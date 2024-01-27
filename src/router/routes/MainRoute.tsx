@@ -1,11 +1,14 @@
 import { Outlet, RouteObject } from "react-router-dom";
 import { PrivateRoute } from "../components";
+import { Layout } from "../../layout";
 
 export const MainRoute: RouteObject = {
   path: "/",
   element: (
     <PrivateRoute>
-      <Outlet />
+      <Layout>
+        <Outlet />
+      </Layout>
     </PrivateRoute>
   ),
   children: [
