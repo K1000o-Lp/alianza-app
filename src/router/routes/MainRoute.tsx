@@ -14,7 +14,11 @@ export const MainRoute: RouteObject = {
   children: [
     {
       index: true,
-      element: <div>dashboard</div>,
+      element: <div>Dashboard</div>,
+    },
+    {
+      path: "miembros",
+      element: <div>Lista de Miembros</div>,
     },
   ],
 };
