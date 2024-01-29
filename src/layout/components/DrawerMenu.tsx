@@ -2,7 +2,7 @@ import * as React from "react";
 import Drawer from "@mui/material/Drawer";
 import DashboardIcon from "@mui/icons-material/Dashboard";
 import PeopleIcon from "@mui/icons-material/People";
-import ReceiptLongIcon from "@mui/icons-material/ReceiptLong";
+import AssignmentIcon from "@mui/icons-material/Assignment";
 
 import { NavList } from "./NavList";
 import { NavItem } from "../../types";
@@ -32,7 +32,7 @@ export const DrawerMenu: React.FC<Props> = ({ open, toggleDrawer }) => {
     {
       key: "reportes",
       label: "Reportes",
-      icon: <ReceiptLongIcon />,
+      icon: <AssignmentIcon />,
       route: "../reportes",
     },
   ];
