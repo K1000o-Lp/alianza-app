@@ -1,6 +1,8 @@
 import { Outlet, RouteObject } from "react-router-dom";
+
 import { PrivateRoute } from "../components";
 import { Layout } from "../../layout";
+import { Home } from "../../pages/Home/view/Home";
 
 export const MainRoute: RouteObject = {
   path: "/",
@@ -14,7 +16,7 @@ export const MainRoute: RouteObject = {
   children: [
     {
       index: true,
-      element: <div>Dashboard</div>,
+      element: <Home />,
     },
     {
       path: "miembros",

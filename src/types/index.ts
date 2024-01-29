@@ -12,3 +12,9 @@ export interface NavItem {
   route: string | undefined;
   items?: NavItem[];
 }
+
+export interface Statistic {
+  title: string;
+  requisito_id?: number;
+  competencia_id?: number;
+}
