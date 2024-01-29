@@ -20,5 +20,9 @@ export const MainRoute: RouteObject = {
       path: "miembros",
       element: <div>Lista de Miembros</div>,
     },
+    {
+      path: "reportes",
+      element: <div>Reporte de Miembros</div>,
+    },
   ],
 };

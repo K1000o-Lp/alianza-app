@@ -2,8 +2,10 @@ import * as React from "react";
 import Drawer from "@mui/material/Drawer";
 import DashboardIcon from "@mui/icons-material/Dashboard";
 import PeopleIcon from "@mui/icons-material/People";
+import ReceiptLongIcon from "@mui/icons-material/ReceiptLong";
 
 import { NavList } from "./NavList";
+import { NavItem } from "../../types";
 
 interface Props {
   open: boolean;
@@ -14,7 +16,7 @@ interface Props {
 }
 
 export const DrawerMenu: React.FC<Props> = ({ open, toggleDrawer }) => {
-  const navItems = [
+  const navItems: NavItem[] = [
     {
       key: "panel-administracion",
       label: "Panel",
@@ -26,6 +28,12 @@ export const DrawerMenu: React.FC<Props> = ({ open, toggleDrawer }) => {
       label: "Miembros",
       icon: <PeopleIcon />,
       route: "../miembros",
+    },
+    {
+      key: "reportes",
+      label: "Reportes",
+      icon: <ReceiptLongIcon />,
+      route: "../reportes",
     },
   ];
 
