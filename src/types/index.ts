@@ -14,7 +14,18 @@ export interface NavItem {
 }
 
 export interface Statistic {
+  key: string;
   title: string;
   requisito_id?: number;
   competencia_id?: number;
+}
+
+export interface StatisticParam {
+  requisito_id?: number;
+  competencia_id?: number;
+}
+
+export interface ResponseStatistic {
+  total_miembros: number;
+  cantidad: number;
 }
