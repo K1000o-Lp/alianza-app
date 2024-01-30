@@ -71,8 +71,10 @@ export const Home: React.FC = () => {
 
   return (
     <Grid container spacing={3}>
-      {statisticsList.map((statistic: Statistic) => (
-        <CountStatistics {...statistic} />
+      {statisticsList.map(({ key, ...statistic }: Statistic) => (
+        <Grid key={key} xs={12} md={3}>
+          <CountStatistics {...statistic} />
+        </Grid>
       ))}
     </Grid>
   );

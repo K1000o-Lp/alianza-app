@@ -29,3 +29,22 @@ export interface ResponseStatistic {
   total_miembros: number;
   cantidad: number;
 }
+
+export interface ResponseMember {
+  miembro_id: number;
+  cedula: string;
+  nombre_completo: string;
+  telefono: string;
+  fecha_nacimiento: Date;
+  hijos: number;
+  creado_en?: Date;
+  modificado_en?: Date;
+  eliminado_en?: Date;
+  historiales?: unknown;
+  evaluaciones?: unknown;
+}
+
+export interface Zone {
+  zona_id: number;
+  descripcion: string;
+}
