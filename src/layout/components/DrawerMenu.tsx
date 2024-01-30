@@ -18,19 +18,19 @@ interface Props {
 export const DrawerMenu: React.FC<Props> = ({ open, toggleDrawer }) => {
   const navItems: NavItem[] = [
     {
-      key: "panel-administracion",
+      key: "/",
       label: "Panel",
       icon: <DashboardIcon />,
       route: "../",
     },
     {
-      key: "miembros",
+      key: "/miembros",
       label: "Miembros",
       icon: <PeopleIcon />,
       route: "../miembros",
     },
     {
-      key: "reportes",
+      key: "/reportes",
       label: "Reportes",
       icon: <AssignmentIcon />,
       route: "../reportes",

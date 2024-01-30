@@ -68,6 +68,7 @@ export const Home: React.FC = () => {
       competencia_id: 3,
     },
   ];
+
   return (
     <Grid container spacing={3}>
       {statisticsList.map((statistic: Statistic) => (

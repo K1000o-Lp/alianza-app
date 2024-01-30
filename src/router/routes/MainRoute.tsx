@@ -3,6 +3,7 @@ import { Outlet, RouteObject } from "react-router-dom";
 import { PrivateRoute } from "../components";
 import { Layout } from "../../layout";
 import { Home } from "../../pages/Home/view/Home";
+import { Miembros } from "../../pages/Miembros/view/Miembros";
 
 export const MainRoute: RouteObject = {
   path: "/",
@@ -20,7 +21,7 @@ export const MainRoute: RouteObject = {
     },
     {
       path: "miembros",
-      element: <div>Lista de Miembros</div>,
+      element: <Miembros />,
     },
     {
       path: "reportes",
