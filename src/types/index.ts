@@ -13,6 +13,16 @@ export interface NavItem {
   items?: NavItem[];
 }
 
+export interface Zone {
+  zona_id: number;
+  descripcion: string;
+}
+
+export interface Service {
+  servicio_id: number;
+  descripcion: string;
+}
+
 export interface Statistic {
   key: string;
   title: string;
@@ -44,7 +54,40 @@ export interface ResponseMember {
   evaluaciones?: unknown;
 }
 
-export interface Zone {
-  zona_id: number;
+export interface CivilStatus {
+  estado_civil_id: number;
   descripcion: string;
+}
+
+export interface Education {
+  educacion_id: number;
+  descripcion: string;
+}
+
+export interface Occupation {
+  ocupacion_id: number;
+  descripcion: string;
+}
+
+export interface Disability {
+  discapacidad_id: number;
+  descripcion: string;
+}
+
+export interface MemberForm {
+  cedula?: string;
+  nombre_completo: string;
+  telefono?: string;
+  fecha_nacimiento?: Date;
+  hijos: number;
+  educacion_fk_id: number;
+  estado_civil_fk_id: number;
+  ocupacion_fk_id: number;
+  discapacidad_fk_id: number;
+  historial: {
+    lider_fk_id: number;
+    supervisor_fk_id: number;
+    servicio_fk_id: number;
+    zona_fk_id: number;
+  };
 }

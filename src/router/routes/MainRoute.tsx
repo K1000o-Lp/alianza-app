@@ -4,6 +4,7 @@ import { PrivateRoute } from "../components";
 import { Layout } from "../../layout";
 import { Home } from "../../pages/Home/view/Home";
 import { Miembros } from "../../pages/Miembros/view/Miembros";
+import { AddMember } from "../../pages/AddMember/view/AddMember";
 
 export const MainRoute: RouteObject = {
   path: "/",
@@ -22,6 +23,10 @@ export const MainRoute: RouteObject = {
     {
       path: "miembros",
       element: <Miembros />,
+    },
+    {
+      path: "miembros/agregar",
+      element: <AddMember />,
     },
     {
       path: "reportes",

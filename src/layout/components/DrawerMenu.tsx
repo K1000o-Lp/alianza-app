@@ -3,6 +3,7 @@ import Drawer from "@mui/material/Drawer";
 import DashboardIcon from "@mui/icons-material/Dashboard";
 import PeopleIcon from "@mui/icons-material/People";
 import AssignmentIcon from "@mui/icons-material/Assignment";
+import AddBoxIcon from "@mui/icons-material/AddBox";
 
 import { NavList } from "./NavList";
 import { NavItem } from "../../types";
@@ -28,6 +29,12 @@ export const DrawerMenu: React.FC<Props> = ({ open, toggleDrawer }) => {
       label: "Miembros",
       icon: <PeopleIcon />,
       route: "../miembros",
+    },
+    {
+      key: "/miembros/agregar",
+      label: "Agregar Miembro",
+      icon: <AddBoxIcon />,
+      route: "/miembros/agregar",
     },
     {
       key: "/reportes",

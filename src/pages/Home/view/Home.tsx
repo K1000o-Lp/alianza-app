@@ -1,5 +1,5 @@
 import * as React from "react";
-import Grid from "@mui/material/Unstable_Grid2/Grid2";
+import Grid from "@mui/material/Grid";
 
 import { CountStatistics } from "../components/CountStatistics";
 
@@ -72,7 +72,7 @@ export const Home: React.FC = () => {
   return (
     <Grid container spacing={3}>
       {statisticsList.map(({ key, ...statistic }: Statistic) => (
-        <Grid key={key} xs={12} md={3}>
+        <Grid item key={key} xs={12} md={3}>
           <CountStatistics {...statistic} />
         </Grid>
       ))}

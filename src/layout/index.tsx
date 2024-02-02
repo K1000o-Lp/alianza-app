@@ -12,7 +12,7 @@ interface Props {
 
 export const Layout: React.FC<Props> = ({ children }) => {
   return (
-    <>
+    <React.Fragment>
       <ResponsiveAppBar />
       <Box
         component="main"
@@ -31,6 +31,6 @@ export const Layout: React.FC<Props> = ({ children }) => {
           {children}
         </Container>
       </Box>
-    </>
+    </React.Fragment>
   );
 };
