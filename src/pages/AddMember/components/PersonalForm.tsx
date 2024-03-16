@@ -34,6 +34,12 @@ export const PersonalForm: React.FC = () => {
             control={control}
             name="cedula"
             defaultValue=""
+            rules={{
+              pattern: {
+                value: /^[0-9,$]*$/,
+                message: "Campo solo permite números",
+              },
+            }}
             render={({
               field: { onChange, value },
               fieldState: { invalid, error },
@@ -84,7 +90,12 @@ export const PersonalForm: React.FC = () => {
             control={control}
             name="telefono"
             defaultValue=""
-            rules={{}}
+            rules={{
+              pattern: {
+                value: /^\d{10}$/,
+                message: "Campo solo permite números de 10 dígitos",
+              },
+            }}
             render={({
               field: { onChange, value },
               fieldState: { invalid, error },
@@ -108,7 +119,6 @@ export const PersonalForm: React.FC = () => {
           <Controller
             control={control}
             name="fecha_nacimiento"
-            rules={{}}
             defaultValue=""
             render={({
               field: { onChange, value },

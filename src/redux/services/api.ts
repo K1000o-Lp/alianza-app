@@ -8,6 +8,8 @@ import {
   ResponseStatistic,
   Service,
   StatisticParam,
+  Superior,
+  SuperiorOptions,
   Zone,
 } from "../../types";
 
@@ -24,6 +26,17 @@ export const alianzaApi = createApi({
     getCountStatistics: builder.query<ResponseStatistic, StatisticParam>({
       query: ({ requisito_id, competencia_id }) =>
         `persona/estadisticas?requisito=${requisito_id}&competencia=${competencia_id}`,
+    }),
+    getSuperiors: builder.query<Superior[], Partial<SuperiorOptions>>({
+      query: (options) => ({
+        url: "persona/miembros",
+        params: options,
+      }),
+      transformResponse: (response: ResponseMember[]) =>
+        response.map(({ miembro_id, nombre_completo }) => ({
+          miembro_id,
+          nombre_completo,
+        })),
     }),
     getMembers: builder.query<ResponseMember[], null | void>({
       query: () => ({ url: "persona/miembros" }),
@@ -63,8 +76,10 @@ export const alianzaApi = createApi({
 
 export const {
   useGetCountStatisticsQuery,
+  useGetSuperiorsQuery,
   useGetMembersQuery,
   useGetZonesQuery,
+  useGetServicesQuery,
   useGetCivilStatusesQuery,
   useGetEducationsQuery,
   useGetOccupationsQuery,

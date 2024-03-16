@@ -13,6 +13,17 @@ export interface NavItem {
   items?: NavItem[];
 }
 
+export interface SuperiorOptions {
+  zona: number;
+  requisito: number;
+  competencia: number;
+}
+
+export interface Superior {
+  miembro_id: number;
+  nombre_completo: string;
+}
+
 export interface Zone {
   zona_id: number;
   descripcion: string;

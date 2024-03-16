@@ -41,7 +41,34 @@ export const AddMember: React.FC = () => {
     setActiveStep(activeStep - 1);
   };
 
-  const handleNext = () => {
+  const handleNext = async () => {
+    const formInputs = [
+      [
+        "cedula",
+        "nombre_completo",
+        "telefono",
+        "fecha_nacimiento",
+        "estado_civil_fk_id",
+        "hijos",
+      ],
+      ["educacion_fk_id", "ocupacion_fk_id", "discapacidad_fk_id"],
+      [
+        "historial.lider_fk_id",
+        "historial.supervisor_fk_id",
+        "historial.servicio_fk_id",
+        "historial.zona_fk_id",
+      ],
+    ];
+
+    const isValid = await methods.trigger(formInputs[activeStep]);
+
+    if (!isValid) {
+      return;
+    }
+
+    if (activeStep == formInputs.length - 1) {
+    }
+
     setActiveStep(activeStep + 1);
   };
 

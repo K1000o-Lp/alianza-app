@@ -8,9 +8,32 @@ import {
   Typography,
 } from "@mui/material";
 import { Controller, useFormContext } from "react-hook-form";
+import {
+  useGetServicesQuery,
+  useGetSuperiorsQuery,
+  useGetZonesQuery,
+} from "../../../redux/services";
 
 export const ServiceForm: React.FC = () => {
   const { control } = useFormContext();
+
+  const {
+    data: zones,
+    isLoading: zonesLoading,
+    isError: zonesError,
+  } = useGetZonesQuery();
+
+  const {
+    data: services,
+    isLoading: servicesLoading,
+    isError: servicesError,
+  } = useGetServicesQuery();
+
+  const {
+    data: superiors,
+    isLoading: superiorsLoading,
+    isError: superiorsError,
+  } = useGetSuperiorsQuery({ requisito: 11, competencia: 3 });
 
   return (
     <React.Fragment>
@@ -37,6 +60,19 @@ export const ServiceForm: React.FC = () => {
                   value={value}
                 >
                   <option key="-1" value="" hidden></option>
+
+                  {superiorsLoading && (
+                    <option key="0" value="">
+                      Cargando...
+                    </option>
+                  )}
+
+                  {!superiorsError &&
+                    superiors?.map(({ miembro_id, nombre_completo }) => (
+                      <option key={miembro_id} value={miembro_id}>
+                        {nombre_completo}
+                      </option>
+                    ))}
 
                   {/*{disabilitiesLoading && (
                     <option key="0" value="">
@@ -74,6 +110,19 @@ export const ServiceForm: React.FC = () => {
                 >
                   <option key="-1" value="" hidden></option>
 
+                  {superiorsLoading && (
+                    <option key="0" value="">
+                      Cargando...
+                    </option>
+                  )}
+
+                  {!superiorsError &&
+                    superiors?.map(({ miembro_id, nombre_completo }) => (
+                      <option key={miembro_id} value={miembro_id}>
+                        {nombre_completo}
+                      </option>
+                    ))}
+
                   {/*{disabilitiesLoading && (
                     <option key="0" value="">
                       Cargando...
@@ -110,16 +159,18 @@ export const ServiceForm: React.FC = () => {
                 >
                   <option key="-1" value="" hidden></option>
 
-                  {/*{disabilitiesLoading && (
+                  {servicesLoading && (
                     <option key="0" value="">
                       Cargando...
                     </option>
                   )}
 
-                  {!disabilitiesError &&
-                    disabilities?.map(({ discapacidad_id, descripcion }) => (
-                      <option key={discapacidad_id}>{descripcion}</option>
-                    ))}*/}
+                  {!servicesError &&
+                    services?.map(({ servicio_id, descripcion }) => (
+                      <option key={servicio_id} value={servicio_id}>
+                        {descripcion}
+                      </option>
+                    ))}
                 </NativeSelect>
                 <FormHelperText>{error?.message}</FormHelperText>
               </FormControl>
@@ -146,16 +197,18 @@ export const ServiceForm: React.FC = () => {
                 >
                   <option key="-1" value="" hidden></option>
 
-                  {/*{disabilitiesLoading && (
+                  {zonesLoading && (
                     <option key="0" value="">
                       Cargando...
                     </option>
                   )}
 
-                  {!disabilitiesError &&
-                    disabilities?.map(({ discapacidad_id, descripcion }) => (
-                      <option key={discapacidad_id}>{descripcion}</option>
-                    ))}*/}
+                  {!zonesError &&
+                    zones?.map(({ zona_id, descripcion }) => (
+                      <option key={zona_id} value={zona_id}>
+                        {descripcion}
+                      </option>
+                    ))}
                 </NativeSelect>
                 <FormHelperText>{error?.message}</FormHelperText>
               </FormControl>
