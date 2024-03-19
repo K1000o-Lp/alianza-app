@@ -72,7 +72,7 @@ export const ProfessionForm: React.FC = () => {
 
                   {!disabilitiesError &&
                     disabilities?.map(({ discapacidad_id, descripcion }) => (
-                      <option key={discapacidad_id}>{descripcion}</option>
+                      <option key={discapacidad_id} value={discapacidad_id}>{descripcion}</option>
                     ))}
                 </NativeSelect>
                 <FormHelperText>{error?.message}</FormHelperText>

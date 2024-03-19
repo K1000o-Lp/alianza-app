@@ -3,6 +3,7 @@ import {
   CivilStatus,
   Disability,
   Education,
+  MemberForm,
   Occupation,
   ResponseMember,
   ResponseStatistic,
@@ -59,6 +60,13 @@ export const alianzaApi = createApi({
           })
         ),
     }),
+    postMembers: builder.mutation<ResponseMember, MemberForm>({
+      query: (newMember) => ({
+        url: 'persona/miembros',
+        method: 'POST',
+        body: newMember,
+      }),
+    }),
     getCivilStatuses: builder.query<CivilStatus[], null | void>({
       query: () => "persona/estados_civiles",
     }),
@@ -78,6 +86,7 @@ export const {
   useGetCountStatisticsQuery,
   useGetSuperiorsQuery,
   useGetMembersQuery,
+  usePostMembersMutation,
   useGetZonesQuery,
   useGetServicesQuery,
   useGetCivilStatusesQuery,
