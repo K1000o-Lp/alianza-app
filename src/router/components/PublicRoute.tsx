@@ -7,7 +7,12 @@ interface Props {
 }
 
 export const PublicRoute: FC<Props> = ({ children }) => {
+  const token = localStorage.getItem('token');
   const auth = useAppSelector((state: RootState) => state.auth);
+
+  if(token) {
+    return <Navigate to="/" />
+  }
 
   return !auth.isLogged ? children : <Navigate to="/" replace />;
 };

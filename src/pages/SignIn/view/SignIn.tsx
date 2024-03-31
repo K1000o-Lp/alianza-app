@@ -13,6 +13,9 @@ import Typography from "@mui/material/Typography";
 import { FormEvent } from "react";
 import { useAppDispatch } from "../../../redux/store";
 import { setUser } from "../../../redux/features/authSlice";
+import { SubmitHandler, useForm } from "react-hook-form";
+import { IniciarSesionForm } from "../../../types";
+import { useIniciarSesionMutation } from "../../../redux/services";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function Copyright(props: any) {
@@ -34,17 +37,23 @@ function Copyright(props: any) {
 }
 
 export function SignIn() {
-  const dispatch = useAppDispatch();
+  // const dispatch = useAppDispatch();
 
-  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    const data = new FormData(event.currentTarget);
-    console.log({
-      email: data.get("username"),
-      password: data.get("password"),
-    });
-    dispatch(setUser({ username: data.get("username") }));
-  };
+  const [iniciarSesion, result] = useIniciarSesionMutation();
+
+  const { register, handleSubmit, formState: { errors } } = useForm<IniciarSesionForm>();
+
+  const onSubmit: SubmitHandler<IniciarSesionForm> = (data) => iniciarSesion(data); 
+
+  // const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
+  //   event.preventDefault();
+  //   const data = new FormData(event.currentTarget);
+  //   console.log({
+  //     email: data.get("username"),
+  //     password: data.get("password"),
+  //   });
+  //   dispatch(setUser({ username: data.get("username") }));
+  // };
 
   return (
     <Grid container component="main" sx={{ height: "100vh" }}>
@@ -84,27 +93,25 @@ export function SignIn() {
           <Box
             component="form"
             noValidate
-            onSubmit={handleSubmit}
+            onSubmit={handleSubmit(onSubmit)}
             sx={{ mt: 1 }}
           >
             <TextField
               margin="normal"
-              required
               fullWidth
               id="username"
               label="Nombre de usuario"
-              name="username"
               autoComplete="username"
+              {...register('nombre_usuario', { required: 'Campo oblogatorio' })}
               autoFocus
             />
             <TextField
               margin="normal"
-              required
               fullWidth
-              name="password"
               label="Contraseña"
               type="password"
               id="password"
+              {...register('contrasena', { required: 'Campo obligatorio' })}
               autoComplete="current-password"
             />
             <FormControlLabel

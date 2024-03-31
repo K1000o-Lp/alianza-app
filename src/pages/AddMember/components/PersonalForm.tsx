@@ -146,7 +146,7 @@ export const PersonalForm: React.FC = () => {
         <Grid item md={4} xs={6}>
           <Controller
             control={control}
-            name="estado_civil_fk_id"
+            name="estado_civil_id"
             rules={{ required: "Campo obligatorio" }}
             defaultValue=""
             render={({
@@ -173,8 +173,8 @@ export const PersonalForm: React.FC = () => {
                   )}
 
                   {!civiliStatusesError &&
-                    civilStatuses?.map(({ estado_civil_id, descripcion }) => (
-                      <option key={estado_civil_id} value={estado_civil_id}>
+                    civilStatuses?.map(({ id, descripcion }) => (
+                      <option key={id} value={id}>
                         {descripcion}
                       </option>
                     ))}

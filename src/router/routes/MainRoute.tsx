@@ -5,6 +5,9 @@ import { Layout } from "../../layout";
 import { Home } from "../../pages/Home/view/Home";
 import { Miembros } from "../../pages/Miembros/view/Miembros";
 import { AddMember } from "../../pages/AddMember/view/AddMember";
+import { Attendance } from "../../pages/Asistencias/view/Attendance";
+import { Eventos } from "../../pages/Eventos/view/Eventos";
+import { EditMember } from "../../pages/EditMember/view/EditMember";
 
 export const MainRoute: RouteObject = {
   path: "/",
@@ -25,8 +28,20 @@ export const MainRoute: RouteObject = {
       element: <Miembros />,
     },
     {
-      path: "miembros/agregar",
+      path: "miembros/crear",
       element: <AddMember />,
+    },
+    {
+      path: "miembros/:id/editar",
+      element: <EditMember />,
+    },
+    {
+      path: "eventos/crear",
+      element: <Eventos />,
+    },
+    {
+      path: "asistencias/crear",
+      element: <Attendance />
     },
     {
       path: "reportes",
