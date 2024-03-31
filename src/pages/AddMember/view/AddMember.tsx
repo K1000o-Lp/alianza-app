@@ -40,7 +40,7 @@ function getStepContent(step: number) {
 export const AddMember: React.FC = () => {
   const [activeStep, setActiveStep] = React.useState<number>(0);
   const { user } = useAppSelector((state) => state.auth);
-  const methods = useForm<MemberForm>({ defaultValues: { historial: { zona_id: user?.zona.id } } });
+  const methods = useForm<MemberForm>({ defaultValues: { historial: { zona_id: user?.zona?.id } } });
 
   const router = useRouter();
   const [postMember, result] = usePostMembersMutation();
