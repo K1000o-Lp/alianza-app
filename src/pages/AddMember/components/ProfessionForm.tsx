@@ -46,7 +46,7 @@ export const ProfessionForm: React.FC = () => {
         <Grid item md={6} xs={9}>
           <Controller
             control={control}
-            name="discapacidad_fk_id"
+            name="discapacidad_id"
             rules={{ required: "Campo obligatorio" }}
             defaultValue=""
             render={({
@@ -71,8 +71,8 @@ export const ProfessionForm: React.FC = () => {
                   )}
 
                   {!disabilitiesError &&
-                    disabilities?.map(({ discapacidad_id, descripcion }) => (
-                      <option key={discapacidad_id} value={discapacidad_id}>{descripcion}</option>
+                    disabilities?.map(({ id, descripcion }) => (
+                      <option key={id} value={id}>{descripcion}</option>
                     ))}
                 </NativeSelect>
                 <FormHelperText>{error?.message}</FormHelperText>
@@ -86,7 +86,7 @@ export const ProfessionForm: React.FC = () => {
         <Grid item md={6} xs={8}>
           <Controller
             control={control}
-            name="educacion_fk_id"
+            name="educacion_id"
             rules={{ required: "Campo obligatorio" }}
             defaultValue=""
             render={({
@@ -109,8 +109,8 @@ export const ProfessionForm: React.FC = () => {
                   )}
 
                   {!educationsError &&
-                    educations?.map(({ educacion_id, descripcion }) => (
-                      <option key={educacion_id} value={educacion_id}>
+                    educations?.map(({ id, descripcion }) => (
+                      <option key={id} value={id}>
                         {descripcion}
                       </option>
                     ))}
@@ -126,7 +126,7 @@ export const ProfessionForm: React.FC = () => {
         <Grid item md={7} xs={12}>
           <Controller
             control={control}
-            name="ocupacion_fk_id"
+            name="ocupacion_id"
             rules={{ required: "Campo obligatorio" }}
             defaultValue=""
             render={({
@@ -149,8 +149,8 @@ export const ProfessionForm: React.FC = () => {
                   )}
 
                   {!occupationsError &&
-                    occupations?.map(({ ocupacion_id, descripcion }) => (
-                      <option key={ocupacion_id} value={ocupacion_id}>
+                    occupations?.map(({ id, descripcion }) => (
+                      <option key={id} value={id}>
                         {descripcion}
                       </option>
                     ))}

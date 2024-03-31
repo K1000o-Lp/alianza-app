@@ -12,10 +12,12 @@ import Tooltip from "@mui/material/Tooltip";
 import MenuItem from "@mui/material/MenuItem";
 import AdbIcon from "@mui/icons-material/Adb";
 import { DrawerMenu } from "./DrawerMenu";
-
-const settings = ["Perfil", "Cambiar contraseña", "Cerrar sesión"];
+import { useAppDispatch, useAppSelector } from "../../redux/store";
+import { logOut } from "../../redux/features/authSlice";
 
 export function ResponsiveAppBar() {
+  const dispatch = useAppDispatch();
+  const { user } = useAppSelector((state) => state.auth);
   const [open, setOpen] = React.useState<boolean>(false);
 
   const [anchorElUser, setAnchorElUser] = React.useState<null | HTMLElement>(
@@ -41,6 +43,16 @@ export function ResponsiveAppBar() {
 
     setOpen(!open);
   };
+
+  const settings = [
+    {
+      label: 'Cerrar Sesion',
+      action: () => {
+        localStorage.removeItem('token');
+        dispatch(logOut());
+      }
+    }
+  ];
 
   return (
     <>
@@ -100,7 +112,7 @@ export function ResponsiveAppBar() {
             <Box sx={{ flexGrow: 0 }}>
               <Tooltip title="Open settings">
                 <IconButton onClick={handleOpenUserMenu} sx={{ p: 0 }}>
-                  <Avatar alt="Rosa Parra" src="/static/images/avatar/2.jpg" />
+                  <Avatar alt={user?.miembro?.nombre_completo} src="/static/images/avatar/2.jpg" />
                 </IconButton>
               </Tooltip>
               <Menu
@@ -119,9 +131,9 @@ export function ResponsiveAppBar() {
                 open={Boolean(anchorElUser)}
                 onClose={handleCloseUserMenu}
               >
-                {settings.map((setting) => (
-                  <MenuItem key={setting} onClick={handleCloseUserMenu}>
-                    <Typography textAlign="center">{setting}</Typography>
+                {settings.map((setting, index) => (
+                  <MenuItem key={index} onClick={setting.action}>
+                    <Typography textAlign="center">{setting.label}</Typography>
                   </MenuItem>
                 ))}
               </Menu>

@@ -16,6 +16,7 @@ import { MemberForm } from "../../../types";
 import { ServiceForm } from "../components/ServiceForm";
 import { usePostMembersMutation } from "../../../redux/services";
 import { useRouter } from "../../../router/hooks";
+import { useAppSelector } from "../../../redux/store";
 
 const steps = [
   "Información personal",
@@ -38,11 +39,12 @@ function getStepContent(step: number) {
 
 export const AddMember: React.FC = () => {
   const [activeStep, setActiveStep] = React.useState<number>(0);
-  const methods = useForm<MemberForm>({ defaultValues: {} });
+  const { user } = useAppSelector((state) => state.auth);
+  const methods = useForm<MemberForm>({ defaultValues: { historial: { zona_id: user?.zona.id } } });
 
   const router = useRouter();
   const [postMember, result] = usePostMembersMutation();
-  const { data: memberData, isLoading: postMemberLoading, isError: postMemberError } = result;
+  const { data: memberData, isLoading: postMemberLoading } = result;
 
   const onSubmit: SubmitHandler<MemberForm> = async (data) => postMember(data);
 
@@ -57,15 +59,13 @@ export const AddMember: React.FC = () => {
         "nombre_completo",
         "telefono",
         "fecha_nacimiento",
-        "estado_civil_fk_id",
+        "estado_civil_id",
         "hijos",
       ],
-      ["educacion_fk_id", "ocupacion_fk_id", "discapacidad_fk_id"],
+      ["educacion_id", "ocupacion_id", "discapacidad_id"],
       [
-        "historial.lider_fk_id",
-        "historial.supervisor_fk_id",
-        "historial.servicio_fk_id",
-        "historial.zona_fk_id",
+        "historial.servicio_id",
+        "historial.zona_id",
       ],
     ];
 

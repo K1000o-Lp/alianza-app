@@ -1,8 +1,12 @@
 import { ReactElement } from "react";
 
+
+
 export interface User {
-  username: FormDataEntryValue | null;
-  rol?: number;
+  id: number;
+  nombre_usuario: string;
+  miembro: ResponseMember
+  zona: Zone;
 }
 
 export interface NavItem {
@@ -13,24 +17,22 @@ export interface NavItem {
   items?: NavItem[];
 }
 
-export interface SuperiorOptions {
+export interface Options {
+  id: string;
+  cedula: string;
   zona: number;
+  rol: number;
   requisito: number;
-  competencia: number;
-}
-
-export interface Superior {
-  miembro_id: number;
-  nombre_completo: string;
+  resultado: boolean;
 }
 
 export interface Zone {
-  zona_id: number;
+  id: number;
   descripcion: string;
 }
 
 export interface Service {
-  servicio_id: number;
+  id: number;
   descripcion: string;
 }
 
@@ -38,12 +40,7 @@ export interface Statistic {
   key: string;
   title: string;
   requisito_id?: number;
-  competencia_id?: number;
-}
-
-export interface StatisticParam {
-  requisito_id?: number;
-  competencia_id?: number;
+  resultado?: boolean;
 }
 
 export interface ResponseStatistic {
@@ -51,8 +48,23 @@ export interface ResponseStatistic {
   cantidad: number;
 }
 
+export interface Requisito {
+  id: number;
+  nombre: string;
+  descripcion: string;
+}
+
+export interface Evaluaciones {
+  id: number;
+  resultado: boolean;
+  creado_en: Date | null;
+  modificado_en: Date | null;
+  eliminado_en: Date | null;
+  requisito: Requisito;
+}
+
 export interface ResponseMember {
-  miembro_id: number;
+  id: number;
   cedula: string;
   nombre_completo: string;
   telefono: string;
@@ -62,26 +74,27 @@ export interface ResponseMember {
   modificado_en?: Date;
   eliminado_en?: Date;
   historiales?: unknown;
-  evaluaciones?: unknown;
+  evaluaciones?: Evaluaciones[];
+  ultimo_requisito?: string;
 }
 
 export interface CivilStatus {
-  estado_civil_id: number;
+  id: number;
   descripcion: string;
 }
 
 export interface Education {
-  educacion_id: number;
+  id: number;
   descripcion: string;
 }
 
 export interface Occupation {
-  ocupacion_id: number;
+  id: number;
   descripcion: string;
 }
 
 export interface Disability {
-  discapacidad_id: number;
+  id: number;
   descripcion: string;
 }
 
@@ -91,14 +104,43 @@ export interface MemberForm {
   telefono?: string;
   fecha_nacimiento?: Date;
   hijos: number;
-  educacion_fk_id: number;
-  estado_civil_fk_id: number;
-  ocupacion_fk_id: number;
-  discapacidad_fk_id: number;
+  educacion_id: number;
+  estado_civil_id: number;
+  ocupacion_id: number;
+  discapacidad_id: number;
   historial: {
-    lider_fk_id: number;
-    supervisor_fk_id: number;
-    servicio_fk_id: number;
-    zona_fk_id: number;
+    servicio_id: number;
+    zona_id: number;
   };
+}
+
+export interface EventForm {
+  nombre: string;
+  descripcion: string;
+  zona_id: number;
+}
+
+export interface ResponseEvent {
+  nombre: string;
+  descripcion: string;
+  zona: Zone;
+}
+
+export interface AsistenciasForm {
+  evento_id: number;
+  miembros: Array<{nombre_completo: string, miembro_id: number}>
+}
+
+export interface EvaluacionInput {
+  id: number;
+  resultado: boolean;
+}
+
+export interface IniciarSesionForm {
+  nombre_usuario: string;
+  contrasena: string;
+}
+
+export interface Sesion {
+  access_token: string;
 }
