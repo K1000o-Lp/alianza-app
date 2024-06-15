@@ -100,7 +100,7 @@ export const Eventos: React.FC = () => {
               <Grid item md={12} xs={12}>
                 <Controller
                   control={control}
-                  name="zona_fk_id"
+                  name="zona_id"
                   rules={{ required: "Campo obligatorio" }}
                   render={({
                     field: { onChange, value },
@@ -122,8 +122,8 @@ export const Eventos: React.FC = () => {
                         )}
 
                         {!zonesError &&
-                          zones?.map(({ zona_id, descripcion }) => (
-                            <option key={zona_id} value={zona_id}>
+                          zones?.map(({ id, descripcion }) => (
+                            <option key={id} value={id}>
                               {descripcion}
                             </option>
                           ))}

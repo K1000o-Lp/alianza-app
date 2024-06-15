@@ -2,10 +2,10 @@ import * as React from "react";
 import Drawer from "@mui/material/Drawer";
 import DashboardIcon from "@mui/icons-material/Dashboard";
 import PeopleIcon from "@mui/icons-material/People";
-import AssignmentIcon from "@mui/icons-material/Assignment";
+// import AssignmentIcon from "@mui/icons-material/Assignment";
 import AddBoxIcon from "@mui/icons-material/AddBox";
-import ChecklistIcon from '@mui/icons-material/Checklist';
-import EventIcon from '@mui/icons-material/Event';
+// import ChecklistIcon from '@mui/icons-material/Checklist';
+//import EventIcon from '@mui/icons-material/Event';
 
 import { NavList } from "./NavList";
 import { NavItem } from "../../types";
@@ -37,24 +37,6 @@ export const DrawerMenu: React.FC<Props> = ({ open, toggleDrawer }) => {
       label: "Agregar Miembro",
       icon: <AddBoxIcon />,
       route: "../miembros/crear",
-    },
-    {
-      key: "/eventos/crear",
-      label: "Eventos",
-      icon: <EventIcon />,
-      route: "../eventos/crear"
-    },
-    {
-      key: "/asistencias/crear",
-      label: 'Marcar sistencias',
-      icon: <ChecklistIcon />,
-      route: '../asistencias/crear',
-    },
-    {
-      key: "/reportes",
-      label: "Reportes",
-      icon: <AssignmentIcon />,
-      route: "../reportes",
     },
   ];
 
