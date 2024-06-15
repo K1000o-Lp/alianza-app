@@ -10,9 +10,6 @@ import Box from "@mui/material/Box";
 import Grid from "@mui/material/Grid";
 import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
 import Typography from "@mui/material/Typography";
-import { FormEvent } from "react";
-import { useAppDispatch } from "../../../redux/store";
-import { setUser } from "../../../redux/features/authSlice";
 import { SubmitHandler, useForm } from "react-hook-form";
 import { IniciarSesionForm } from "../../../types";
 import { useIniciarSesionMutation } from "../../../redux/services";
@@ -39,9 +36,9 @@ function Copyright(props: any) {
 export function SignIn() {
   // const dispatch = useAppDispatch();
 
-  const [iniciarSesion, result] = useIniciarSesionMutation();
+  const [iniciarSesion] = useIniciarSesionMutation();
 
-  const { register, handleSubmit, formState: { errors } } = useForm<IniciarSesionForm>();
+  const { register, handleSubmit } = useForm<IniciarSesionForm>();
 
   const onSubmit: SubmitHandler<IniciarSesionForm> = (data) => iniciarSesion(data); 
 

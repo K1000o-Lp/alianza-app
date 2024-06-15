@@ -13,7 +13,7 @@ export const Attendance: React.FC = () => {
   const [ open, setOpen ] = React.useState<boolean>(false);
   const { control, handleSubmit } = useForm<AsistenciasForm>({ defaultValues: {} });
 
-  const { data: membersData, isLoading: membersLoading, isError: membersError } = useGetMembersQuery();
+  const { data: membersData } = useGetMembersQuery({});
   
   const options: any = membersData?.map(({ nombre_completo, id }) => ({
     nombre_completo, 
@@ -42,13 +42,12 @@ export const Attendance: React.FC = () => {
               control={control}
               name={'miembros'}
               defaultValue={[]}
-              render={({field: { onChange, ...props }}) => (
+              render={({field: { onChange }}) => (
                 <Autocomplete
                   options={options}
-                  getOptionLabel={option => `${option.nombre_completo}`}
+                  getOptionLabel={(option: any) => `${option.nombre_completo}`}
                   renderInput={(params) => <TextField {...params} variant='standard' label="Miembros" margin="normal" />}
                   onChange={(_, data) => onChange(data)}
-                  {...props}
                 />
               )}
             />

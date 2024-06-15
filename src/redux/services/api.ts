@@ -15,6 +15,7 @@ import {
   ResponseStatistic,
   Service,
   Sesion,
+  User,
   Zone,
 } from "../../types";
 import { jwtDecode } from "jwt-decode";
@@ -37,7 +38,7 @@ export const alianzaApi = createApi({
       onCacheEntryAdded: async (_, { dispatch, cacheDataLoaded }) => {
         try {
           const { data: { access_token } } = await cacheDataLoaded;
-          const { session } = jwtDecode(access_token);
+          const { session }: { session: User } = jwtDecode(access_token);
   
           localStorage.setItem('token', access_token);
           dispatch(setUser(session));

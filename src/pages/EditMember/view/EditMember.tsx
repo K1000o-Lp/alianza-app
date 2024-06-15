@@ -22,7 +22,8 @@ export const EditMember:React.FC = () => {
   const onSubmit: SubmitHandler<EvaluacionInput[]> = (data) => updateEvaluations(Object.values(data)); 
 
   const handleClose = (event?: React.SyntheticEvent | Event, reason?: string) => {
-
+    event
+    
     if(reason === 'clickaway'){
       return;
     }

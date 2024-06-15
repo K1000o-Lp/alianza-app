@@ -53,7 +53,7 @@ export const AddMember: React.FC = () => {
   };
 
   const handleNext = async () => {
-    const formInputs = [
+    const formInputs: any = [
       [
         "cedula",
         "nombre_completo",
@@ -70,7 +70,8 @@ export const AddMember: React.FC = () => {
     ];
 
     const lastStep = activeStep == formInputs.length - 1 ? true : false;
-    const isValid = await methods.trigger(formInputs[activeStep]);
+    const inputs = formInputs[activeStep];
+    const isValid = await methods.trigger(inputs);
 
     if (!isValid) {
       return;
