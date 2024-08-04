@@ -20,10 +20,13 @@ import {
 } from "../../types";
 import { jwtDecode } from "jwt-decode";
 import { setUser } from "../features/authSlice";
+import { config } from "../../config";
+
+const BACKEND_URL = config()?.BACKEND_URL;
 
 export const alianzaApi = createApi({
   reducerPath: "alianzaApi",
-  baseQuery: fetchBaseQuery({ baseUrl: "http://localhost:3000/" }),
+  baseQuery: fetchBaseQuery({ baseUrl: BACKEND_URL }),
   tagTypes: [
     'Zones', 'Services', 'Members', 'Evaluations', 'Statistics', 'CivilStatuses', 'Educations',
     'Disabilities', 'Occupations',
