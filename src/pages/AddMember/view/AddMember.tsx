@@ -38,7 +38,7 @@ function getStepContent(step: number) {
 }
 
 export const AddMember: React.FC = () => {
-  const [activeStep, setActiveStep] = React.useState<number>(0);
+  const [ activeStep, setActiveStep ] = React.useState<number>(0);
   const { user } = useAppSelector((state) => state.auth);
   const methods = useForm<MemberForm>({ defaultValues: { historial: { zona_id: user?.zona?.id } } });
 
@@ -85,11 +85,10 @@ export const AddMember: React.FC = () => {
   };
 
   React.useEffect(() => {
-
     if(result.isSuccess) {
       setTimeout(() => {
         router.reload();
-      }, 2000);
+      }, 2500);
     }
   }, [result.isSuccess]);
 
@@ -111,14 +110,28 @@ export const AddMember: React.FC = () => {
             ))}
           </Stepper>
           {activeStep === steps.length ? (
-            <React.Fragment>
-              <Typography variant="h5" gutterBottom>
-                Miembro registrado exitosamente.
-              </Typography>
-              <Typography variant="subtitle1">
-                {memberData?.nombre_completo} ha sido registrada/o exitosamente
-              </Typography>
-            </React.Fragment>
+            result.isError ? (
+              <React.Fragment>
+                <Typography variant="h5" gutterBottom>
+                  Error al registrar miembro.
+                </Typography>
+                <Typography variant="subtitle1">
+                  Probablemente inserto una cédula o un nombre existente. Por favor, vuelva a intentarlo.
+                </Typography>
+                <Box width="100%" sx={{ display: "flex", justifyContent: "center" }}>
+                  <Button variant="contained" onClick={() => setActiveStep(0)}>Volver a intentar</Button>
+                </Box>
+              </React.Fragment>
+            ) : (
+              <React.Fragment>
+                <Typography variant="h5" gutterBottom>
+                  Miembro registrado exitosamente.
+                </Typography>
+                <Typography variant="subtitle1">
+                  {memberData?.nombre_completo} ha sido registrada/o exitosamente
+                </Typography>
+              </React.Fragment> 
+            )
           ) : (
             <React.Fragment>
               {getStepContent(activeStep)}
