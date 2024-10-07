@@ -1,4 +1,4 @@
-import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
+import { BaseQueryFn, createApi, FetchArgs, fetchBaseQuery, FetchBaseQueryError } from "@reduxjs/toolkit/query/react";
 import {
   CivilStatus,
   Disability,
@@ -24,9 +24,13 @@ import { config } from "../../config";
 
 const BACKEND_URL = config()?.BACKEND_URL;
 
+const customBaseQuery = fetchBaseQuery({ 
+  baseUrl: BACKEND_URL,
+ });
+
 export const alianzaApi = createApi({
   reducerPath: "alianzaApi",
-  baseQuery: fetchBaseQuery({ baseUrl: BACKEND_URL }),
+  baseQuery: customBaseQuery,
   tagTypes: [
     'Zones', 'Services', 'Members', 'Evaluations', 'Statistics', 'CivilStatuses', 'Educations',
     'Disabilities', 'Occupations',
@@ -114,6 +118,13 @@ export const alianzaApi = createApi({
         url: 'persona/miembros',
         method: 'POST',
         body: newMember,
+        rejectValue: (error: FetchBaseQueryError) => {
+          const errorMessage = (error.data && typeof error.data === 'object' && 'message' in error.data) ? (error.data as { message: string }).message : 'Unknown error';
+          return {
+            message: errorMessage,
+            code: error.status,
+          }
+        }
       }),
       invalidatesTags: ['Members', 'Statistics'],
     }),
