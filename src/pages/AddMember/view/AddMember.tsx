@@ -44,9 +44,10 @@ export const AddMember: React.FC = () => {
 
   const router = useRouter();
   const [postMember, result] = usePostMembersMutation();
-  const { data: memberData, isLoading: postMemberLoading } = result;
+  const { data: memberData, isLoading: postMemberLoading, error: memberError } = result;
+  const errorMessage = memberError && "data" in memberError ? (memberError.data as { message: string }).message : "Error desconocido";
 
-  const onSubmit: SubmitHandler<MemberForm> = async (data) => postMember(data);
+  const onSubmit: SubmitHandler<MemberForm> = async (data) => postMember(data).unwrap().catch((err) => {console.error(err)});
 
   const handleBack = () => {
     setActiveStep(activeStep - 1);
@@ -115,8 +116,8 @@ export const AddMember: React.FC = () => {
                 <Typography variant="h5" gutterBottom>
                   Error al registrar miembro.
                 </Typography>
-                <Typography variant="subtitle1">
-                  Probablemente inserto una cédula o un nombre existente. Por favor, vuelva a intentarlo.
+                <Typography variant="subtitle1" sx={{mb: 2}}>
+                  { errorMessage }
                 </Typography>
                 <Box width="100%" sx={{ display: "flex", justifyContent: "center" }}>
                   <Button variant="contained" onClick={() => setActiveStep(0)}>Volver a intentar</Button>
