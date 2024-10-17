@@ -90,7 +90,7 @@ export const Miembros: React.FC = () => {
       <Paper
         sx={{
           display: "flex",
-          height: 400,
+          height: 500,
           flexDirection: "column",
         }}
       >
@@ -100,7 +100,7 @@ export const Miembros: React.FC = () => {
           loading={isLoading}
           getRowId={(row) => row.id}
           initialState={{ pagination: { paginationModel: { pageSize: 10 } } }}
-          pageSizeOptions={[10]}
+          pageSizeOptions={[10, 20, 50, 100]}
           disableRowSelectionOnClick
         />
       </Paper>

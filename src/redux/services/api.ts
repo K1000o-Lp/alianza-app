@@ -128,6 +128,21 @@ export const alianzaApi = createApi({
       }),
       invalidatesTags: ['Members', 'Statistics'],
     }),
+    putMembers: builder.mutation<ResponseMember, MemberForm>({
+      query: ({ id, ...newMember }) => ({
+        url: `persona/miembros/${id}`,
+        method: 'PUT',
+        body: newMember,
+        rejectValue: (error: FetchBaseQueryError) => {
+          const errorMessage = (error.data && typeof error.data === 'object' && 'message' in error.data) ? (error.data as { message: string }).message : 'Unknown error';
+          return {
+            message: errorMessage,
+            code: error.status,
+          }
+        }
+      }),
+      invalidatesTags: ['Members'],
+    }),
     getCivilStatuses: builder.query<CivilStatus[], null | void>({
       query: () => "persona/estados_civiles",
     }),
@@ -170,6 +185,7 @@ export const {
   useGetCountStatisticsQuery,
   useGetMembersQuery,
   usePostMembersMutation,
+  usePutMembersMutation,
   useGetZonesQuery,
   useGetServicesQuery,
   useGetCivilStatusesQuery,

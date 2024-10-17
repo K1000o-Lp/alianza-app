@@ -47,7 +47,7 @@ export const AddMember: React.FC = () => {
   const { data: memberData, isLoading: postMemberLoading, error: memberError } = result;
   const errorMessage = memberError && "data" in memberError ? (memberError.data as { message: string }).message : "Error desconocido";
 
-  const onSubmit: SubmitHandler<MemberForm> = async (data) => postMember(data).unwrap().catch((err) => {console.error(err)});
+  const onSubmit: SubmitHandler<MemberForm> = async (data) => postMember(data);
 
   const handleBack = () => {
     setActiveStep(activeStep - 1);

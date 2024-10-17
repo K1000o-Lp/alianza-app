@@ -1,3 +1,4 @@
+import dayjs from "dayjs";
 import { ReactElement } from "react";
 
 
@@ -64,6 +65,10 @@ export interface Evaluaciones {
 }
 
 export interface ResponseMember {
+  discapacidad?: any;
+  ocupacion?: any;
+  estado_civil?: any;
+  educacion?: any;
   id: number;
   cedula: string;
   nombre_completo: string;
@@ -73,7 +78,7 @@ export interface ResponseMember {
   creado_en?: Date;
   modificado_en?: Date;
   eliminado_en?: Date;
-  historiales?: unknown;
+  historiales?: any;
   evaluaciones?: Evaluaciones[];
   ultimo_requisito?: string;
 }
@@ -99,10 +104,11 @@ export interface Disability {
 }
 
 export interface MemberForm {
+  id?: number;
   cedula?: string;
   nombre_completo: string;
   telefono?: string;
-  fecha_nacimiento?: Date;
+  fecha_nacimiento?: Date|dayjs.Dayjs;
   hijos: number;
   educacion_id: number;
   estado_civil_id: number;
@@ -143,4 +149,9 @@ export interface IniciarSesionForm {
 
 export interface Sesion {
   access_token: string;
+}
+
+export interface snackBarStatus {
+  is_open: boolean;
+  message: string;
 }

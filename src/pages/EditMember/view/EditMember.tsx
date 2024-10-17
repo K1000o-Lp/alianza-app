@@ -4,22 +4,29 @@ import Paper from "@mui/material/Paper";
 import LoadingButton from '@mui/lab/LoadingButton';
 import Typography from "@mui/material/Typography";
 import { useParams } from 'react-router-dom';
-import { useGetEvaluationsQuery, useUpdateEvaluationsMutation } from '../../../redux/services';
-import { Controller, SubmitHandler, useForm } from 'react-hook-form';
-import { EvaluacionInput } from '../../../types';
-import { Alert, Button, Snackbar, Stack, Switch } from '@mui/material';
+import { useGetEvaluationsQuery, usePutMembersMutation, useUpdateEvaluationsMutation } from '../../../redux/services';
+import { Controller, FormProvider, SubmitHandler, useForm } from 'react-hook-form';
+import { EvaluacionInput, MemberForm, snackBarStatus } from '../../../types';
+import { Alert, Button, Grid2 as Grid, Snackbar, Stack, Switch } from '@mui/material';
 import { useRouter } from '../../../router/hooks';
+import { PersonalForm } from '../../AddMember/components/PersonalForm';
+import { ProfessionForm } from '../../AddMember/components/ProfessionForm';
+import { ServiceForm } from '../../AddMember/components/ServiceForm';
+import dayjs from 'dayjs';
 
 export const EditMember:React.FC = () => {
   const { id } = useParams();
   const router = useRouter();
   
-  const [open, setOpen] = React.useState<boolean>(false);
-  const { data } = useGetEvaluationsQuery({ id }, { refetchOnMountOrArgChange: true });
-  const [ updateEvaluations, result ] = useUpdateEvaluationsMutation();
-  const { control, handleSubmit } = useForm<EvaluacionInput[]>();
+  const [ snackBarStatus, setSnackBarStatus ] = React.useState<snackBarStatus>({ is_open: false, message: "" });
+  const { data: memberData, isSuccess: memberIsSuccess } = useGetEvaluationsQuery({ id }, { refetchOnMountOrArgChange: true });
+  const [ updateEvaluations, resultEvaluations ] = useUpdateEvaluationsMutation();
+  const [ updateMember, resultMember ] = usePutMembersMutation();
+  const { control: evaFormControl, handleSubmit: evaFormSubmit } = useForm<EvaluacionInput[]>();
+  const memberFormMethods = useForm<MemberForm>();
 
-  const onSubmit: SubmitHandler<EvaluacionInput[]> = (data) => updateEvaluations(Object.values(data)); 
+  const onSubmitEvaluations: SubmitHandler<EvaluacionInput[]> = (data) => updateEvaluations(Object.values(data)); 
+  const onSubmitUpdateMember: SubmitHandler<MemberForm> = (data) => updateMember({ id: Number(id), ...data });
 
   const handleClose = (event?: React.SyntheticEvent | Event, reason?: string) => {
     event
@@ -28,16 +35,53 @@ export const EditMember:React.FC = () => {
       return;
     }
 
-    setOpen(false);
+    setSnackBarStatus({ is_open: false, message: "" });
+  }
+
+  const handleSubmitUpdateMember = () => {
+    memberFormMethods.handleSubmit(onSubmitUpdateMember)();
   }
   
   React.useEffect(()=>{
-    if(result.isSuccess){
-      setOpen(true);
+    if(resultEvaluations.isSuccess){
+      setSnackBarStatus({ is_open: true, message: "EVALUACION GUARDADA" });
     }
-  },[result.isSuccess]);
+  },[resultEvaluations.isSuccess]);
 
-  if(!data) {
+  React.useEffect(()=>{
+    if(resultMember.isSuccess){
+      setSnackBarStatus({ is_open: true, message: "MIEMBRO ACTUALIZADO" });
+    }
+  }, [resultMember.isSuccess]);
+
+  React.useEffect(()=>{ 
+    if(memberIsSuccess){
+      console.log(memberData);
+    }
+  }, [memberIsSuccess, memberData]);
+
+  React.useEffect(()=> {
+    if(memberData && Array.isArray(memberData)) {
+      memberFormMethods.reset({ ...memberData[0] ? {
+      cedula: memberData[0].cedula ?? "",
+      nombre_completo: memberData[0].nombre_completo,
+      telefono: memberData[0].telefono ?? "",
+      fecha_nacimiento: dayjs(memberData[0].fecha_nacimiento),
+      hijos: memberData[0].hijos,
+      educacion_id: memberData[0].educacion.id ?? null,
+      estado_civil_id: memberData[0].estado_civil.id ?? null,
+      ocupacion_id: memberData[0].ocupacion.id ?? null,
+      discapacidad_id: memberData[0].discapacidad.id ?? null,
+      historial: memberData[0].historiales[0] ? { 
+        servicio_id: memberData[0].historiales[0].servicio?.id ?? null, 
+        zona_id: memberData[0].historiales[0].zona?.id ?? null 
+      } 
+      : undefined } 
+      : undefined });
+    }
+  }, [memberData, memberFormMethods]);
+
+  if(!memberData) {
     return (
       <div>
         Cargando...
@@ -45,28 +89,79 @@ export const EditMember:React.FC = () => {
     )
   }
 
-
-
   return (
-    <Box width="100%" sx={{ display: "flex", justifyContent: "center" }}>
+    <Grid container spacing={2}>
+      <Grid size={12}>
+        <Button variant='outlined' sx={{ marginLeft: { xs: 0, md: 5 } }} onClick={() => router.back()}>
+          Atras
+        </Button>
+      </Grid>
+      <Grid size={12}>
+        <Box sx={{ display: 'flex', justifyContent: 'space-around', alignItems: 'center' }}>
+          <Typography component="h1" variant="h5">
+            MIEMBRO { memberData[0].nombre_completo }
+          </Typography>
+        </Box>
+      </Grid>
+      <Grid size={{ xs: 12, md: 7}}>
         <Paper
           variant="outlined"
-          sx={{ my: { xs: 1.5, md: 3 }, width: 600, p: { xs: 5, md: 8 } }}
+          sx={{ 
+            my: { 
+              xs: 1.5, 
+              md: 3 
+            }, 
+            mx: { 
+              md: 5 
+            }, 
+            p: { 
+              xs: 5,
+              md: 8 
+            } 
+          }}
         >
-          <Typography component="h1" variant="h5" align="center" mb={10}>
-            Progreso de { data[0].nombre_completo }
-          </Typography>
-
-          <form id='edit_member_form' onSubmit={handleSubmit(onSubmit)}>
+          <FormProvider {...memberFormMethods} >
+            <Box sx={{ marginBottom: 5 }} >
+              <PersonalForm />
+            </Box>
+            <Box sx={{ marginBottom: 5 }} >
+              <ProfessionForm />
+            </Box>
+            <Box>
+              <ServiceForm />
+            </Box>
+            <Box sx={{display: 'flex', justifyContent: 'end', mt: 5}}>
+              <LoadingButton onClick={handleSubmitUpdateMember} type="submit" variant='contained' loading={resultMember.isLoading}>
+                Guardar Informacion
+              </LoadingButton>
+            </Box>
+          </FormProvider>
+        </Paper>
+      </Grid>
+      <Grid size={{xs: 12, md: 5}}>
+        <Paper
+          variant="outlined"
+          sx={{ 
+            my: { 
+              xs: 1.5, 
+              md: 3 
+            },
+            p: { 
+              xs: 5, 
+              md: 8 
+            } 
+          }}
+        >
+          <form id='edit_member_eva_form' onSubmit={evaFormSubmit(onSubmitEvaluations)}>
             {
-              data[0]?.evaluaciones?.map((evaluacion, index) => (
+              memberData[0]?.evaluaciones?.map((evaluacion, index) => (
                 <Box key={evaluacion?.id} sx={{display: "flex", justifyContent: 'space-between', alignItems: "center", margin: 1 }}>
                   <Typography color="primary">
                     { evaluacion?.requisito?.nombre }
                   </Typography>
 
                   <Controller
-                    control={control}
+                    control={evaFormControl}
                     name={`${index}.id`}
                     defaultValue={evaluacion.id}
                     render={({ field: { value, onChange } }) => (
@@ -75,7 +170,7 @@ export const EditMember:React.FC = () => {
                   />
 
                   <Controller
-                    control={control}
+                    control={evaFormControl}
                     name={`${index}.resultado`}
                     defaultValue={evaluacion.resultado}
                     render={({ field: { value, onChange } }) => (
@@ -90,20 +185,16 @@ export const EditMember:React.FC = () => {
               ))
             }
 
-            <Box sx={{display: 'flex', justifyContent: 'space-between', mt: 5}}>
-              <Button variant='outlined' onClick={() => router.back()}>
-                Cancelar
-              </Button>
-
-              <LoadingButton type="submit" variant='contained' loading={result.isLoading}>
-                Guardar
+            <Box sx={{display: 'flex', justifyContent: 'end', mt: 5}}>
+              <LoadingButton type="submit" variant='contained' loading={resultEvaluations.isLoading}>
+                Actualizar Evaluaciones
               </LoadingButton>
             </Box>
           </form>
 
           <Snackbar 
             anchorOrigin={{vertical: 'bottom', horizontal: 'right'}} 
-            open={open} 
+            open={snackBarStatus.is_open} 
             autoHideDuration={2000} 
             onClose={handleClose}
           >
@@ -113,10 +204,11 @@ export const EditMember:React.FC = () => {
               variant="filled"
               sx={{ width: '100%' }}
             >
-              EVALUACION GUARDADA
+              {snackBarStatus.message}
             </Alert>
           </Snackbar>
         </Paper>
-    </Box>
+      </Grid>
+    </Grid>
   )
 }

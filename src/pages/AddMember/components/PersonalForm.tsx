@@ -1,10 +1,10 @@
 import * as React from "react";
-import Grid from "@mui/material/Grid";
 import Typography from "@mui/material/Typography";
 import { Controller, useFormContext } from "react-hook-form";
 import {
   FormControl,
   FormHelperText,
+  Grid2 as Grid,
   InputLabel,
   NativeSelect,
   TextField,
@@ -29,7 +29,7 @@ export const PersonalForm: React.FC = () => {
       </Typography>
 
       <Grid container spacing={3}>
-        <Grid item md={4} xs={8}>
+        <Grid size={{ xs: 8, md: 4 }}>
           <Controller
             control={control}
             name="cedula"
@@ -57,9 +57,9 @@ export const PersonalForm: React.FC = () => {
           />
         </Grid>
 
-        <Grid item md={8} xs={4} />
+        <Grid size={{ xs: 4, md: 8 }} />
 
-        <Grid item md={9} xs={11}>
+        <Grid size={{ xs: 11, md: 9 }} >
           <Controller
             control={control}
             name="nombre_completo"
@@ -83,9 +83,9 @@ export const PersonalForm: React.FC = () => {
           />
         </Grid>
 
-        <Grid item md={3} xs={1} />
+        <Grid size={{ xs: 1, md: 3 }} />
 
-        <Grid item md={5} xs={8}>
+        <Grid size={{ xs: 8, md: 5 }} >
           <Controller
             control={control}
             name="telefono"
@@ -113,9 +113,9 @@ export const PersonalForm: React.FC = () => {
           />
         </Grid>
 
-        <Grid item md={7} xs={4} />
+        <Grid size={{ xs: 4, md: 7 }} />
 
-        <Grid item md={6} xs={10}>
+        <Grid size={{ xs: 10, md: 6 }} >
           <Controller
             control={control}
             name="fecha_nacimiento"
@@ -141,9 +141,9 @@ export const PersonalForm: React.FC = () => {
           />
         </Grid>
 
-        <Grid item md={6} xs={2} />
+        <Grid size={{ xs: 2, md: 6 }} />
 
-        <Grid item md={4} xs={6}>
+        <Grid size={{ xs:6, md: 4 }} >
           <Controller
             control={control}
             name="estado_civil_id"
@@ -185,7 +185,7 @@ export const PersonalForm: React.FC = () => {
           />
         </Grid>
 
-        <Grid item md={2} xs={4}>
+        <Grid size={{ xs: 4, md: 2 }} >
           <Controller
             control={control}
             name="hijos"
@@ -212,7 +212,7 @@ export const PersonalForm: React.FC = () => {
           />
         </Grid>
 
-        <Grid item md={6} xs={2} />
+        <Grid size={{ xs: 2, md: 6 }} />
       </Grid>
     </React.Fragment>
   );

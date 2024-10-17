@@ -2,7 +2,7 @@ import * as React from "react";
 import {
   FormControl,
   FormHelperText,
-  Grid,
+  Grid2 as Grid,
   InputLabel,
   NativeSelect,
   Typography,
@@ -43,7 +43,7 @@ export const ProfessionForm: React.FC = () => {
       </Typography>
 
       <Grid container spacing={3}>
-        <Grid item md={6} xs={9}>
+        <Grid size={{ xs: 9, md: 6 }} >
           <Controller
             control={control}
             name="discapacidad_id"
@@ -81,9 +81,9 @@ export const ProfessionForm: React.FC = () => {
           />
         </Grid>
 
-        <Grid item md={6} xs={3} />
+        <Grid size={{ xs: 3, md: 6 }} />
 
-        <Grid item md={6} xs={8}>
+        <Grid size={{ xs: 8, md: 6 }} >
           <Controller
             control={control}
             name="educacion_id"
@@ -121,9 +121,9 @@ export const ProfessionForm: React.FC = () => {
           />
         </Grid>
 
-        <Grid item md={6} xs={4} />
+        <Grid size={{ xs: 4, md: 6 }} />
 
-        <Grid item md={7} xs={12}>
+        <Grid size={{ xs: 12, md: 7 }} >
           <Controller
             control={control}
             name="ocupacion_id"
@@ -161,7 +161,7 @@ export const ProfessionForm: React.FC = () => {
           />
         </Grid>
 
-        <Grid item md={5} />
+        <Grid size={{ md: 5 }} />
       </Grid>
     </React.Fragment>
   );
