@@ -2,7 +2,7 @@ import * as React from "react";
 import {
   FormControl,
   FormHelperText,
-  Grid,
+  Grid2 as Grid,
   InputLabel,
   NativeSelect,
   Typography,
@@ -12,9 +12,13 @@ import {
   useGetServicesQuery,
   useGetZonesQuery,
 } from "../../../redux/services";
+import { useAppSelector } from "../../../redux/store";
 
 export const ServiceForm: React.FC = () => {
+  const { user } = useAppSelector((state) => state.auth);
   const { control } = useFormContext();
+
+  console.log(user);
 
   const {
     data: zones,
@@ -35,7 +39,7 @@ export const ServiceForm: React.FC = () => {
       </Typography>
 
       <Grid container spacing={3}>
-        <Grid item md={12} xs={12}>
+        <Grid size={12} >
           <Controller
             control={control}
             name="historial.servicio_id"
@@ -73,7 +77,7 @@ export const ServiceForm: React.FC = () => {
           />
         </Grid>
 
-        <Grid item md={12} xs={12}>
+        <Grid size={12} >
           <Controller
             control={control}
             name="historial.zona_id"
@@ -89,6 +93,7 @@ export const ServiceForm: React.FC = () => {
                   inputProps={{ id: "zona_native" }}
                   onChange={onChange}
                   value={value}
+                  disabled={user?.zona !== null}
                 >
                   <option key="-1" value="" hidden></option>
 
