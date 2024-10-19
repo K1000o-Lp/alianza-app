@@ -1,6 +1,5 @@
 import { Box, Paper, Typography } from "@mui/material";
 import { DataGrid, GridActionsCellItem, GridColDef, GridRowId } from "@mui/x-data-grid";
-import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
 import * as React from "react";
 import { useGetMembersQuery } from "../../../redux/services";
