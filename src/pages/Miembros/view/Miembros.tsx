@@ -68,7 +68,6 @@ export const Miembros: React.FC = () => {
       width: 100,
       getActions: (params) => [
         <GridActionsCellItem icon={<EditIcon />} label="Edit" onClick={() => editMember(params.id)} />,
-        <GridActionsCellItem icon={<DeleteIcon />} label="Delete" />,
       ],
   
     },
