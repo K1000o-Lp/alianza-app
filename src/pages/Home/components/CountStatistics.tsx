@@ -13,11 +13,10 @@ interface Props {
 export const CountStatistics: React.FC<Props> = ({
   title,
   requisito_id,
-  resultado,
 }) => {
   const { user } = useAppSelector((state) => state.auth);
   const { data } = useGetCountStatisticsQuery(
-    { requisito: requisito_id, resultado, zona: user?.zona?.id },
+    { requisito: requisito_id, zona: user?.zona?.id },
     { refetchOnMountOrArgChange: true }
   );
 

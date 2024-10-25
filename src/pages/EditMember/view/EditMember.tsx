@@ -4,10 +4,10 @@ import Paper from "@mui/material/Paper";
 import LoadingButton from '@mui/lab/LoadingButton';
 import Typography from "@mui/material/Typography";
 import { useParams } from 'react-router-dom';
-import { useGetEvaluationsQuery, usePutMembersMutation, useUpdateEvaluationsMutation } from '../../../redux/services';
-import { Controller, FormProvider, SubmitHandler, useForm } from 'react-hook-form';
-import { EvaluacionInput, MemberForm, snackBarStatus } from '../../../types';
-import { Alert, Button, Grid2 as Grid, Snackbar, Stack, Switch } from '@mui/material';
+import { useGetMembersWithResultsQuery, usePutMembersMutation } from '../../../redux/services';
+import { FormProvider, SubmitHandler, useForm } from 'react-hook-form';
+import { MemberForm, snackBarStatus } from '../../../types';
+import { Alert, Button, Grid2 as Grid, Snackbar } from '@mui/material';
 import { useRouter } from '../../../router/hooks';
 import { PersonalForm } from '../../AddMember/components/PersonalForm';
 import { ProfessionForm } from '../../AddMember/components/ProfessionForm';
@@ -19,13 +19,10 @@ export const EditMember:React.FC = () => {
   const router = useRouter();
   
   const [ snackBarStatus, setSnackBarStatus ] = React.useState<snackBarStatus>({ is_open: false, message: "" });
-  const { data: memberData, isSuccess: memberIsSuccess } = useGetEvaluationsQuery({ id }, { refetchOnMountOrArgChange: true });
-  const [ updateEvaluations, resultEvaluations ] = useUpdateEvaluationsMutation();
+  const { data: memberData, isSuccess: memberIsSuccess } = useGetMembersWithResultsQuery({ id }, { refetchOnMountOrArgChange: true });
   const [ updateMember, resultMember ] = usePutMembersMutation();
-  const { control: evaFormControl, handleSubmit: evaFormSubmit } = useForm<EvaluacionInput[]>();
   const memberFormMethods = useForm<MemberForm>();
 
-  const onSubmitEvaluations: SubmitHandler<EvaluacionInput[]> = (data) => updateEvaluations(Object.values(data)); 
   const onSubmitUpdateMember: SubmitHandler<MemberForm> = (data) => updateMember({ id: Number(id), ...data });
 
   const handleClose = (event?: React.SyntheticEvent | Event, reason?: string) => {
@@ -41,12 +38,6 @@ export const EditMember:React.FC = () => {
   const handleSubmitUpdateMember = () => {
     memberFormMethods.handleSubmit(onSubmitUpdateMember)();
   }
-  
-  React.useEffect(()=>{
-    if(resultEvaluations.isSuccess){
-      setSnackBarStatus({ is_open: true, message: "EVALUACION GUARDADA" });
-    }
-  },[resultEvaluations.isSuccess]);
 
   React.useEffect(()=>{
     if(resultMember.isSuccess){
@@ -68,13 +59,13 @@ export const EditMember:React.FC = () => {
       telefono: memberData[0].telefono ?? "",
       fecha_nacimiento: dayjs(memberData[0].fecha_nacimiento),
       hijos: memberData[0].hijos,
-      educacion_id: memberData[0].educacion.id ?? null,
-      estado_civil_id: memberData[0].estado_civil.id ?? null,
-      ocupacion_id: memberData[0].ocupacion.id ?? null,
-      discapacidad_id: memberData[0].discapacidad.id ?? null,
+      educacion_id: memberData[0].educacion.id ?? undefined,
+      estado_civil_id: memberData[0].estado_civil.id ?? undefined,
+      ocupacion_id: memberData[0].ocupacion.id ?? undefined,
+      discapacidad_id: memberData[0].discapacidad.id ?? undefined,
       historial: memberData[0].historiales[0] ? { 
-        servicio_id: memberData[0].historiales[0].servicio?.id ?? null, 
-        zona_id: memberData[0].historiales[0].zona?.id ?? null 
+        servicio_id: memberData[0].historiales[0].servicio?.id ?? undefined, 
+        zona_id: memberData[0].historiales[0].zona?.id ?? undefined 
       } 
       : undefined } 
       : undefined });
@@ -152,46 +143,7 @@ export const EditMember:React.FC = () => {
             } 
           }}
         >
-          <form id='edit_member_eva_form' onSubmit={evaFormSubmit(onSubmitEvaluations)}>
-            {
-              memberData[0]?.evaluaciones?.map((evaluacion, index) => (
-                <Box key={evaluacion?.id} sx={{display: "flex", justifyContent: 'space-between', alignItems: "center", margin: 1 }}>
-                  <Typography color="primary">
-                    { evaluacion?.requisito?.nombre }
-                  </Typography>
-
-                  <Controller
-                    control={evaFormControl}
-                    name={`${index}.id`}
-                    defaultValue={evaluacion.id}
-                    render={({ field: { value, onChange } }) => (
-                      <input type="hidden" value={value} onChange={onChange}/>
-                    )}
-                  />
-
-                  <Controller
-                    control={evaFormControl}
-                    name={`${index}.resultado`}
-                    defaultValue={evaluacion.resultado}
-                    render={({ field: { value, onChange } }) => (
-                      <Stack direction="row" spacing={1} alignItems="center">
-                        <Typography>No</Typography>
-                          <Switch value={true} onChange={onChange} checked={value} />
-                        <Typography>Si</Typography>
-                      </Stack>
-                    )}
-                  />
-                </Box>
-              ))
-            }
-
-            <Box sx={{display: 'flex', justifyContent: 'end', mt: 5}}>
-              <LoadingButton type="submit" variant='contained' loading={resultEvaluations.isLoading}>
-                Actualizar Evaluaciones
-              </LoadingButton>
-            </Box>
-          </form>
-
+          Aqui se mostraran los resultados...
           <Snackbar 
             anchorOrigin={{vertical: 'bottom', horizontal: 'right'}} 
             open={snackBarStatus.is_open} 

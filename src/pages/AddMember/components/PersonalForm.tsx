@@ -12,6 +12,7 @@ import {
 import { DatePicker } from "@mui/x-date-pickers";
 
 import { useGetCivilStatusesQuery } from "../../../redux/services";
+import dayjs from "dayjs";
 
 export const PersonalForm: React.FC = () => {
   const { control, setValue } = useFormContext();
@@ -125,8 +126,8 @@ export const PersonalForm: React.FC = () => {
               fieldState: { invalid, error },
             }) => (
               <DatePicker
-                onChange={onChange}
-                value={value}
+                onChange={(date) => onChange(date)}
+                value={value ? dayjs(value) : undefined }
                 slotProps={{
                   textField: {
                     variant: "standard",

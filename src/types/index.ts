@@ -55,9 +55,8 @@ export interface Requisito {
   descripcion: string;
 }
 
-export interface Evaluaciones {
+export interface Resultado {
   id: number;
-  resultado: boolean;
   creado_en: Date | null;
   modificado_en: Date | null;
   eliminado_en: Date | null;
@@ -79,7 +78,7 @@ export interface ResponseMember {
   modificado_en?: Date;
   eliminado_en?: Date;
   historiales?: any;
-  evaluaciones?: Evaluaciones[];
+  resultados: Resultado[];
   ultimo_requisito?: string;
 }
 

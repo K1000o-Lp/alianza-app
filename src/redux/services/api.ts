@@ -3,8 +3,6 @@ import {
   CivilStatus,
   Disability,
   Education,
-  EvaluacionInput,
-  Evaluaciones,
   EventForm,
   IniciarSesionForm,
   MemberForm,
@@ -32,7 +30,7 @@ export const alianzaApi = createApi({
   reducerPath: "alianzaApi",
   baseQuery: customBaseQuery,
   tagTypes: [
-    'Zones', 'Services', 'Members', 'Evaluations', 'Statistics', 'CivilStatuses', 'Educations',
+    'Zones', 'Services', 'Members', 'Results', 'Statistics', 'CivilStatuses', 'Educations',
     'Disabilities', 'Occupations',
   ],
   endpoints: (builder) => ({
@@ -70,7 +68,14 @@ export const alianzaApi = createApi({
       }),
       providesTags: ['Statistics'],
     }),
-    getMembers: builder.query<ResponseMember[], Partial<Options>>({
+    getMembersWithResults: builder.query<ResponseMember[], Partial<Options>>({
+      query: (options) => ({
+        url: 'persona/miembros',
+        params: options,
+      }),
+      providesTags: ['Results'],
+    }),
+    getMembersWithLastResult: builder.query<ResponseMember[], Partial<Options>>({
       query: (options) => ({ url: "persona/miembros", params: options }),
       transformResponse: (response: ResponseMember[]) =>
         response.map(
@@ -81,23 +86,12 @@ export const alianzaApi = createApi({
             telefono,
             fecha_nacimiento,
             hijos,
-            evaluaciones
+            resultados
           }) => {
             let ultimo_requisito: string | undefined;
 
-            if(!evaluaciones) {
-              console.log(`Evaluaciones no existen para el miembro: ${nombre_completo}`);
-              throw new Error(`Evaluaciones no existen para el miembro: ${nombre_completo}`); 
-            }
-
-            for(let i = 0; i < evaluaciones?.length; i++) {
-              if(evaluaciones[i]?.resultado === false) {
-                break;
-              }
-  
-              if(evaluaciones[i]?.resultado === true) {
-                ultimo_requisito = evaluaciones[i]?.requisito.nombre;
-              }
+            if(resultados?.length > 0) {
+              ultimo_requisito = resultados[0].requisito.nombre;
             }
             
             return ({
@@ -107,6 +101,7 @@ export const alianzaApi = createApi({
               telefono,
               fecha_nacimiento,
               hijos,
+              resultados,
               ultimo_requisito
             })
           }
@@ -162,28 +157,14 @@ export const alianzaApi = createApi({
         body: newEvent,
       }),
     }),
-    getEvaluations: builder.query<ResponseMember[], Partial<Options>>({
-      query: (options) => ({
-        url: 'persona/miembros',
-        params: options,
-      }),
-      providesTags: ['Evaluations'],
-    }),
-    updateEvaluations: builder.mutation<Evaluaciones[], EvaluacionInput[]>({
-      query: (toUpdate) => ({
-        url: 'formacion/evaluaciones',
-        method: 'PUT',
-        body: toUpdate,
-      }),
-      invalidatesTags: ['Evaluations', 'Statistics'],
-    }), 
   }),
 });
 
 export const {
   useIniciarSesionMutation,
   useGetCountStatisticsQuery,
-  useGetMembersQuery,
+  useGetMembersWithResultsQuery,
+  useGetMembersWithLastResultQuery,
   usePostMembersMutation,
   usePutMembersMutation,
   useGetZonesQuery,
@@ -193,6 +174,4 @@ export const {
   useGetOccupationsQuery,
   useGetDisabilitiesQuery,
   usePostEventsMutation,
-  useGetEvaluationsQuery,
-  useUpdateEvaluationsMutation,
 } = alianzaApi;
