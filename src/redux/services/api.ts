@@ -1,6 +1,7 @@
 import { createApi, fetchBaseQuery, FetchBaseQueryError } from "@reduxjs/toolkit/query/react";
 import {
   CivilStatus,
+  consolidationForm,
   Disability,
   Education,
   EventForm,
@@ -8,8 +9,11 @@ import {
   MemberForm,
   Occupation,
   Options,
+  Requirement,
+  RequirementsOption,
   ResponseEvent,
   ResponseMember,
+  ResponseResultado,
   ResponseStatistic,
   Service,
   Sesion,
@@ -47,7 +51,6 @@ export const alianzaApi = createApi({
   
           localStorage.setItem('token', access_token);
           dispatch(setUser(session));
-          console.log(session);
   
           dispatch(setUser(session));
         } catch(error) {
@@ -91,7 +94,7 @@ export const alianzaApi = createApi({
             let ultimo_requisito: string | undefined;
 
             if(resultados?.length > 0) {
-              ultimo_requisito = resultados[0].requisito.nombre;
+              ultimo_requisito = resultados[resultados.length - 1].requisito.nombre;
             }
             
             return ({
@@ -138,6 +141,24 @@ export const alianzaApi = createApi({
       }),
       invalidatesTags: ['Members'],
     }),
+    postConsolidationResults: builder.mutation<ResponseResultado, consolidationForm>({
+      query: (newConsolidation) => ({
+        url: 'formacion/resultados',
+        method: 'POST',
+        body: newConsolidation,
+        rejectValue: (error: FetchBaseQueryError) => {
+          const errorMessage = (error.data && typeof error.data === 'object' && 'message' in error.data) ? (error.data as { message: string }).message : 'Unknown error';
+          return {
+            message: errorMessage,
+            code: error.status,
+          }
+        }
+      }),
+      invalidatesTags: ['Results', 'Members'],
+    }),
+    getRequirements: builder.query<Requirement[], Partial<RequirementsOption>>({
+      query: (options) => ({ url: "formacion/requisitos", params: options }),
+    }),
     getCivilStatuses: builder.query<CivilStatus[], null | void>({
       query: () => "persona/estados_civiles",
     }),
@@ -165,6 +186,8 @@ export const {
   useGetCountStatisticsQuery,
   useGetMembersWithResultsQuery,
   useGetMembersWithLastResultQuery,
+  usePostConsolidationResultsMutation,
+  useGetRequirementsQuery,
   usePostMembersMutation,
   usePutMembersMutation,
   useGetZonesQuery,

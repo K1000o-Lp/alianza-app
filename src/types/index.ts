@@ -27,6 +27,10 @@ export interface Options {
   resultado: boolean;
 }
 
+export interface RequirementsOption {
+  requisitos: number[];
+}
+
 export interface Zone {
   id: number;
   descripcion: string;
@@ -82,6 +86,21 @@ export interface ResponseMember {
   ultimo_requisito?: string;
 }
 
+export interface ResponseResultado {
+  id: number;
+  miembro: any;
+  requisito: any;
+  creado_en: Date;
+  modificado_en: Date;
+  eliminado_en: Date;
+}
+
+export interface Requirement {
+  id: number;
+  nombre: string;
+  descripcion: string;
+}
+
 export interface CivilStatus {
   id: number;
   descripcion: string;
@@ -119,6 +138,12 @@ export interface MemberForm {
   };
 }
 
+export interface consolidationForm {
+  miembro_id: number;
+  requisito_id: number;
+  fecha_consolidacion: Date | dayjs.Dayjs;
+}
+
 export interface EventForm {
   nombre: string;
   descripcion: string;
@@ -153,4 +178,5 @@ export interface Sesion {
 export interface snackBarStatus {
   is_open: boolean;
   message: string;
+  severity: "success" | "error" | "info" | "warning";
 }

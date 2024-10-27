@@ -127,7 +127,7 @@ export const PersonalForm: React.FC = () => {
             }) => (
               <DatePicker
                 onChange={(date) => onChange(date)}
-                value={value ? dayjs(value) : undefined }
+                value={ value ? dayjs(value) : null }
                 slotProps={{
                   textField: {
                     variant: "standard",
