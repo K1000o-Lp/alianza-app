@@ -9,6 +9,7 @@ import AddBoxIcon from "@mui/icons-material/AddBox";
 
 import { NavList } from "./NavList";
 import { NavItem } from "../../types";
+import { Assignment } from "@mui/icons-material";
 
 interface Props {
   open: boolean;
@@ -38,6 +39,12 @@ export const DrawerMenu: React.FC<Props> = ({ open, toggleDrawer }) => {
       icon: <AddBoxIcon />,
       route: "../miembros/crear",
     },
+    {
+      key: "/reportes/consolidaciones",
+      label: "Reporte de Consolidaciones",
+      icon: <Assignment />,
+      route: "../reportes/consolidaciones",
+    }
   ];
 
   return (

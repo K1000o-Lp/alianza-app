@@ -25,6 +25,8 @@ export interface Options {
   rol: number;
   requisito: number;
   resultado: boolean;
+  results_since: Date | dayjs.Dayjs | null;
+  results_until: Date | dayjs.Dayjs | null;
 }
 
 export interface RequirementsOption {
@@ -179,4 +181,11 @@ export interface snackBarStatus {
   is_open: boolean;
   message: string;
   severity: "success" | "error" | "info" | "warning";
+}
+
+export interface filterConsolidation {
+  zona: number;
+  requisito: number;
+  results_since: Date | dayjs.Dayjs | null;
+  results_until: Date | dayjs.Dayjs | null;
 }

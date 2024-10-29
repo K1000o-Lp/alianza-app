@@ -156,8 +156,8 @@ export const alianzaApi = createApi({
       }),
       invalidatesTags: ['Results', 'Members'],
     }),
-    getRequirements: builder.query<Requirement[], Partial<RequirementsOption>>({
-      query: (options) => ({ url: "formacion/requisitos", params: options }),
+    getRequirements: builder.query<Requirement[], Partial<RequirementsOption> | null | void >({
+      query: (options) => ({ url: "formacion/requisitos", params: options || undefined }),
     }),
     getCivilStatuses: builder.query<CivilStatus[], null | void>({
       query: () => "persona/estados_civiles",

@@ -28,7 +28,7 @@ const getQuarterStartEnd = () => {
   return { startOfQuarter, endOfQuarter };
 }
 
-export const EditMember:React.FC = () => {
+export const EditMember: React.FC = () => {
   const { id } = useParams();
   const router = useRouter();
   
