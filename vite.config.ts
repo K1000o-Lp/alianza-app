@@ -6,5 +6,8 @@ export default defineConfig({
   build: {
     minify: true,
   },
+  resolve: {
+    extensions: ['.ts', '.tsx'],
+  },
   plugins: [react()],
 })
