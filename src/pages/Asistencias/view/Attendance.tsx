@@ -6,14 +6,14 @@ import { Controller, SubmitHandler, useForm } from 'react-hook-form';
 import { AsistenciasForm } from '../../../types';
 import { LoadingButton } from '@mui/lab';
 import { GridCloseIcon } from '@mui/x-data-grid';
-import { useGetMembersQuery } from '../../../redux/services';
+import { useGetMembersWithLastResultQuery } from '../../../redux/services';
 
 export const Attendance: React.FC = () => {
 
   const [ open, setOpen ] = React.useState<boolean>(false);
   const { control, handleSubmit } = useForm<AsistenciasForm>({ defaultValues: {} });
 
-  const { data: membersData } = useGetMembersQuery({});
+  const { data: membersData } = useGetMembersWithLastResultQuery({});
   
   const options: any = membersData?.map(({ nombre_completo, id }) => ({
     nombre_completo, 

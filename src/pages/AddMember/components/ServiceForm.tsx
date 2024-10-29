@@ -18,8 +18,6 @@ export const ServiceForm: React.FC = () => {
   const { user } = useAppSelector((state) => state.auth);
   const { control } = useFormContext();
 
-  console.log(user);
-
   const {
     data: zones,
     isLoading: zonesLoading,

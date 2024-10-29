@@ -8,6 +8,7 @@ import { AddMember } from "../../pages/AddMember/view/AddMember";
 import { Attendance } from "../../pages/Asistencias/view/Attendance";
 import { Eventos } from "../../pages/Eventos/view/Eventos";
 import { EditMember } from "../../pages/EditMember/view/EditMember";
+import { ReportesConsolidaciones } from "../../pages/ReportesConsolidaciones/view/ReportesConsolidaciones";
 
 export const MainRoute: RouteObject = {
   path: "/",
@@ -44,8 +45,8 @@ export const MainRoute: RouteObject = {
       element: <Attendance />
     },
     {
-      path: "reportes",
-      element: <div>Reporte de Miembros</div>,
+      path: "reportes/consolidaciones",
+      element: <ReportesConsolidaciones />,
     },
   ],
 };

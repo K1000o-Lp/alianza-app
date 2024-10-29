@@ -25,6 +25,12 @@ export interface Options {
   rol: number;
   requisito: number;
   resultado: boolean;
+  results_since: Date | dayjs.Dayjs | null;
+  results_until: Date | dayjs.Dayjs | null;
+}
+
+export interface RequirementsOption {
+  requisitos: number[];
 }
 
 export interface Zone {
@@ -55,9 +61,8 @@ export interface Requisito {
   descripcion: string;
 }
 
-export interface Evaluaciones {
+export interface Resultado {
   id: number;
-  resultado: boolean;
   creado_en: Date | null;
   modificado_en: Date | null;
   eliminado_en: Date | null;
@@ -79,8 +84,23 @@ export interface ResponseMember {
   modificado_en?: Date;
   eliminado_en?: Date;
   historiales?: any;
-  evaluaciones?: Evaluaciones[];
+  resultados: Resultado[];
   ultimo_requisito?: string;
+}
+
+export interface ResponseResultado {
+  id: number;
+  miembro: any;
+  requisito: any;
+  creado_en: Date;
+  modificado_en: Date;
+  eliminado_en: Date;
+}
+
+export interface Requirement {
+  id: number;
+  nombre: string;
+  descripcion: string;
 }
 
 export interface CivilStatus {
@@ -120,6 +140,12 @@ export interface MemberForm {
   };
 }
 
+export interface consolidationForm {
+  miembro_id: number;
+  requisito_id: number;
+  fecha_consolidacion: Date | dayjs.Dayjs;
+}
+
 export interface EventForm {
   nombre: string;
   descripcion: string;
@@ -154,4 +180,12 @@ export interface Sesion {
 export interface snackBarStatus {
   is_open: boolean;
   message: string;
+  severity: "success" | "error" | "info" | "warning";
+}
+
+export interface filterConsolidation {
+  zona: number;
+  requisito: number;
+  results_since: Date | dayjs.Dayjs | null;
+  results_until: Date | dayjs.Dayjs | null;
 }

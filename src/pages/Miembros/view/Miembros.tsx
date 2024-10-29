@@ -2,7 +2,7 @@ import { Box, Paper, Typography } from "@mui/material";
 import { DataGrid, GridActionsCellItem, GridColDef, GridRowId } from "@mui/x-data-grid";
 import EditIcon from '@mui/icons-material/Edit';
 import * as React from "react";
-import { useGetMembersQuery } from "../../../redux/services";
+import { useGetMembersWithLastResultQuery } from "../../../redux/services";
 import { useRouter } from "../../../router/hooks";
 import { useAppSelector } from "../../../redux/store";
 
@@ -10,7 +10,7 @@ import { useAppSelector } from "../../../redux/store";
 
 export const Miembros: React.FC = () => {
   const { user } = useAppSelector((state) => state.auth);
-  const { data, isLoading } = useGetMembersQuery({ zona: user?.zona?.id }, { refetchOnMountOrArgChange: true });
+  const { data, isLoading } = useGetMembersWithLastResultQuery({ zona: user?.zona?.id }, { refetchOnMountOrArgChange: true });
 
   const router = useRouter();
 
@@ -51,12 +51,8 @@ export const Miembros: React.FC = () => {
     },
     { 
       field: "ultimo_requisito", 
-      valueGetter: ({value}) => {
-        if(!value) {
-          return 'SIN PROGRESO';
-        }
-
-        return value;
+      valueGetter: (value) => {
+        return value || 'SIN PROGRESO';
       },
       headerName: "REQUISITO ALCANZADO", 
       width: 200, 

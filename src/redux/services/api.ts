@@ -1,17 +1,19 @@
 import { createApi, fetchBaseQuery, FetchBaseQueryError } from "@reduxjs/toolkit/query/react";
 import {
   CivilStatus,
+  consolidationForm,
   Disability,
   Education,
-  EvaluacionInput,
-  Evaluaciones,
   EventForm,
   IniciarSesionForm,
   MemberForm,
   Occupation,
   Options,
+  Requirement,
+  RequirementsOption,
   ResponseEvent,
   ResponseMember,
+  ResponseResultado,
   ResponseStatistic,
   Service,
   Sesion,
@@ -32,7 +34,7 @@ export const alianzaApi = createApi({
   reducerPath: "alianzaApi",
   baseQuery: customBaseQuery,
   tagTypes: [
-    'Zones', 'Services', 'Members', 'Evaluations', 'Statistics', 'CivilStatuses', 'Educations',
+    'Zones', 'Services', 'Members', 'Results', 'Statistics', 'CivilStatuses', 'Educations',
     'Disabilities', 'Occupations',
   ],
   endpoints: (builder) => ({
@@ -49,7 +51,6 @@ export const alianzaApi = createApi({
   
           localStorage.setItem('token', access_token);
           dispatch(setUser(session));
-          console.log(session);
   
           dispatch(setUser(session));
         } catch(error) {
@@ -70,7 +71,14 @@ export const alianzaApi = createApi({
       }),
       providesTags: ['Statistics'],
     }),
-    getMembers: builder.query<ResponseMember[], Partial<Options>>({
+    getMembersWithResults: builder.query<ResponseMember[], Partial<Options>>({
+      query: (options) => ({
+        url: 'persona/miembros',
+        params: options,
+      }),
+      providesTags: ['Results'],
+    }),
+    getMembersWithLastResult: builder.query<ResponseMember[], Partial<Options>>({
       query: (options) => ({ url: "persona/miembros", params: options }),
       transformResponse: (response: ResponseMember[]) =>
         response.map(
@@ -81,23 +89,12 @@ export const alianzaApi = createApi({
             telefono,
             fecha_nacimiento,
             hijos,
-            evaluaciones
+            resultados
           }) => {
             let ultimo_requisito: string | undefined;
 
-            if(!evaluaciones) {
-              console.log(`Evaluaciones no existen para el miembro: ${nombre_completo}`);
-              throw new Error(`Evaluaciones no existen para el miembro: ${nombre_completo}`); 
-            }
-
-            for(let i = 0; i < evaluaciones?.length; i++) {
-              if(evaluaciones[i]?.resultado === false) {
-                break;
-              }
-  
-              if(evaluaciones[i]?.resultado === true) {
-                ultimo_requisito = evaluaciones[i]?.requisito.nombre;
-              }
+            if(resultados?.length > 0) {
+              ultimo_requisito = resultados[resultados.length - 1].requisito.nombre;
             }
             
             return ({
@@ -107,6 +104,7 @@ export const alianzaApi = createApi({
               telefono,
               fecha_nacimiento,
               hijos,
+              resultados,
               ultimo_requisito
             })
           }
@@ -143,6 +141,24 @@ export const alianzaApi = createApi({
       }),
       invalidatesTags: ['Members'],
     }),
+    postConsolidationResults: builder.mutation<ResponseResultado, consolidationForm>({
+      query: (newConsolidation) => ({
+        url: 'formacion/resultados',
+        method: 'POST',
+        body: newConsolidation,
+        rejectValue: (error: FetchBaseQueryError) => {
+          const errorMessage = (error.data && typeof error.data === 'object' && 'message' in error.data) ? (error.data as { message: string }).message : 'Unknown error';
+          return {
+            message: errorMessage,
+            code: error.status,
+          }
+        }
+      }),
+      invalidatesTags: ['Results', 'Members'],
+    }),
+    getRequirements: builder.query<Requirement[], Partial<RequirementsOption> | null | void >({
+      query: (options) => ({ url: "formacion/requisitos", params: options || undefined }),
+    }),
     getCivilStatuses: builder.query<CivilStatus[], null | void>({
       query: () => "persona/estados_civiles",
     }),
@@ -162,28 +178,16 @@ export const alianzaApi = createApi({
         body: newEvent,
       }),
     }),
-    getEvaluations: builder.query<ResponseMember[], Partial<Options>>({
-      query: (options) => ({
-        url: 'persona/miembros',
-        params: options,
-      }),
-      providesTags: ['Evaluations'],
-    }),
-    updateEvaluations: builder.mutation<Evaluaciones[], EvaluacionInput[]>({
-      query: (toUpdate) => ({
-        url: 'formacion/evaluaciones',
-        method: 'PUT',
-        body: toUpdate,
-      }),
-      invalidatesTags: ['Evaluations', 'Statistics'],
-    }), 
   }),
 });
 
 export const {
   useIniciarSesionMutation,
   useGetCountStatisticsQuery,
-  useGetMembersQuery,
+  useGetMembersWithResultsQuery,
+  useGetMembersWithLastResultQuery,
+  usePostConsolidationResultsMutation,
+  useGetRequirementsQuery,
   usePostMembersMutation,
   usePutMembersMutation,
   useGetZonesQuery,
@@ -193,6 +197,4 @@ export const {
   useGetOccupationsQuery,
   useGetDisabilitiesQuery,
   usePostEventsMutation,
-  useGetEvaluationsQuery,
-  useUpdateEvaluationsMutation,
 } = alianzaApi;
