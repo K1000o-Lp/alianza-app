@@ -26,7 +26,10 @@ export const Miembros: React.FC = () => {
     },
     { 
       field: "cedula", 
-      headerName: "CÉDULA", 
+      headerName: "CEDULA", 
+      valueGetter: (value) => {
+        return value || 'SIN CEDULA';
+      },
       width: 150 
     },
     { 
@@ -36,12 +39,18 @@ export const Miembros: React.FC = () => {
     },
     {
       field: "telefono",
-      headerName: "TELÉFONO",
+      headerName: "TELEFONO",
+      valueGetter: (value) => {
+        return value || 'SIN TELEFONO';
+      },
       width: 150,
     },
     { 
       field: "fecha_nacimiento",
       headerName: "FECHA DE NACIMIENTO",
+      valueGetter: (value) => {
+        return value || 'SIN FECHA';
+      },
       width: 180
     },
     { 
