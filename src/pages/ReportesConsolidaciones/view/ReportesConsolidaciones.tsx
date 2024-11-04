@@ -1,4 +1,4 @@
-import { Box, FormControl, Grid2 as Grid, InputLabel, NativeSelect, Paper, Typography } from "@mui/material";
+import { Box, Checkbox, FormControl, FormControlLabel, Grid2 as Grid, InputLabel, NativeSelect, Paper, Typography } from "@mui/material";
 import { DataGrid, GridColDef, GridToolbar } from "@mui/x-data-grid";
 import { useGetMembersWithResultsQuery, useGetRequirementsQuery, useGetZonesQuery } from "../../../redux/services";
 import React from "react";
@@ -26,6 +26,7 @@ export const ReportesConsolidaciones: React.FC = () => {
 	const [ filtersState, setFiltersState ] = React.useState<filterConsolidation>({ 
 		zona: user?.zona !== null ? user?.zona.id as number : 1, 
 		requisito: 1, 
+		no_completado: false,
 		results_since: startOfQuarter, 
 		results_until: endOfQuarter 
 	});	
@@ -48,9 +49,10 @@ export const ReportesConsolidaciones: React.FC = () => {
 		isLoading: memberIsLoading 
 	} = useGetMembersWithResultsQuery({ 
 		zona: filtersState?.zona, 
+    no_completado: filtersState?.no_completado,
 		requisito: filtersState?.requisito,
-		results_since: filtersState?.results_since,
-		results_until: filtersState?.results_until
+		results_since: filtersState?.results_since?.format('YYYY-MM-DD'),
+		results_until: filtersState?.results_until?.format('YYYY-MM-DD'),
 	}, { refetchOnMountOrArgChange: true });
 
 	const handleFilterChange = (event: React.ChangeEvent<HTMLSelectElement> | any) => {
@@ -69,11 +71,20 @@ export const ReportesConsolidaciones: React.FC = () => {
 		}));
 	}
 
+  const handleNoCompletadoChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, checked } = event.target;
+
+    setFiltersState((prevState) => ({
+      ...prevState,
+      [name]: checked,
+    }));
+  }
+
 	const dataForGrid = memberData?.map((member) => {
 		return {
 			...member,
-			resultados: member?.resultados?.[0].requisito.nombre,
-			consolidado_en: member.resultados?.[0]?.creado_en
+			resultados: member.resultados.length > 0 ? member?.resultados?.[0].requisito?.nombre : null,
+			consolidado_en: member.resultados.length > 0 ? member.resultados?.[0]?.creado_en : null
 		}
 	});
 
@@ -86,6 +97,9 @@ export const ReportesConsolidaciones: React.FC = () => {
     { 
       field: "cedula", 
       headerName: "CEDULA", 
+      valueGetter: (value) => {
+        return value || 'SIN CEDULA';
+      },
       width: 120 
     },
     { 
@@ -96,6 +110,9 @@ export const ReportesConsolidaciones: React.FC = () => {
     {
       field: "telefono",
       headerName: "TELEFONO",
+      valueGetter: (value) => {
+        return value || 'SIN TELEFONO';
+      },
       width: 150,
     },
     { 
@@ -111,14 +128,14 @@ export const ReportesConsolidaciones: React.FC = () => {
 			field: "consolidado_en",
 			valueGetter: (value) => {
 
+				if(!value) return 'SIN FECHA';
+
 				return dayjs(value).format("DD/MM/YYYY");
 			},
 			headerName: "FECHA DE CONSOLIDACION",
 			width: 200
 		}
   ];
-
-
 
 	return (
 		<Grid container spacing={1}>
@@ -159,7 +176,7 @@ export const ReportesConsolidaciones: React.FC = () => {
 					}}
 				>
 					<Box>
-						<FormControl sx={{ width: 150 }}>
+						<FormControl sx={{ width: 200 }}>
 							<InputLabel htmlFor="zona_native">Zona</InputLabel>
 							<NativeSelect
 								onChange={handleFilterChange}
@@ -183,7 +200,18 @@ export const ReportesConsolidaciones: React.FC = () => {
 						</FormControl>
 					</Box>
 
-					<Box sx={{ marginLeft: { md: 2, xs: 0 } }}>
+					<Box sx={{ marginLeft: { md: 1, xs: 0 } }}>
+						<FormControl sx={{ width: 180 }}>
+							<FormControlLabel
+								control={
+									<Checkbox checked={filtersState.no_completado} onChange={handleNoCompletadoChange} name="no_completado" />
+								}
+								label="NO COMPLETADO"
+							/>
+						</FormControl>
+					</Box>
+
+					<Box>
 						<FormControl sx={{ width: 250 }}>
 							<InputLabel htmlFor="requisito_native">Proceso de formacion</InputLabel>
 							<NativeSelect

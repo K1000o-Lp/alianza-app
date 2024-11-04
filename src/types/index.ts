@@ -23,10 +23,11 @@ export interface Options {
   cedula: string;
   zona: number;
   rol: number;
+  no_completado: boolean;
   requisito: number;
   resultado: boolean;
-  results_since: Date | dayjs.Dayjs | null;
-  results_until: Date | dayjs.Dayjs | null;
+  results_since: string;
+  results_until: string;
 }
 
 export interface RequirementsOption {
@@ -185,7 +186,8 @@ export interface snackBarStatus {
 
 export interface filterConsolidation {
   zona: number;
+  no_completado: boolean;
   requisito: number;
-  results_since: Date | dayjs.Dayjs | null;
-  results_until: Date | dayjs.Dayjs | null;
+  results_since: dayjs.Dayjs | null;
+  results_until: dayjs.Dayjs | null;
 }
