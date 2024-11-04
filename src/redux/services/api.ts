@@ -94,7 +94,7 @@ export const alianzaApi = createApi({
             let ultimo_requisito: string | undefined;
 
             if(resultados?.length > 0) {
-              ultimo_requisito = resultados[resultados.length - 1].requisito.nombre;
+              ultimo_requisito = resultados[0].requisito.nombre;
             }
             
             return ({
