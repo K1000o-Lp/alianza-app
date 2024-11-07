@@ -1,22 +1,41 @@
-import { Box, Paper, Typography } from "@mui/material";
+import { Box, FormControl, InputLabel, NativeSelect, Paper, Typography } from "@mui/material";
 import { DataGrid, GridActionsCellItem, GridColDef, GridRowId } from "@mui/x-data-grid";
 import EditIcon from '@mui/icons-material/Edit';
 import * as React from "react";
-import { useGetMembersWithLastResultQuery } from "../../../redux/services";
+import { useGetMembersWithLastResultQuery, useGetZonesQuery } from "../../../redux/services";
 import { useRouter } from "../../../router/hooks";
 import { useAppSelector } from "../../../redux/store";
+import { filterMembers } from "../../../types";
 
 
 
 export const Miembros: React.FC = () => {
   const { user } = useAppSelector((state) => state.auth);
-  const { data, isLoading } = useGetMembersWithLastResultQuery({ zona: user?.zona?.id }, { refetchOnMountOrArgChange: true });
+  const [ filtersState, setFiltersState ] = React.useState<filterMembers>({ 
+		zona: user?.zona !== null ? user?.zona.id as number : 1000,
+	});	
+  
+  const {
+    data: zones,
+    isLoading: zonesLoading,
+    isError: zonesError,
+  } = useGetZonesQuery();
+  const { data, isLoading } = useGetMembersWithLastResultQuery({ zona: filtersState?.zona }, { refetchOnMountOrArgChange: true });
 
   const router = useRouter();
 
   const editMember = (id:  GridRowId) => {
     router.push(`${id}/editar`);
   }
+
+  const handleFilterChange = (event: React.ChangeEvent<HTMLSelectElement> | any) => {
+		const { name, value } = event.target;
+
+		setFiltersState((prevState) => ({
+			...prevState,
+			[name]: value,
+		}));
+	}
 
   const columns: GridColDef[] = [
     { 
@@ -89,6 +108,39 @@ export const Miembros: React.FC = () => {
           Miembros
         </Typography>
       </Box>
+
+      { user?.zona === null && (
+        <Box sx={{ display: 'flex', width: "100%", mb: 2 }}>
+          <FormControl sx={{ width: 200 }}>
+            <InputLabel htmlFor="zona_native">Zona</InputLabel>
+            <NativeSelect
+              onChange={handleFilterChange}
+              disabled={user?.zona !== null}
+              value={filtersState?.zona}
+              inputProps={{ id: "zona_native", name: "zona" }}
+            >
+              {zonesLoading && (
+                <option key="0" value="">
+                  Cargando...
+                </option>
+              )}
+
+              {!zonesError && (
+                <option key={`zones-all`} value={1000}>
+                  {"TODAS"}
+                </option>
+              )}
+
+              {!zonesError &&
+                zones?.map(({ id, descripcion }) => (
+                  <option key={`zones-${id}`} value={id}>
+                    {descripcion}
+                  </option>
+                ))}
+            </NativeSelect>
+          </FormControl>
+        </Box>
+      ) }
 
       <Paper
         sx={{

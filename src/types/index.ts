@@ -191,3 +191,7 @@ export interface filterConsolidation {
   results_since: dayjs.Dayjs | null;
   results_until: dayjs.Dayjs | null;
 }
+
+export interface filterMembers {
+  zona: number;
+}

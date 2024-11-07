@@ -24,7 +24,7 @@ export const ReportesConsolidaciones: React.FC = () => {
   const { startOfQuarter,  endOfQuarter } = getQuarterStartEnd();
 
 	const [ filtersState, setFiltersState ] = React.useState<filterConsolidation>({ 
-		zona: user?.zona !== null ? user?.zona.id as number : 1, 
+		zona: user?.zona !== null ? user?.zona.id as number : 1000, 
 		requisito: 1, 
 		no_completado: false,
 		results_since: startOfQuarter, 
@@ -187,6 +187,12 @@ export const ReportesConsolidaciones: React.FC = () => {
 								{zonesLoading && (
 									<option key="0" value="">
 										Cargando...
+									</option>
+								)}
+
+								{!zonesError && (
+									<option key={`zones-all`} value={1000}>
+										{"TODAS"}
 									</option>
 								)}
 
