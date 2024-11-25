@@ -188,8 +188,8 @@ export interface filterConsolidation {
   zona: number;
   no_completado: boolean;
   requisito: number;
-  results_since: dayjs.Dayjs | null;
-  results_until: dayjs.Dayjs | null;
+  desde: dayjs.Dayjs | null;
+  hasta: dayjs.Dayjs | null;
 }
 
 export interface filterMembers {

@@ -25,25 +25,25 @@ export const DrawerMenu: React.FC<Props> = ({ open, toggleDrawer }) => {
       key: "/",
       label: "Panel",
       icon: <DashboardIcon />,
-      route: "../",
+      route: "/",
     },
     {
       key: "/miembros",
       label: "Miembros",
       icon: <PeopleIcon />,
-      route: "../miembros",
+      route: "/miembros",
     },
     {
       key: "/miembros/crear",
       label: "Agregar Miembro",
       icon: <AddBoxIcon />,
-      route: "../miembros/crear",
+      route: "/miembros/crear",
     },
     {
       key: "/reportes/consolidaciones",
       label: "Reporte de Consolidaciones",
       icon: <Assignment />,
-      route: "../reportes/consolidaciones",
+      route: "/reportes/consolidaciones",
     }
   ];
 

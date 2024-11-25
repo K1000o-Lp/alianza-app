@@ -1,12 +1,16 @@
-import { Box, Checkbox, FormControl, FormControlLabel, Grid2 as Grid, InputLabel, NativeSelect, Paper, Typography } from "@mui/material";
-import { DataGrid, GridColDef, GridToolbar } from "@mui/x-data-grid";
-import { useGetMembersWithResultsQuery, useGetRequirementsQuery, useGetZonesQuery } from "../../../redux/services";
 import React from "react";
-import { filterConsolidation } from "../../../types";
+import { Box, Checkbox, FormControl, FormControlLabel, Grid2 as Grid, InputLabel, NativeSelect, Paper, Typography } from "@mui/material";
+import { DataGrid, GridActionsCellItem, GridColDef, GridRowId, GridToolbar } from "@mui/x-data-grid";
+import { useGetMembersWithResultsQuery, useGetRequirementsQuery, useGetZonesQuery } from "../../../redux/services";
+import { DatePicker } from "@mui/x-date-pickers";
 import dayjs from "dayjs";
 import quarterOfYear from 'dayjs/plugin/quarterOfYear';
-import { DatePicker } from "@mui/x-date-pickers";
+import EditIcon from '@mui/icons-material/Edit';
 import { useAppSelector } from "../../../redux/store";
+import { filterConsolidation } from "../../../types";
+import { useRouter } from "../../../router/hooks";
+import queryString from "query-string";
+import { useLocation } from "react-router-dom";
 
 dayjs.extend(quarterOfYear);
 
@@ -22,13 +26,53 @@ export const ReportesConsolidaciones: React.FC = () => {
 
   const { user } = useAppSelector((state) => state.auth);
   const { startOfQuarter,  endOfQuarter } = getQuarterStartEnd();
+  const router = useRouter();
+  const location = useLocation();
+
+  const { requisito, zona, desde, hasta, no_completado } = queryString.parse(location.search);
+
+  const obtenerRequisito = () => {
+    if(requisito) {
+      return requisito as unknown as number;
+    }
+
+    return 1;
+  }
+
+  const obtenerZona = () => {
+    if(zona) {
+      return zona as unknown as number;
+    }
+
+    if(user?.zona !== null) {
+      return user?.zona.id as number;
+    }
+
+    return 1000;
+  }
+
+  const obtenerDesde = () => {
+    if(desde) {
+      return dayjs(desde as string);
+    }
+
+    return startOfQuarter;
+  }
+
+  const obtenerHasta = () => {
+    if(hasta) {
+      return dayjs(hasta as string);
+    }
+
+    return endOfQuarter;
+  }
 
 	const [ filtersState, setFiltersState ] = React.useState<filterConsolidation>({ 
-		zona: user?.zona !== null ? user?.zona.id as number : 1000, 
-		requisito: 1, 
-		no_completado: false,
-		results_since: startOfQuarter, 
-		results_until: endOfQuarter 
+		zona: obtenerZona(), 
+		requisito: obtenerRequisito(), 
+		no_completado: no_completado as unknown as boolean,
+		desde: obtenerDesde(), 
+		hasta: obtenerHasta() 
 	});	
 
 	const {
@@ -43,7 +87,6 @@ export const ReportesConsolidaciones: React.FC = () => {
 		isError: requirementsError 
 	} = useGetRequirementsQuery();
 
-
   const { 
 		data: memberData, 
 		isLoading: memberIsLoading 
@@ -51,8 +94,8 @@ export const ReportesConsolidaciones: React.FC = () => {
 		zona: filtersState?.zona, 
     no_completado: filtersState?.no_completado,
 		requisito: filtersState?.requisito,
-		results_since: filtersState?.results_since?.format('YYYY-MM-DD'),
-		results_until: filtersState?.results_until?.format('YYYY-MM-DD'),
+		results_since: filtersState?.desde?.format('YYYY-MM-DD'),
+		results_until: filtersState?.hasta?.format('YYYY-MM-DD'),
 	}, { refetchOnMountOrArgChange: true });
 
 	const handleFilterChange = (event: React.ChangeEvent<HTMLSelectElement> | any) => {
@@ -78,6 +121,10 @@ export const ReportesConsolidaciones: React.FC = () => {
       ...prevState,
       [name]: checked,
     }));
+  }
+
+  const editMember = (id:  GridRowId) => {
+    router.push(`/miembros/${id}/editar`);
   }
 
 	const dataForGrid = memberData?.map((member) => {
@@ -124,18 +171,34 @@ export const ReportesConsolidaciones: React.FC = () => {
       headerName: "REQUISITO ALCANZADO", 
       width: 200, 
     },
-		{
-			field: "consolidado_en",
-			valueGetter: (value) => {
+	{
+		field: "consolidado_en",
+		valueGetter: (value) => {
 
-				if(!value) return 'SIN FECHA';
+			if(!value) return 'SIN FECHA';
 
-				return dayjs(value).format("DD/MM/YYYY");
-			},
-			headerName: "FECHA DE CONSOLIDACION",
-			width: 200
-		}
+			return dayjs(value).format("DD/MM/YYYY");
+		},
+		headerName: "FECHA DE CONSOLIDACION",
+		width: 200
+	},
+	{
+		field: 'actions',
+		type: 'actions',
+		width: 100,
+		getActions: (params) => [
+		  <GridActionsCellItem icon={<EditIcon />} label="Edit" onClick={() => editMember(params.id)} />,
+		],
+	
+	  },
   ];
+
+  React.useEffect(() => {
+    const query = queryString.stringify(filtersState);
+
+    router.push(`?${query}`);
+
+  }, [filtersState])
 
 	return (
 		<Grid container spacing={1}>
@@ -243,8 +306,8 @@ export const ReportesConsolidaciones: React.FC = () => {
 
 					<Box sx={{ marginLeft: { md: 2, xs: 0 }, marginRight: 1 }}>
 						<DatePicker
-							onChange={(value) => handleFilterDateChange(value, "results_since")}
-							value={ filtersState.results_since ? dayjs(filtersState.results_since) : null }
+							onChange={(value) => handleFilterDateChange(value, "desde")}
+							value={ filtersState.desde ? dayjs(filtersState.desde) : null }
 							slotProps={{
 								textField: {
 									variant: "standard",
@@ -256,8 +319,8 @@ export const ReportesConsolidaciones: React.FC = () => {
 
 					<Box sx={{ marginLeft: {md: 1, xs: 0 } }}>
 						<DatePicker
-								onChange={(value) => handleFilterDateChange(value, "results_until")}
-								value={ filtersState.results_until ? dayjs(filtersState.results_until) : null }
+								onChange={(value) => handleFilterDateChange(value, "hasta")}
+								value={ filtersState.hasta ? dayjs(filtersState.hasta) : null }
 								slotProps={{
 									textField: {
 										variant: "standard",
