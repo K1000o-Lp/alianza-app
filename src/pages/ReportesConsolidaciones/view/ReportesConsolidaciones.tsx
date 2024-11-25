@@ -308,6 +308,8 @@ export const ReportesConsolidaciones: React.FC = () => {
 						<DatePicker
 							onChange={(value) => handleFilterDateChange(value, "desde")}
 							value={ filtersState.desde ? dayjs(filtersState.desde) : null }
+							minDate={dayjs('2024-01-01')}
+							maxDate={endOfQuarter}
 							slotProps={{
 								textField: {
 									variant: "standard",
@@ -321,6 +323,8 @@ export const ReportesConsolidaciones: React.FC = () => {
 						<DatePicker
 								onChange={(value) => handleFilterDateChange(value, "hasta")}
 								value={ filtersState.hasta ? dayjs(filtersState.hasta) : null }
+								minDate={filtersState.desde as unknown as dayjs.Dayjs}
+								maxDate={endOfQuarter}
 								slotProps={{
 									textField: {
 										variant: "standard",
