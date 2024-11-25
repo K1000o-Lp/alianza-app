@@ -3,6 +3,10 @@ import Paper from "@mui/material/Paper";
 import Typography from "@mui/material/Typography";
 import { useGetCountStatisticsQuery } from "../../../redux/services";
 import { useAppSelector } from "../../../redux/store";
+import { Link } from "react-router-dom";
+import queryString from "query-string";
+import dayjs from "dayjs";
+import quarterOfYear from 'dayjs/plugin/quarterOfYear';
 
 interface Props {
   title: string;
@@ -10,34 +14,61 @@ interface Props {
   resultado?: boolean;
 }
 
+dayjs.extend(quarterOfYear);
+
+const getEndOfQuarter = () => {
+  const currentQuarter = dayjs().quarter();
+  const endOfQuarter = dayjs().quarter(currentQuarter).endOf('quarter');
+
+  return endOfQuarter;
+}
+
 export const CountStatistics: React.FC<Props> = ({
   title,
   requisito_id,
 }) => {
   const { user } = useAppSelector((state) => state.auth);
+  const zona = user?.zona?.id;
+
+  const zonaAnalizada = () => {
+    if(!zona) return 1000;
+
+    return zona;
+  }
+
   const { data } = useGetCountStatisticsQuery(
-    { requisito: requisito_id, zona: user?.zona?.id },
+    { requisito: requisito_id, zona },
     { refetchOnMountOrArgChange: true }
   );
 
   return (
-    <Paper
-      sx={{
-        p: 2,
-        display: "flex",
-        flexDirection: "column",
-        height: 150,
-      }}
+    <Link 
+      style={{ textDecoration: 'none' }} 
+      to={`/reportes/consolidaciones?${queryString.stringify({ 
+        zona: zonaAnalizada(), 
+        requisito: requisito_id, 
+        desde: dayjs("2024-01-01"),
+        hasta: getEndOfQuarter(),
+      })}`}
     >
-      <Typography component="h1" variant="h6" color="primary" gutterBottom>
-        {title}
-      </Typography>
-      <Typography component="p" variant="h4">
-        {data?.cantidad}
-      </Typography>
-      <Typography color="text.secondary" sx={{ flex: 1 }}>
-        {`de ${data?.total_miembros} miembros`}
-      </Typography>
-    </Paper>
+      <Paper
+        sx={{
+          p: 2,
+          display: "flex",
+          flexDirection: "column",
+          height: 150,
+        }}
+      >
+        <Typography component="h1" variant="h6" color="primary" gutterBottom>
+          {title}
+        </Typography>
+        <Typography component="p" variant="h4">
+          {data?.cantidad}
+        </Typography>
+        <Typography color="text.secondary" sx={{ flex: 1 }}>
+          {`de ${data?.total_miembros} miembros`}
+        </Typography>
+      </Paper>
+    </Link>
   );
 };
