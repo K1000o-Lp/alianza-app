@@ -1,16 +1,18 @@
 import React from "react";
-import { Box, Checkbox, FormControl, FormControlLabel, Grid2 as Grid, InputLabel, NativeSelect, Paper, Typography } from "@mui/material";
+import { Box, Button, Checkbox, Dialog, DialogActions, DialogTitle, FormControl, FormControlLabel, Grid2 as Grid, InputLabel, NativeSelect, Paper, Typography } from "@mui/material";
 import { DataGrid, GridActionsCellItem, GridColDef, GridRowId, GridToolbar } from "@mui/x-data-grid";
-import { useGetMembersWithResultsQuery, useGetRequirementsQuery, useGetZonesQuery } from "../../../redux/services";
+import { useGetMembersWithResultsQuery, useGetRequirementsQuery, useGetZonesQuery, usePutMembersMutation } from "../../../redux/services";
 import { DatePicker } from "@mui/x-date-pickers";
 import dayjs from "dayjs";
 import quarterOfYear from 'dayjs/plugin/quarterOfYear';
 import EditIcon from '@mui/icons-material/Edit';
+import DeleteIcon from '@mui/icons-material/Delete';
 import { useAppSelector } from "../../../redux/store";
 import { filterConsolidation } from "../../../types";
 import { useRouter } from "../../../router/hooks";
 import queryString from "query-string";
 import { useLocation } from "react-router-dom";
+import { config } from "../../../config";
 
 dayjs.extend(quarterOfYear);
 
@@ -73,7 +75,10 @@ export const ReportesConsolidaciones: React.FC = () => {
 		no_completado: no_completado as unknown as boolean,
 		desde: obtenerDesde(), 
 		hasta: obtenerHasta() 
-	});	
+	});
+  
+  const  [openDialog, setOpenDialog] = React.useState<{open: boolean, id?: number}>({ open: false, id: undefined });
+
 
 	const {
     data: zones,
@@ -89,14 +94,17 @@ export const ReportesConsolidaciones: React.FC = () => {
 
   const { 
 		data: memberData, 
-		isLoading: memberIsLoading 
+		isLoading: memberIsLoading,
 	} = useGetMembersWithResultsQuery({ 
-		zona: filtersState?.zona, 
+    zona: filtersState?.zona, 
     no_completado: filtersState?.no_completado,
 		requisito: filtersState?.requisito,
 		results_since: filtersState?.desde?.format('YYYY-MM-DD'),
 		results_until: filtersState?.hasta?.format('YYYY-MM-DD'),
 	}, { refetchOnMountOrArgChange: true });
+  
+  const [ updateMember, updateMemberResult ] = usePutMembersMutation();
+  const { isLoading: updateMemberIsLoading } = updateMemberResult;
 
 	const handleFilterChange = (event: React.ChangeEvent<HTMLSelectElement> | any) => {
 		const { name, value } = event.target;
@@ -123,17 +131,30 @@ export const ReportesConsolidaciones: React.FC = () => {
     }));
   }
 
-  const editMember = (id:  GridRowId) => {
+  const editMember = (id:  GridRowId | null) => {
+    if(!id) return;
+
     router.push(`/miembros/${id}/editar`);
   }
 
-	const dataForGrid = memberData?.map((member) => {
-		return {
-			...member,
-			resultados: member.resultados.length > 0 ? member?.resultados?.[0].requisito?.nombre : null,
-			consolidado_en: member.resultados.length > 0 ? member.resultados?.[0]?.creado_en : null
-		}
-	});
+  const deleteMember = async (id: GridRowId | null) => {
+    if(!id) return;
+
+    updateMember({ id: id as number, historial: { zona_id: config().ZONA_0 } });
+  } 
+
+  const handleCloseDialog = () => {
+    setOpenDialog({open: false, id: undefined});
+  } 
+
+  const handleOpenDialog = (id: number) => {
+    setOpenDialog({open: true, id});
+  }
+
+  const handleDeleteMember = () => {
+    deleteMember(openDialog.id as number);
+    handleCloseDialog();
+  }
 
 	const columns: GridColDef[] = [
     { 
@@ -164,32 +185,34 @@ export const ReportesConsolidaciones: React.FC = () => {
     },
     { 
       field: "resultados", 
-			valueGetter: (value) => {
-				
-				return value || 'SIN PROGRESO';
+		  valueGetter: (value) => {
+			  const resultados = value as Array<any>;
+			  if(resultados.length === 0) return 'SIN PROGRESO';
+
+				return resultados[0]?.requisito?.nombre;
 			},
       headerName: "REQUISITO ALCANZADO", 
       width: 200, 
     },
-	{
-		field: "consolidado_en",
-		valueGetter: (value) => {
+    {
+      field: "consolidado_en",
+      valueGetter: (value) => {
 
-			if(!value) return 'SIN FECHA';
+        if(!value) return 'SIN FECHA';
 
-			return dayjs(value).format("DD/MM/YYYY");
-		},
-		headerName: "FECHA DE CONSOLIDACION",
-		width: 200
-	},
-	{
-		field: 'actions',
-		type: 'actions',
-		width: 100,
-		getActions: (params) => [
-		  <GridActionsCellItem icon={<EditIcon />} label="Edit" onClick={() => editMember(params.id)} />,
-		],
-	
+        return dayjs(value).format("DD/MM/YYYY");
+      },
+      headerName: "FECHA DE CONSOLIDACION",
+      width: 200
+    },
+    {
+      field: 'actions',
+      type: 'actions',
+      width: 100,
+      getActions: (params) => [
+        <GridActionsCellItem icon={<EditIcon />} label="Edit" onClick={() => editMember(params?.id)} />,
+        <GridActionsCellItem icon={<DeleteIcon />} label="Delete" onClick={() => handleOpenDialog(params.id as number)} />,
+      ],
 	  },
   ];
 
@@ -345,17 +368,47 @@ export const ReportesConsolidaciones: React.FC = () => {
 						flexDirection: "column",
 					}}
 				>
-					<DataGrid
-						rows={dataForGrid ?? []}
-						columns={columns}
-						loading={memberIsLoading}
-						getRowId={(row) => row?.id}
-						slots={{ toolbar: GridToolbar }}
-						initialState={{ pagination: { paginationModel: { pageSize: 10 } } }}
-						pageSizeOptions={[10, 20, 50, 100]}
-						disableRowSelectionOnClick
-					/>
+          {
+            Array.isArray(memberData) && memberData.length > 0 
+            ? (
+              <DataGrid
+                rows={memberData ?? []}
+                columns={columns}
+                loading={memberIsLoading || updateMemberIsLoading}
+                getRowId={(row) => row?.id || null}
+                slots={{ 
+                  toolbar: GridToolbar, 
+                  noRowsOverlay: () => <Box sx={{display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%'}}><Typography>No hay datos</Typography></Box> 
+                }}
+                initialState={{ pagination: { paginationModel: { pageSize: 10 } } }}
+                pageSizeOptions={[10, 20, 50, 100]}
+                disableRowSelectionOnClick
+              />
+            ) 
+            : (
+              <Box sx={{display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%'}}>
+                <Typography>No hay datos</Typography>
+              </Box>
+            )
+          }
 				</Paper>
+
+        <Dialog
+        open={openDialog.open}
+        onClose={handleCloseDialog}
+        aria-labelledby="alert-dialog-title"
+        aria-describedby="alert-dialog-description"
+        >
+          <DialogTitle id="alert-dialog-title">
+            {"Estas seguro de eliminar este miembro?"}
+          </DialogTitle>
+          <DialogActions>
+            <Button onClick={handleCloseDialog}>No</Button>
+            <Button onClick={handleDeleteMember} autoFocus>
+              Si
+            </Button>
+          </DialogActions>
+        </Dialog>
 			</Grid>
 		</Grid>
 	);

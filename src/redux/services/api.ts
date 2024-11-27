@@ -76,6 +76,37 @@ export const alianzaApi = createApi({
         url: 'persona/miembros',
         params: options,
       }),
+      transformResponse: (response: ResponseMember[]) =>
+        response.map(
+          ({
+            id,
+            cedula,
+            nombre_completo,
+            telefono,
+            fecha_nacimiento,
+            hijos,
+            resultados,
+            ...rest
+          }) => {
+            let consolidado_en: Date | undefined;
+
+            if(resultados?.length > 0) {
+              consolidado_en = resultados[0].creado_en as Date | undefined;
+            }
+
+            return ({
+              id,
+              cedula,
+              nombre_completo,
+              telefono,
+              fecha_nacimiento,
+              hijos,
+              resultados,
+              consolidado_en,
+              ...rest
+            })
+          }
+        ),
       providesTags: ['Results'],
     }),
     getMembersWithLastResult: builder.query<ResponseMember[], Partial<Options>>({
@@ -105,7 +136,7 @@ export const alianzaApi = createApi({
               fecha_nacimiento,
               hijos,
               resultados,
-              ultimo_requisito
+              ultimo_requisito,
             })
           }
         ),
@@ -126,7 +157,7 @@ export const alianzaApi = createApi({
       }),
       invalidatesTags: ['Members', 'Statistics'],
     }),
-    putMembers: builder.mutation<ResponseMember, MemberForm>({
+    putMembers: builder.mutation<ResponseMember, Partial<MemberForm>>({
       query: ({ id, ...newMember }) => ({
         url: `persona/miembros/${id}`,
         method: 'PUT',
@@ -139,7 +170,7 @@ export const alianzaApi = createApi({
           }
         }
       }),
-      invalidatesTags: ['Members'],
+      invalidatesTags: ['Results', 'Members'],
     }),
     postConsolidationResults: builder.mutation<ResponseResultado, consolidationForm>({
       query: (newConsolidation) => ({

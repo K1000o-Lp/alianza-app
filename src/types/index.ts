@@ -136,7 +136,7 @@ export interface MemberForm {
   ocupacion_id: number;
   discapacidad_id: number;
   historial: {
-    servicio_id: number;
+    servicio_id?: number;
     zona_id: number;
   };
 }
