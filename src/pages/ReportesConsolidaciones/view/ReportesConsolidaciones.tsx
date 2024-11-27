@@ -1,11 +1,12 @@
 import React from "react";
 import { Box, Button, Checkbox, CircularProgress, Dialog, DialogActions, DialogTitle, FormControl, FormControlLabel, Grid2 as Grid, InputLabel, NativeSelect, Paper, Typography } from "@mui/material";
-import { DataGrid, GridActionsCellItem, GridColDef, GridRowId, GridToolbar } from "@mui/x-data-grid";
+import { DataGrid, GridActionsCellItem, GridColDef, GridRowId, GridToolbarContainer } from "@mui/x-data-grid";
 import { useGetMembersWithResultsQuery, useGetRequirementsQuery, useGetZonesQuery, usePutMembersMutation } from "../../../redux/services";
 import { DatePicker } from "@mui/x-date-pickers";
 import dayjs from "dayjs";
 import quarterOfYear from 'dayjs/plugin/quarterOfYear';
 import EditIcon from '@mui/icons-material/Edit';
+import FileDownloadIcon from '@mui/icons-material/FileDownload';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { useAppSelector } from "../../../redux/store";
 import { filterConsolidation } from "../../../types";
@@ -72,7 +73,7 @@ export const ReportesConsolidaciones: React.FC = () => {
 	const [ filtersState, setFiltersState ] = React.useState<filterConsolidation>({ 
 		zona: obtenerZona(), 
 		requisito: obtenerRequisito(), 
-		no_completado: no_completado as unknown as boolean,
+		no_completado: no_completado == 'true' ? true : false,
 		desde: obtenerDesde(), 
 		hasta: obtenerHasta() 
 	});
@@ -156,6 +157,21 @@ export const ReportesConsolidaciones: React.FC = () => {
     handleCloseDialog();
   }
 
+  const handleClickExportToExcel = () => {
+    const api = config().BACKEND_URL;
+
+    fetch(`${api}persona/miembros/reportes?${queryString.stringify(filtersState)}`)
+    .then(response => response.blob())
+    .then(blob => {
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `reporte_consolidaciones_${dayjs().format('DD/MM/YYYY HH:mm:ss')}.xlsx`;
+      a.click();
+    })
+    .catch(error => console.error(error));
+  }
+
 	const columns: GridColDef[] = [
     { 
       field: "id", 
@@ -215,6 +231,16 @@ export const ReportesConsolidaciones: React.FC = () => {
       ],
 	  },
   ];
+
+  const CustomToolbar = () => {
+    return (
+      <GridToolbarContainer>
+        <Button color="primary" variant="text" startIcon={<FileDownloadIcon />} onClick={handleClickExportToExcel}>
+          Exportar a Excel
+        </Button>
+      </GridToolbarContainer>
+    );
+  }
 
   React.useEffect(() => {
     const query = queryString.stringify(filtersState);
@@ -296,7 +322,7 @@ export const ReportesConsolidaciones: React.FC = () => {
 						<FormControl sx={{ width: 180 }}>
 							<FormControlLabel
 								control={
-									<Checkbox checked={filtersState.no_completado} onChange={handleNoCompletadoChange} name="no_completado" />
+									<Checkbox checked={filtersState.no_completado == true ? true : false} onChange={handleNoCompletadoChange} name="no_completado" />
 								}
 								label="NO COMPLETADO"
 							/>
@@ -383,7 +409,7 @@ export const ReportesConsolidaciones: React.FC = () => {
                 loading={memberIsLoading || updateMemberIsLoading}
                 getRowId={(row) => row?.id || null}
                 slots={{ 
-                  toolbar: GridToolbar, 
+                  toolbar: CustomToolbar, 
                   noRowsOverlay: () => <Box sx={{display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%'}}><Typography>No hay datos</Typography></Box> 
                 }}
                 initialState={{ pagination: { paginationModel: { pageSize: 10 } } }}
