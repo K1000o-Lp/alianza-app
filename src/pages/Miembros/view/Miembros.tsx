@@ -1,4 +1,4 @@
-import { Box, Button, Dialog, DialogActions, DialogTitle, FormControl, InputLabel, NativeSelect, Paper, Typography } from "@mui/material";
+import { Box, Button, CircularProgress, Dialog, DialogActions, DialogTitle, FormControl, InputLabel, NativeSelect, Paper, Typography } from "@mui/material";
 import { DataGrid, GridActionsCellItem, GridColDef, GridRowId } from "@mui/x-data-grid";
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
@@ -178,7 +178,13 @@ export const Miembros: React.FC = () => {
         }}
       >
         {
-          Array.isArray(data) && data.length > 0 
+          isLoading 
+          ? (
+            <Box sx={{display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%'}}>
+              <CircularProgress />
+            </Box>
+          )
+          : Array.isArray(data) && data.length > 0 
           ? (
             <DataGrid
               rows={data ?? []}

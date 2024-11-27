@@ -1,5 +1,5 @@
 import React from "react";
-import { Box, Button, Checkbox, Dialog, DialogActions, DialogTitle, FormControl, FormControlLabel, Grid2 as Grid, InputLabel, NativeSelect, Paper, Typography } from "@mui/material";
+import { Box, Button, Checkbox, CircularProgress, Dialog, DialogActions, DialogTitle, FormControl, FormControlLabel, Grid2 as Grid, InputLabel, NativeSelect, Paper, Typography } from "@mui/material";
 import { DataGrid, GridActionsCellItem, GridColDef, GridRowId, GridToolbar } from "@mui/x-data-grid";
 import { useGetMembersWithResultsQuery, useGetRequirementsQuery, useGetZonesQuery, usePutMembersMutation } from "../../../redux/services";
 import { DatePicker } from "@mui/x-date-pickers";
@@ -369,7 +369,13 @@ export const ReportesConsolidaciones: React.FC = () => {
 					}}
 				>
           {
-            Array.isArray(memberData) && memberData.length > 0 
+            memberIsLoading || updateMemberIsLoading 
+            ? (
+              <Box sx={{display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%'}}>
+                <CircularProgress />
+              </Box>
+            )
+            : Array.isArray(memberData) && memberData.length > 0 
             ? (
               <DataGrid
                 rows={memberData ?? []}
@@ -394,10 +400,10 @@ export const ReportesConsolidaciones: React.FC = () => {
 				</Paper>
 
         <Dialog
-        open={openDialog.open}
-        onClose={handleCloseDialog}
-        aria-labelledby="alert-dialog-title"
-        aria-describedby="alert-dialog-description"
+          open={openDialog.open}
+          onClose={handleCloseDialog}
+          aria-labelledby="alert-dialog-title"
+          aria-describedby="alert-dialog-description"
         >
           <DialogTitle id="alert-dialog-title">
             {"Estas seguro de eliminar este miembro?"}
