@@ -359,6 +359,7 @@ export const ReportesConsolidaciones: React.FC = () => {
 							value={ filtersState.desde ? dayjs(filtersState.desde) : null }
 							minDate={dayjs('2024-01-01')}
 							maxDate={endOfQuarter}
+              format="DD/MM/YYYY"
 							slotProps={{
 								textField: {
 									variant: "standard",
@@ -374,6 +375,7 @@ export const ReportesConsolidaciones: React.FC = () => {
 								value={ filtersState.hasta ? dayjs(filtersState.hasta) : null }
 								minDate={filtersState.desde as unknown as dayjs.Dayjs}
 								maxDate={endOfQuarter}
+                format="DD/MM/YYYY"
 								slotProps={{
 									textField: {
 										variant: "standard",

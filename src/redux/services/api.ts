@@ -23,6 +23,7 @@ import {
 import { jwtDecode } from "jwt-decode";
 import { setUser } from "../features/authSlice";
 import { config } from "../../config";
+import { obtenerEdad } from "../../helpers/obtenerEdad";
 
 const BACKEND_URL = config()?.BACKEND_URL;
 
@@ -123,6 +124,7 @@ export const alianzaApi = createApi({
             resultados
           }) => {
             let ultimo_requisito: string | undefined;
+            const edad = obtenerEdad(fecha_nacimiento);
 
             if(resultados?.length > 0) {
               ultimo_requisito = resultados[0].requisito.nombre;
@@ -134,6 +136,7 @@ export const alianzaApi = createApi({
               nombre_completo,
               telefono,
               fecha_nacimiento,
+              edad,
               hijos,
               resultados,
               ultimo_requisito,
@@ -187,6 +190,20 @@ export const alianzaApi = createApi({
       }),
       invalidatesTags: ['Results', 'Members'],
     }),
+    deleteConsolidationResults: builder.mutation<Object, number>({
+      query: (id) => ({
+        url: `formacion/resultados/${id}`,
+        method: 'DELETE',
+        rejectValue: (error: FetchBaseQueryError) => {
+          const errorMessage = (error.data && typeof error.data === 'object' && 'mensaje' in error.data) ? (error.data as { mensaje: string }).mensaje : 'Unknown error';
+          return {
+            message: errorMessage,
+            code: error.status,
+          }
+        }
+      }),
+      invalidatesTags: ['Results', 'Members'],
+    }),
     getRequirements: builder.query<Requirement[], Partial<RequirementsOption> | null | void >({
       query: (options) => ({ url: "formacion/requisitos", params: options || undefined }),
     }),
@@ -218,6 +235,7 @@ export const {
   useGetMembersWithResultsQuery,
   useGetMembersWithLastResultQuery,
   usePostConsolidationResultsMutation,
+  useDeleteConsolidationResultsMutation,
   useGetRequirementsQuery,
   usePostMembersMutation,
   usePutMembersMutation,

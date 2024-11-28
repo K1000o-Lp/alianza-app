@@ -4,10 +4,10 @@ import Paper from "@mui/material/Paper";
 import LoadingButton from '@mui/lab/LoadingButton';
 import Typography from "@mui/material/Typography";
 import { useParams } from 'react-router-dom';
-import { useGetMembersWithResultsQuery, useGetRequirementsQuery, usePostConsolidationResultsMutation, usePutMembersMutation } from '../../../redux/services';
+import { useDeleteConsolidationResultsMutation, useGetMembersWithResultsQuery, useGetRequirementsQuery, usePostConsolidationResultsMutation, usePutMembersMutation } from '../../../redux/services';
 import { Controller, FormProvider, SubmitHandler, useForm } from 'react-hook-form';
 import { consolidationForm, MemberForm, snackBarStatus } from '../../../types';
-import { Alert, Button, Dialog, DialogActions, DialogContent, DialogTitle, Fab, FormControl, FormHelperText, Grid2 as Grid, InputLabel, NativeSelect, Skeleton, Snackbar } from '@mui/material';
+import { Alert, Button, Dialog, DialogActions, DialogContent, DialogTitle, Fab, FormControl, FormHelperText, Grid2 as Grid, IconButton, InputLabel, NativeSelect, Skeleton, Snackbar } from '@mui/material';
 import { useRouter } from '../../../router/hooks';
 import { PersonalForm } from '../../AddMember/components/PersonalForm';
 import { ProfessionForm } from '../../AddMember/components/ProfessionForm';
@@ -17,6 +17,7 @@ import quarterOfYear from 'dayjs/plugin/quarterOfYear';
 import { Timeline, TimelineConnector, TimelineContent, TimelineDot, TimelineItem, TimelineOppositeContent, TimelineSeparator } from '@mui/lab';
 import { Add } from '@mui/icons-material';
 import { DatePicker } from '@mui/x-date-pickers';
+import ClearIcon from '@mui/icons-material/Clear';
 
 dayjs.extend(quarterOfYear);
 
@@ -35,13 +36,19 @@ export const EditMember: React.FC = () => {
   const [ snackBarStatus, setSnackBarStatus ] = React.useState<snackBarStatus>({ is_open: false, message: "", severity: "success" });
   const [ requirements, setRequirements ] = React.useState<number[] | undefined>([]);
   const [ openDialog, setOpenDialog ] = React.useState<boolean>(false);
+  const [ openDeleteDialog, setOpenDeleteDialog ] = React.useState<{open: boolean, id?: number}>({ open: false, id: undefined });
+
+  
   const { startOfQuarter,  endOfQuarter } = getQuarterStartEnd();
 
   const { data: requirementsData, isLoading: requirementsIsLoading, isError: requirementsError } = useGetRequirementsQuery({ requisitos: requirements }, { refetchOnMountOrArgChange: true });
   const { data: memberData, isLoading: memberIsLoading, isError: memberIsError } = useGetMembersWithResultsQuery({ id }, { refetchOnMountOrArgChange: true });
   const [ updateMember, resultMember ] = usePutMembersMutation();
-  const [ postConsolidationResults, resultConsolidation ] = usePostConsolidationResultsMutation();
-  const errorMessageInConsolidation = resultConsolidation.error && "data" in resultConsolidation.error ? (resultConsolidation.error.data as { message: string }).message : "Error desconocido";
+  const [ postConsolidationResults, resultPostConsolidation ] = usePostConsolidationResultsMutation();
+  const errorMessageInPostConsolidation = resultPostConsolidation.error && "data" in resultPostConsolidation.error ? (resultPostConsolidation.error.data as { message: string }).message : "Error desconocido";
+
+  const [ deleteConsolidationResults, resultDeleteConsolidation ] = useDeleteConsolidationResultsMutation();
+  const errorMessageInDeleteConsolidation = resultDeleteConsolidation.error && "data" in resultDeleteConsolidation.error ? (resultDeleteConsolidation.error.data as { message: string }).message : "Error desconocido";
 
   const memberFormMethods = useForm<MemberForm>();
   const { control: consolidationControl, handleSubmit: consolidationHandleSubmit } = useForm<consolidationForm>({ defaultValues: { miembro_id: Number(id) ?? undefined } });
@@ -70,8 +77,17 @@ export const EditMember: React.FC = () => {
     setOpenDialog(false);
   }
 
+  const handleCloseDeleteDialog = () => {
+    setOpenDeleteDialog({open: false, id: undefined});
+  }
+
   const handleSubmitUpdateMember = () => {
     memberFormMethods.handleSubmit(onSubmitUpdateMember)();
+  }
+
+  const handleDeleteConsolidation = async () => {
+    await deleteConsolidationResults(openDeleteDialog.id as number);
+    setOpenDeleteDialog({ open: false, id: undefined });
   }
 
   React.useEffect(()=>{
@@ -81,16 +97,28 @@ export const EditMember: React.FC = () => {
   }, [resultMember.isSuccess]);
 
   React.useEffect(()=> {
-    if(resultConsolidation.isSuccess) {
+    if(resultPostConsolidation.isSuccess) {
       setSnackBarStatus({ is_open: true, message: "RESULTADO CONSOLIDADO", severity: "success" });
     }
-  }, [resultConsolidation.isSuccess]);
+  }, [resultPostConsolidation.isSuccess]);
 
   React.useEffect(()=> {
-    if(resultConsolidation.isError) {
-      setSnackBarStatus({ is_open: true, message: errorMessageInConsolidation, severity: "error" });
+    if(resultPostConsolidation.isError) {
+      setSnackBarStatus({ is_open: true, message: errorMessageInPostConsolidation, severity: "error" });
     }
-  }, [resultConsolidation.isError]);
+  }, [resultPostConsolidation.isError]);
+
+  React.useEffect(() => {
+    if(resultDeleteConsolidation.isSuccess) {
+      setSnackBarStatus({ is_open: true, message: "RESULTADO ELIMINADO", severity: "success" });
+    }
+  }, [resultDeleteConsolidation.isSuccess]);
+
+  React.useEffect(() => {
+    if(resultDeleteConsolidation.isError) {
+      setSnackBarStatus({ is_open: true, message: errorMessageInDeleteConsolidation, severity: "error" });
+    }
+  }, [resultDeleteConsolidation.isError]);
 
   React.useEffect(()=> {
     if(memberData && Array.isArray(memberData)) {
@@ -254,7 +282,7 @@ export const EditMember: React.FC = () => {
         </Typography>
         <Timeline>
           {
-            !memberIsError && (memberData?.[0]?.resultados ?? []).map(({ creado_en, requisito: { nombre } }, index) => (
+            !memberIsError && (memberData?.[0]?.resultados ?? []).map(({ id, creado_en, requisito: { nombre } }, index) => (
               <TimelineItem key={`resultados-${index}`}>
                 <TimelineOppositeContent color="text.secondary">
                   { dayjs(creado_en).format('DD/MM/YYYY') }
@@ -263,7 +291,12 @@ export const EditMember: React.FC = () => {
                   <TimelineDot />
                   <TimelineConnector />
                 </TimelineSeparator>
-                <TimelineContent>{ nombre }</TimelineContent>
+                <TimelineContent>
+                  { nombre }
+                  <IconButton onClick={() => setOpenDeleteDialog({ open: true, id})} aria-label="clear" color='error' size='small'>
+                    <ClearIcon />
+                  </IconButton>
+                </TimelineContent>
               </TimelineItem>
             ))
           }
@@ -346,6 +379,7 @@ export const EditMember: React.FC = () => {
                       value={ value ? dayjs(value) : null }
                       minDate={startOfQuarter}
                       maxDate={endOfQuarter}
+                      format='DD/MM/YYYY'
                       slotProps={{
                         textField: {
                           variant: "standard",
@@ -367,7 +401,7 @@ export const EditMember: React.FC = () => {
                     type='submit'
                     variant='contained'
                     color='primary'
-                    loading={resultConsolidation.isLoading}
+                    loading={resultPostConsolidation.isLoading}
                   >
                     Guardar
                   </LoadingButton>
@@ -394,6 +428,23 @@ export const EditMember: React.FC = () => {
           {snackBarStatus.message}
         </Alert>
       </Snackbar>
+
+      <Dialog
+        open={openDeleteDialog.open}
+        onClose={handleCloseDeleteDialog}
+        aria-labelledby="alert-dialog-title"
+        aria-describedby="alert-dialog-description"
+      >
+        <DialogTitle id="alert-dialog-title">
+          {"Estas seguro de eliminar el resultado consolidado actual?"}
+        </DialogTitle>
+        <DialogActions>
+          <Button onClick={handleCloseDeleteDialog}>No</Button>
+          <Button onClick={handleDeleteConsolidation} autoFocus>
+            Si
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Grid>
   )
 }

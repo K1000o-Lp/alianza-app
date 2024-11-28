@@ -126,6 +126,7 @@ export const PersonalForm: React.FC = () => {
               fieldState: { invalid, error },
             }) => (
               <DatePicker
+                format="DD/MM/YYYY"
                 onChange={(date) => onChange(date)}
                 value={ value ? dayjs(value) : null }
                 slotProps={{

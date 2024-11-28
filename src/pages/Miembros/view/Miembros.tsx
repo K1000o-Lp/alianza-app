@@ -100,6 +100,14 @@ export const Miembros: React.FC = () => {
       width: 180
     },
     { 
+      field: "edad",
+      headerName: "EDAD",
+      valueGetter: (value) => {
+        return value || 'NO DISPONIBLE';
+      },
+      width: 150
+    },
+    { 
       field: "hijos", 
       headerName: "HIJOS", 
       width: 90 
@@ -194,7 +202,7 @@ export const Miembros: React.FC = () => {
               slots={{
                 noRowsOverlay: () => <Box sx={{display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%'}}><Typography>No hay datos</Typography></Box> 
               }}
-              initialState={{ pagination: { paginationModel: { pageSize: 50 } } }}
+              initialState={{ pagination: { paginationModel: { pageSize: 100 } } }}
               disableRowSelectionOnClick
             />
           )
