@@ -390,7 +390,7 @@ export const ReportesConsolidaciones: React.FC = () => {
 				<Paper
 					sx={{ 
 						display: "flex",
-						height: 500,
+						height: "calc(100vh - 310px)",
 						flexDirection: "column",
 					}}
 				>
@@ -412,8 +412,7 @@ export const ReportesConsolidaciones: React.FC = () => {
                   toolbar: CustomToolbar, 
                   noRowsOverlay: () => <Box sx={{display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%'}}><Typography>No hay datos</Typography></Box> 
                 }}
-                initialState={{ pagination: { paginationModel: { pageSize: 10 } } }}
-                pageSizeOptions={[10, 20, 50, 100]}
+                initialState={{ pagination: { paginationModel: { pageSize: 50 } } }}
                 disableRowSelectionOnClick
               />
             ) 
