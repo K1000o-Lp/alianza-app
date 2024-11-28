@@ -294,7 +294,7 @@ export const EditMember: React.FC = () => {
                 <TimelineContent>
                   { nombre }
                   <IconButton onClick={() => setOpenDeleteDialog({ open: true, id})} aria-label="clear" color='error' size='small'>
-                    <ClearIcon />
+                    <ClearIcon fontSize='small' />
                   </IconButton>
                 </TimelineContent>
               </TimelineItem>
