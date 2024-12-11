@@ -7,7 +7,7 @@ import { useParams } from 'react-router-dom';
 import { useDeleteConsolidationResultsMutation, useGetMembersWithResultsQuery, useGetRequirementsQuery, usePostConsolidationResultsMutation, usePutMembersMutation } from '../../../redux/services';
 import { Controller, FormProvider, SubmitHandler, useForm } from 'react-hook-form';
 import { consolidationForm, MemberForm, snackBarStatus } from '../../../types';
-import { Alert, Button, Dialog, DialogActions, DialogContent, DialogTitle, Fab, FormControl, FormHelperText, Grid2 as Grid, IconButton, InputLabel, NativeSelect, Skeleton, Snackbar } from '@mui/material';
+import { Alert, Button, Chip, Dialog, DialogActions, DialogContent, DialogTitle, Fab, FormControl, FormHelperText, Grid2 as Grid, IconButton, InputLabel, MenuItem, OutlinedInput, Select, SelectChangeEvent, Skeleton, Snackbar } from '@mui/material';
 import { useRouter } from '../../../router/hooks';
 import { PersonalForm } from '../../AddMember/components/PersonalForm';
 import { ProfessionForm } from '../../AddMember/components/ProfessionForm';
@@ -29,11 +29,26 @@ const getQuarterStartEnd = () => {
   return { startOfQuarter, endOfQuarter };
 }
 
+const requirementsJson: any = {
+  1: 'GRUPO DE CONEXION',
+  2: 'PRIMEROS PASOS',
+  3: 'BAUTISMO',
+  4: 'ENCUENTRO',
+  5: 'POS ENCUENTRO',
+  6: 'DOCTRINAS 1',
+  7: 'DOCTRINAS 2',
+  8: 'ENTRENAMIENTO LIDERAZGO',
+  9: 'LIDERAZGO',
+  10: 'ENCUENTRO DE ORACION',
+  11: 'LIDER',
+}
+
 export const EditMember: React.FC = () => {
   const { id } = useParams();
   const router = useRouter();
   
   const [ snackBarStatus, setSnackBarStatus ] = React.useState<snackBarStatus>({ is_open: false, message: "", severity: "success" });
+  const [ selectedRequirements, setSelectedRequirements ] = React.useState<string[]>([]);
   const [ requirements, setRequirements ] = React.useState<number[] | undefined>([]);
   const [ openDialog, setOpenDialog ] = React.useState<boolean>(false);
   const [ openDeleteDialog, setOpenDeleteDialog ] = React.useState<{open: boolean, id?: number}>({ open: false, id: undefined });
@@ -51,7 +66,7 @@ export const EditMember: React.FC = () => {
   const errorMessageInDeleteConsolidation = resultDeleteConsolidation.error && "data" in resultDeleteConsolidation.error ? (resultDeleteConsolidation.error.data as { message: string }).message : "Error desconocido";
 
   const memberFormMethods = useForm<MemberForm>();
-  const { control: consolidationControl, handleSubmit: consolidationHandleSubmit } = useForm<consolidationForm>({ defaultValues: { miembro_id: Number(id) ?? undefined } });
+  const { control: consolidationControl, handleSubmit: consolidationHandleSubmit, setValue } = useForm<consolidationForm>({ defaultValues: { miembro_id: Number(id) ?? undefined }});
 
   const onSubmitUpdateMember: SubmitHandler<MemberForm> = (data) => updateMember({ id: Number(id), ...data });
   const onSubmitConsolidation: SubmitHandler<consolidationForm> = async (data) => {
@@ -88,6 +103,16 @@ export const EditMember: React.FC = () => {
   const handleDeleteConsolidation = async () => {
     await deleteConsolidationResults(openDeleteDialog.id as number);
     setOpenDeleteDialog({ open: false, id: undefined });
+  }
+
+  const handleMultipleRequirementsChange = (event: SelectChangeEvent<typeof selectedRequirements>) => {
+    const { target: { value } } = event;
+
+    setSelectedRequirements(
+      typeof value === 'string' ? value.split(',') : value
+    );
+
+    setValue('requisito_ids', typeof value === 'string' ? value.split(',') : value);
   }
 
   React.useEffect(()=>{
@@ -151,6 +176,7 @@ export const EditMember: React.FC = () => {
 
     if(!openDialog) {
       consolidationControl._reset();
+      setSelectedRequirements([]);
     }
 
   }, [openDialog]);
@@ -329,37 +355,45 @@ export const EditMember: React.FC = () => {
 
                 <Controller
                   control={consolidationControl}
-                  name='requisito_id'
-                  rules={{ required: "Campo obligatorio" }}
-                  render={({ field: { value, onChange }, fieldState: { invalid, error } }) => (
+                  name='requisito_ids'
+                  render={({ fieldState: { invalid, error } }) => (
                     <FormControl sx={{ mt: 2 }} error={invalid} fullWidth>
-                      <InputLabel htmlFor="requisito_native">Requisito</InputLabel>
-                      <NativeSelect
-                        inputProps={{ id: "requisito_native" }}
-                        onChange={onChange}
-                        value={value}
+                      <InputLabel id="requisito_multiple" htmlFor="requisito_multiple">Requisito</InputLabel>
+                      <Select
+                        labelId='requisito_multiple'
+                        multiple
+                        onChange={handleMultipleRequirementsChange}
+                        value={selectedRequirements}
+                        input={<OutlinedInput id="requisito_multiple" label="Requisito" />}
+                        renderValue={(selected) => (
+                          <Box sx={{display: 'flex', flexWrap: 'wrap', gap: 0.5}}>
+                            {selected.map((value) => (
+                              <Chip key={value} label={requirementsJson[value]} />
+                            ))}
+                          </Box>
+                        )}
                       >
-                        <option key="-1" value="" hidden></option>
+                        <MenuItem key="-1" value="" hidden></MenuItem>
 
                         {requirementsIsLoading && (
-                          <option key="0" value="">
+                          <MenuItem key="0" value="">
                             Cargando...
-                          </option>
+                          </MenuItem>
                         )}
 
                         {!requirementsError &&
                           requirementsData?.map(({ id, nombre }) => (
-                            <option key={`requisitos-${id}`} value={id}>
+                            <MenuItem key={`requisitos-${id}`} value={id}>
                               {nombre}
-                            </option>
+                            </MenuItem>
                           ))}
 
                         {!requirementsError && requirementsData?.length === 0 && (
-                          <option key="0" value="">
+                          <MenuItem key="0" value="">
                             {"No hay requisitos disponibles para consolidar"}
-                          </option>
+                          </MenuItem>
                         )}  
-                      </NativeSelect>
+                      </Select>
                       <FormHelperText>{error?.message}</FormHelperText>
                     </FormControl>
                   )} 
