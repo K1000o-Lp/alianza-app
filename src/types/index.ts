@@ -143,7 +143,7 @@ export interface MemberForm {
 
 export interface consolidationForm {
   miembro_id: number;
-  requisito_id: number;
+  requisito_ids: any[];
   fecha_consolidacion: Date | dayjs.Dayjs;
 }
 
