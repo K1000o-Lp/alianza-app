@@ -7,7 +7,7 @@ import { useParams } from 'react-router-dom';
 import { useDeleteConsolidationResultsMutation, useGetMembersWithResultsQuery, useGetRequirementsQuery, usePostConsolidationResultsMutation, usePutMembersMutation } from '../../../redux/services';
 import { Controller, FormProvider, SubmitHandler, useForm } from 'react-hook-form';
 import { consolidationForm, MemberForm, snackBarStatus } from '../../../types';
-import { Alert, Button, Chip, Dialog, DialogActions, DialogContent, DialogTitle, Fab, FormControl, FormHelperText, Grid2 as Grid, IconButton, InputLabel, MenuItem, OutlinedInput, Select, SelectChangeEvent, Skeleton, Snackbar } from '@mui/material';
+import { Alert, Button, Chip, Dialog, DialogActions, DialogContent, DialogTitle, Fab, FormControl, FormHelperText, Grid2 as Grid, IconButton, Input, InputLabel, MenuItem, Select, SelectChangeEvent, Skeleton, Snackbar } from '@mui/material';
 import { useRouter } from '../../../router/hooks';
 import { PersonalForm } from '../../AddMember/components/PersonalForm';
 import { ProfessionForm } from '../../AddMember/components/ProfessionForm';
@@ -364,7 +364,7 @@ export const EditMember: React.FC = () => {
                         multiple
                         onChange={handleMultipleRequirementsChange}
                         value={selectedRequirements}
-                        input={<OutlinedInput id="requisito_multiple" label="Requisito" />}
+                        input={<Input id="requisito_multiple" />}
                         renderValue={(selected) => (
                           <Box sx={{display: 'flex', flexWrap: 'wrap', gap: 0.5}}>
                             {selected.map((value) => (
