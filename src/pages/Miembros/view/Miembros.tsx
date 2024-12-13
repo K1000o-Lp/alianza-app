@@ -1,5 +1,5 @@
 import { Box, Button, CircularProgress, Dialog, DialogActions, DialogTitle, FormControl, InputLabel, NativeSelect, Paper, Typography } from "@mui/material";
-import { DataGrid, GridActionsCellItem, GridColDef, GridRowId } from "@mui/x-data-grid";
+import { DataGrid, GridActionsCellItem, GridColDef, GridRowId, GridToolbarContainer } from "@mui/x-data-grid";
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import * as React from "react";
@@ -8,8 +8,9 @@ import { useRouter } from "../../../router/hooks";
 import { useAppSelector } from "../../../redux/store";
 import { filterMembers } from "../../../types";
 import { config } from "../../../config";
-
-
+import FileDownloadIcon from '@mui/icons-material/FileDownload';
+import queryString from "query-string";
+import dayjs from "dayjs";
 
 export const Miembros: React.FC = () => {
   const { user } = useAppSelector((state) => state.auth);
@@ -132,6 +133,31 @@ export const Miembros: React.FC = () => {
     },
   ];
 
+  const CustomToolbar = () => {
+    return (
+      <GridToolbarContainer>
+        <Button color="primary" variant="text" startIcon={<FileDownloadIcon />} onClick={handleClickExportToExcel}>
+          Exportar a Excel
+        </Button>
+      </GridToolbarContainer>
+    );
+  }
+
+  const handleClickExportToExcel = () => {
+    const api = config().BACKEND_URL;
+
+    fetch(`${api}persona/miembros/reportes?${queryString.stringify(filtersState)}`)
+    .then(response => response.blob())
+    .then(blob => {
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `reporte_miembros_${dayjs().format('DD/MM/YYYY HH:mm:ss')}.xlsx`;
+      a.click();
+    })
+    .catch(error => console.error(error));
+  }
+
   return (
     <Box sx={{ width: "100%" }}>
       <Box sx={{ display: "flex", width: "100%", mb: 2 }}>
@@ -200,6 +226,7 @@ export const Miembros: React.FC = () => {
               loading={isLoading}
               getRowId={(row) => row?.id || null}
               slots={{
+                toolbar: CustomToolbar,
                 noRowsOverlay: () => <Box sx={{display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%'}}><Typography>No hay datos</Typography></Box> 
               }}
               initialState={{ pagination: { paginationModel: { pageSize: 100 } } }}
