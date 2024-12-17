@@ -80,7 +80,6 @@ export const ReportesConsolidaciones: React.FC = () => {
   
   const  [openDialog, setOpenDialog] = React.useState<{open: boolean, id?: number}>({ open: false, id: undefined });
 
-
 	const {
     data: zones,
     isLoading: zonesLoading,
@@ -172,6 +171,21 @@ export const ReportesConsolidaciones: React.FC = () => {
     .catch(error => console.error(error));
   }
 
+  const handleClickExportResumeToExcel = () => {
+    const api = config().BACKEND_URL;
+
+    fetch(`${api}persona/estadisticas/reportes?zona=${filtersState?.zona}`)
+    .then(response => response.blob())
+    .then(blob => {
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `estadisticas_resumen_${dayjs().format('DD/MM/YYYY HH:mm:ss')}.xlsx`;
+      a.click();
+    })
+    .catch(error => console.error(error));
+  }
+
 	const columns: GridColDef[] = [
     { 
       field: "id", 
@@ -236,7 +250,10 @@ export const ReportesConsolidaciones: React.FC = () => {
     return (
       <GridToolbarContainer>
         <Button color="primary" variant="text" startIcon={<FileDownloadIcon />} onClick={handleClickExportToExcel}>
-          Exportar a Excel
+          Exportar lista a Excel
+        </Button>
+        <Button color="primary" variant="text" startIcon={<FileDownloadIcon />} onClick={handleClickExportResumeToExcel}>
+          Exportar resumen a Excel
         </Button>
       </GridToolbarContainer>
     );
