@@ -356,6 +356,7 @@ export const EditMember: React.FC = () => {
                 <Controller
                   control={consolidationControl}
                   name='requisito_ids'
+                  rules={{ required: "Campo obligatorio" }}
                   render={({ fieldState: { invalid, error } }) => (
                     <FormControl sx={{ mt: 2 }} error={invalid} fullWidth>
                       <InputLabel id="requisito_multiple" htmlFor="requisito_multiple">Requisito</InputLabel>
