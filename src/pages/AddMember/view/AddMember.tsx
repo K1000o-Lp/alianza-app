@@ -17,11 +17,13 @@ import { ServiceForm } from "../components/ServiceForm";
 import { usePostMembersMutation } from "../../../redux/services";
 import { useRouter } from "../../../router/hooks";
 import { useAppSelector } from "../../../redux/store";
+import { FormationForm } from "../components/FormationForm";
 
 const steps = [
   "Información personal",
   "Historial profesional",
   "Información del servicio",
+  "Procesos de formación",
 ];
 
 function getStepContent(step: number) {
@@ -32,6 +34,8 @@ function getStepContent(step: number) {
       return <ProfessionForm />;
     case 2:
       return <ServiceForm />;
+    case 3:
+      return <FormationForm />
     default:
       throw new Error("Unknown step");
   }
@@ -68,6 +72,9 @@ export const AddMember: React.FC = () => {
         "historial.servicio_id",
         "historial.zona_id",
       ],
+      [
+        "requisito.requisito_ids",
+      ]
     ];
 
     const lastStep = activeStep == formInputs.length - 1 ? true : false;
