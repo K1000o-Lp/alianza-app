@@ -139,6 +139,9 @@ export interface MemberForm {
     servicio_id?: number;
     zona_id: number;
   };
+  requisito: {
+    requisito_ids: number[];
+  }
 }
 
 export interface consolidationForm {
