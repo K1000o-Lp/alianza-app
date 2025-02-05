@@ -3,7 +3,7 @@ import { DataGrid, GridActionsCellItem, GridColDef, GridRowId, GridToolbarContai
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import * as React from "react";
-import { useGetMembersWithLastResultQuery, useGetZonesQuery, usePutMembersMutation } from "../../../redux/services";
+import { useGetMembersWithLastResultQuery, useGetSupervisorsQuery, useGetZonesQuery, usePutMembersMutation } from "../../../redux/services";
 import { useRouter } from "../../../router/hooks";
 import { useAppSelector } from "../../../redux/store";
 import { filterMembers } from "../../../types";
@@ -16,7 +16,8 @@ export const Miembros: React.FC = () => {
   const { user } = useAppSelector((state) => state.auth);
   const  [openDialog, setOpenDialog] = React.useState<{open: boolean, id?: number}>({ open: false, id: undefined });
   const [ filtersState, setFiltersState ] = React.useState<filterMembers>({ 
-		zona: user?.zona !== null ? user?.zona.id as number : 1000,
+		zona: user?.zona !== null ? user?.zona.id as number : 0,
+    supervisor: undefined,
 	});
   
   const {
@@ -24,8 +25,11 @@ export const Miembros: React.FC = () => {
     isLoading: zonesLoading,
     isError: zonesError,
   } = useGetZonesQuery();
+  
+  const { data: supervisors, isLoading: supervisorsLoading, isError: supervisorsError } = useGetSupervisorsQuery({ zona_id: filtersState?.zona }, { refetchOnMountOrArgChange: true });
 
-  const { data, isLoading } = useGetMembersWithLastResultQuery({ zona: filtersState?.zona }, { refetchOnMountOrArgChange: true });
+  const { data, isLoading } = useGetMembersWithLastResultQuery({ zona: filtersState?.zona, supervisor: filtersState.supervisor }, { refetchOnMountOrArgChange: true });
+
 
   const [ updateMember ] = usePutMembersMutation();
 
@@ -45,6 +49,8 @@ export const Miembros: React.FC = () => {
 
   const handleFilterChange = (event: React.ChangeEvent<HTMLSelectElement> | any) => {
 		const { name, value } = event.target;
+
+    console.log(name, value);
 
 		setFiltersState((prevState) => ({
 			...prevState,
@@ -69,7 +75,7 @@ export const Miembros: React.FC = () => {
     { 
       field: "id", 
       headerName: "ID", 
-      width: 90 
+      width: 50 
     },
     { 
       field: "cedula", 
@@ -77,12 +83,12 @@ export const Miembros: React.FC = () => {
       valueGetter: (value) => {
         return value || 'SIN CEDULA';
       },
-      width: 150 
+      width: 120 
     },
     { 
       field: "nombre_completo", 
       headerName: "NOMBRE COMPLETO", 
-      width: 350 
+      width: 300 
     },
     {
       field: "telefono",
@@ -90,28 +96,28 @@ export const Miembros: React.FC = () => {
       valueGetter: (value) => {
         return value || 'SIN TELEFONO';
       },
-      width: 150,
+      width: 120,
     },
     { 
       field: "fecha_nacimiento",
-      headerName: "FECHA DE NACIMIENTO",
+      headerName: "F. NACIMIENTO",
       valueGetter: (value) => {
         return value || 'SIN FECHA';
       },
-      width: 180
+      width: 120
     },
     { 
       field: "edad",
       headerName: "EDAD",
       valueGetter: (value) => {
-        return value || 'NO DISPONIBLE';
+        return value || 'N/S';
       },
-      width: 150
+      width: 70
     },
     { 
       field: "hijos", 
       headerName: "HIJOS", 
-      width: 90 
+      width: 75 
     },
     { 
       field: "ultimo_requisito", 
@@ -120,6 +126,15 @@ export const Miembros: React.FC = () => {
       },
       headerName: "REQUISITO ALCANZADO", 
       width: 200, 
+    },
+    { 
+      field: "historiales", 
+      valueGetter: (value: any) => {
+        const historial = value[0] ?? null;
+        return historial?.supervisor?.nombre_completo || 'SIN SUPERVISOR';
+      },
+      headerName: "SUPERVISOR", 
+      width: 300, 
     },
     {
       field: 'actions',
@@ -171,38 +186,68 @@ export const Miembros: React.FC = () => {
         </Typography>
       </Box>
 
+      <Box sx={{ display: 'flex', width: "100%", mb: 2 }}>
       { user?.zona === null && (
-        <Box sx={{ display: 'flex', width: "100%", mb: 2 }}>
-          <FormControl sx={{ width: 200 }}>
-            <InputLabel htmlFor="zona_native">Zona</InputLabel>
-            <NativeSelect
-              onChange={handleFilterChange}
-              disabled={user?.zona !== null}
-              value={filtersState?.zona}
-              inputProps={{ id: "zona_native", name: "zona" }}
-            >
-              {zonesLoading && (
-                <option key="0" value="">
-                  Cargando...
-                </option>
-              )}
+        <FormControl sx={{ width: 200 }}>
+          <InputLabel htmlFor="zona_native">Zona</InputLabel>
+          <NativeSelect
+            onChange={handleFilterChange}
+            disabled={user?.zona !== null}
+            value={filtersState?.zona}
+            inputProps={{ id: "zona_native", name: "zona" }}
+          >
+            {zonesLoading && (
+              <option key="0" value="">
+                Cargando...
+              </option>
+            )}
 
-              {!zonesError && (
-                <option key={`zones-all`} value={1000}>
-                  {"TODAS"}
-                </option>
-              )}
+            {!zonesError && (
+              <option key={`zones-all`} value={0}>
+                {"TODAS"}
+              </option>
+            )}
 
-              {!zonesError &&
-                zones?.map(({ id, descripcion }) => (
-                  <option key={`zones-${id}`} value={id}>
-                    {descripcion}
-                  </option>
-                ))}
-            </NativeSelect>
-          </FormControl>
-        </Box>
-      ) }
+            {!zonesError &&
+              zones?.map(({ id, descripcion }) => (
+                <option key={`zones-${id}`} value={id}>
+                  {descripcion}
+                </option>
+              ))}
+          </NativeSelect>
+        </FormControl>
+      )}
+
+        <FormControl sx={{ width: 300, ml: 2 }}>
+          <InputLabel htmlFor="supervisor_native">Supervisor</InputLabel>
+          <NativeSelect
+            onChange={handleFilterChange}
+            value={filtersState?.supervisor}
+            inputProps={{ id: "supervisor_native", name: "supervisor" }}
+          >
+            {supervisorsLoading && (
+              <option key="0" value="">
+                Cargando...
+              </option>
+            )}
+
+            {!supervisorsError && (
+              <option key={`supervisor-none`} value={0}>
+                {"NINGUNO"}
+              </option>
+            )}
+
+            {!supervisorsError &&
+              supervisors?.map((supervisor: any) => (
+                <option key={`zones-${supervisor?.miembro_id}`} value={supervisor?.miembro_id}>
+                  {supervisor.nombre_completo}
+                </option>
+              ))}
+          </NativeSelect>
+        </FormControl>
+      </Box>
+
+
 
       <Paper
         sx={{
