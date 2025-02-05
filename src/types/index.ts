@@ -22,6 +22,7 @@ export interface Options {
   id: string;
   cedula: string;
   zona: number;
+  supervisor: number;
   rol: number;
   no_completado: boolean;
   requisito: number;
@@ -138,6 +139,7 @@ export interface MemberForm {
   historial: {
     servicio_id?: number;
     zona_id: number;
+    supervisor_id?: number;
   };
   requisito: {
     requisito_ids: number[];
@@ -189,6 +191,7 @@ export interface snackBarStatus {
 
 export interface filterConsolidation {
   zona: number;
+  supervisor: number;
   no_completado: boolean;
   requisito: number;
   desde: dayjs.Dayjs | null;
@@ -197,4 +200,23 @@ export interface filterConsolidation {
 
 export interface filterMembers {
   zona: number;
+  supervisor?: number;
+}
+
+export interface Supervisor {
+  id: number;
+  zona: Zone,
+  miembro: ResponseMember;
+  fecha_inicio: Date;
+  fecha_finalizacion: Date;
+}
+
+export interface SupervisorOptions {
+  id: number;
+  zona_id: number;
+}
+
+export interface SupervisorForm {
+  zona_id: number;
+  miembro_ids: any[];
 }

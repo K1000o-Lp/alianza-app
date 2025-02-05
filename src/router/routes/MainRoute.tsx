@@ -9,6 +9,7 @@ import { Attendance } from "../../pages/Asistencias/view/Attendance";
 import { Eventos } from "../../pages/Eventos/view/Eventos";
 import { EditMember } from "../../pages/EditMember/view/EditMember";
 import { ReportesConsolidaciones } from "../../pages/ReportesConsolidaciones/view/ReportesConsolidaciones";
+import { Supervisores } from "../../pages/Supervisores/view/Supervisores";
 
 export const MainRoute: RouteObject = {
   path: "/",
@@ -48,5 +49,9 @@ export const MainRoute: RouteObject = {
       path: "reportes/consolidaciones",
       element: <ReportesConsolidaciones />,
     },
+    {
+      path: "supervisores",
+      element: <Supervisores />,
+    }
   ],
 };

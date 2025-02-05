@@ -10,13 +10,15 @@ import {
 import { Controller, useFormContext } from "react-hook-form";
 import {
   useGetServicesQuery,
+  useGetSupervisorsQuery,
   useGetZonesQuery,
 } from "../../../redux/services";
 import { useAppSelector } from "../../../redux/store";
 
 export const ServiceForm: React.FC = () => {
   const { user } = useAppSelector((state) => state.auth);
-  const { control } = useFormContext();
+  const { control, watch } = useFormContext();
+  const zona = watch("historial.zona_id");
 
   const {
     data: zones,
@@ -29,6 +31,12 @@ export const ServiceForm: React.FC = () => {
     isLoading: servicesLoading,
     isError: servicesError,
   } = useGetServicesQuery();
+
+  const {
+    data: supervisors,
+    isLoading: supervisorsLoading,
+    isError: supervisorsError,
+  } = useGetSupervisorsQuery({ zona_id: zona }, { refetchOnMountOrArgChange: true });
 
   return (
     <React.Fragment>
@@ -107,6 +115,50 @@ export const ServiceForm: React.FC = () => {
                         {descripcion}
                       </option>
                     ))}
+                </NativeSelect>
+                <FormHelperText>{error?.message}</FormHelperText>
+              </FormControl>
+            )}
+          />
+        </Grid>
+
+        <Grid size={12} >
+          <Controller
+            control={control}
+            name="historial.supervisor_id"
+            rules={{ required: "Campo obligatorio" }}
+            defaultValue=""
+            render={({
+              field: { onChange, value },
+              fieldState: { invalid, error },
+            }) => (
+              <FormControl error={invalid} fullWidth>
+                <InputLabel htmlFor="supervisor_native">Supervisor</InputLabel>
+                <NativeSelect
+                  inputProps={{ id: "supervisor_native" }}
+                  onChange={onChange}
+                  value={value}
+                >
+                  <option key="-1" value="" hidden></option>
+
+                  {supervisorsLoading && (
+                    <option key="0" value="">
+                      Cargando...
+                    </option>
+                  )}
+
+                  {!supervisorsError &&
+                    supervisors?.map((supervisor: any) => (
+                      <option key={supervisor?.miembro_id} value={supervisor?.miembro_id}>
+                        {supervisor?.nombre_completo}
+                      </option>
+                    ))}
+
+                  {!supervisorsError && supervisors?.length === 0 && (
+                    <option key="0" value="">
+                      No hay supervisores disponibles
+                    </option>
+                  )}
                 </NativeSelect>
                 <FormHelperText>{error?.message}</FormHelperText>
               </FormControl>

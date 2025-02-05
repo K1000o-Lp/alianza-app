@@ -153,13 +153,14 @@ export const EditMember: React.FC = () => {
       telefono: memberData[0].telefono ?? "",
       fecha_nacimiento: dayjs(memberData[0].fecha_nacimiento),
       hijos: memberData[0].hijos,
-      educacion_id: memberData[0].educacion.id ?? undefined,
-      estado_civil_id: memberData[0].estado_civil.id ?? undefined,
-      ocupacion_id: memberData[0].ocupacion.id ?? undefined,
-      discapacidad_id: memberData[0].discapacidad.id ?? undefined,
+      educacion_id: memberData[0].educacion?.id ?? undefined,
+      estado_civil_id: memberData[0].estado_civil?.id ?? undefined,
+      ocupacion_id: memberData[0].ocupacion?.id ?? undefined,
+      discapacidad_id: memberData[0].discapacidad?.id ?? undefined,
       historial: memberData[0].historiales[0] ? { 
         servicio_id: memberData[0].historiales[0].servicio?.id ?? undefined, 
-        zona_id: memberData[0].historiales[0].zona?.id ?? undefined 
+        zona_id: memberData[0].historiales[0].zona?.id ?? undefined, 
+        supervisor_id: memberData[0].historiales[0].supervisor?.id ?? undefined,
       } 
       : undefined } 
       : undefined });

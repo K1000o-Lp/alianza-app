@@ -17,6 +17,9 @@ import {
   ResponseStatistic,
   Service,
   Sesion,
+  Supervisor,
+  SupervisorForm,
+  SupervisorOptions,
   User,
   Zone,
 } from "../../types";
@@ -36,7 +39,7 @@ export const alianzaApi = createApi({
   baseQuery: customBaseQuery,
   tagTypes: [
     'Zones', 'Services', 'Members', 'Results', 'Statistics', 'CivilStatuses', 'Educations',
-    'Disabilities', 'Occupations',
+    'Disabilities', 'Occupations', 'Supervisors'
   ],
   endpoints: (builder) => ({
     iniciarSesion: builder.mutation<Sesion, IniciarSesionForm>({
@@ -121,7 +124,8 @@ export const alianzaApi = createApi({
             telefono,
             fecha_nacimiento,
             hijos,
-            resultados
+            resultados,
+            historiales,
           }) => {
             let ultimo_requisito: string | undefined;
             const edad = obtenerEdad(fecha_nacimiento);
@@ -140,10 +144,11 @@ export const alianzaApi = createApi({
               hijos,
               resultados,
               ultimo_requisito,
+              historiales,
             })
           }
         ),
-        providesTags: ['Members'],
+      providesTags: ['Members'],
     }),
     postMembers: builder.mutation<ResponseMember, MemberForm>({
       query: (newMember) => ({
@@ -226,6 +231,68 @@ export const alianzaApi = createApi({
         body: newEvent,
       }),
     }),
+    getSupervisors: builder.query<Supervisor[], Partial<SupervisorOptions>>({
+      query: (options) => ({
+        url: 'organizacion/supervisores',
+        params: options,
+      }),
+      transformResponse: (response: Supervisor[]) =>
+        response.map(
+          ({
+            id,
+            zona,
+            miembro,
+            fecha_inicio,
+            fecha_finalizacion,
+          }) => {
+            const { id: miembro_id, cedula, nombre_completo, telefono, fecha_nacimiento } = miembro;
+
+            return ({
+              id,
+              zona,
+              miembro,
+              miembro_id,
+              cedula,
+              nombre_completo,
+              telefono,
+              fecha_nacimiento,
+              fecha_inicio,
+              fecha_finalizacion,
+            })
+          }
+        ),
+      providesTags: ['Supervisors'],
+    }),
+    postSupervisors: builder.mutation<Supervisor, SupervisorForm>({
+      query: (newSupervisor) => ({
+        url: 'organizacion/supervisores',
+        method: 'POST',
+        body: newSupervisor,
+        rejectValue: (error: FetchBaseQueryError) => {
+          const errorMessage = (error.data && typeof error.data === 'object' && 'message' in error.data) ? (error.data as { message: string }).message : 'Unknown error';
+          return {
+            message: errorMessage,
+            code: error.status,
+          }
+        },
+      }),
+      invalidatesTags: ['Supervisors'],
+    }),
+    deleteSupervisors: builder.mutation<void, Partial<SupervisorOptions>>({
+      query: ({id, ...rest}) => ({
+        url: `organizacion/supervisores/${id}`,
+        method: 'DELETE',
+        params: rest,
+        rejectValue: (error: FetchBaseQueryError) => {
+          const errorMessage = (error.data && typeof error.data === 'object' && 'message' in error.data) ? (error.data as { message: string }).message : 'Unknown error';
+          return {
+            message: errorMessage,
+            code: error.status,
+          }
+        },
+      }),
+      invalidatesTags: ['Supervisors'],
+    })
   }),
 });
 
@@ -246,4 +313,7 @@ export const {
   useGetOccupationsQuery,
   useGetDisabilitiesQuery,
   usePostEventsMutation,
+  useGetSupervisorsQuery,
+  usePostSupervisorsMutation,
+  useDeleteSupervisorsMutation,
 } = alianzaApi;
