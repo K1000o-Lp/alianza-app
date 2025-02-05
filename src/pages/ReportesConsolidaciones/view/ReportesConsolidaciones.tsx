@@ -1,7 +1,7 @@
 import React from "react";
 import { Box, Button, Checkbox, CircularProgress, Dialog, DialogActions, DialogTitle, FormControl, FormControlLabel, Grid2 as Grid, InputLabel, NativeSelect, Paper, Typography } from "@mui/material";
 import { DataGrid, GridActionsCellItem, GridColDef, GridRowId, GridToolbarContainer } from "@mui/x-data-grid";
-import { useGetMembersWithResultsQuery, useGetRequirementsQuery, useGetZonesQuery, usePutMembersMutation } from "../../../redux/services";
+import { useGetMembersWithResultsQuery, useGetRequirementsQuery, useGetSupervisorsQuery, useGetZonesQuery, usePutMembersMutation } from "../../../redux/services";
 import { DatePicker } from "@mui/x-date-pickers";
 import dayjs from "dayjs";
 import quarterOfYear from 'dayjs/plugin/quarterOfYear';
@@ -32,7 +32,7 @@ export const ReportesConsolidaciones: React.FC = () => {
   const router = useRouter();
   const location = useLocation();
 
-  const { requisito, zona, desde, hasta, no_completado } = queryString.parse(location.search);
+  const { requisito, zona, desde, hasta, no_completado, supervisor } = queryString.parse(location.search);
 
   const obtenerRequisito = () => {
     if(requisito) {
@@ -51,7 +51,15 @@ export const ReportesConsolidaciones: React.FC = () => {
       return user?.zona.id as number;
     }
 
-    return 1000;
+    return 0;
+  }
+
+  const obtenerSupervisor = () => {
+    if(supervisor) {
+      return supervisor as unknown as number;
+    }
+
+    return 0;
   }
 
   const obtenerDesde = () => {
@@ -72,6 +80,7 @@ export const ReportesConsolidaciones: React.FC = () => {
 
 	const [ filtersState, setFiltersState ] = React.useState<filterConsolidation>({ 
 		zona: obtenerZona(), 
+    supervisor: obtenerSupervisor(),
 		requisito: obtenerRequisito(), 
 		no_completado: no_completado == 'true' ? true : false,
 		desde: obtenerDesde(), 
@@ -87,6 +96,12 @@ export const ReportesConsolidaciones: React.FC = () => {
   } = useGetZonesQuery();
 
   const { 
+    data: supervisors, 
+    isLoading: supervisorsLoading, 
+    isError: supervisorsError 
+  } = useGetSupervisorsQuery({ zona_id: filtersState?.zona }, { refetchOnMountOrArgChange: true });
+
+  const { 
 		data: requirementsData, 
 		isLoading: requirementsIsLoading, 
 		isError: requirementsError 
@@ -97,6 +112,7 @@ export const ReportesConsolidaciones: React.FC = () => {
 		isLoading: memberIsLoading,
 	} = useGetMembersWithResultsQuery({ 
     zona: filtersState?.zona, 
+    supervisor: filtersState?.supervisor,
     no_completado: filtersState?.no_completado,
 		requisito: filtersState?.requisito,
 		results_since: filtersState?.desde?.format('YYYY-MM-DD'),
@@ -320,7 +336,7 @@ export const ReportesConsolidaciones: React.FC = () => {
 								)}
 
 								{!zonesError && (
-									<option key={`zones-all`} value={1000}>
+									<option key={`zones-all`} value={0}>
 										{"TODAS"}
 									</option>
 								)}
@@ -334,6 +350,36 @@ export const ReportesConsolidaciones: React.FC = () => {
 							</NativeSelect>
 						</FormControl>
 					</Box>
+
+          <Box>
+            <FormControl sx={{ width: 300, ml: 2 }}>
+              <InputLabel htmlFor="supervisor_native">Supervisor</InputLabel>
+              <NativeSelect
+                onChange={handleFilterChange}
+                value={filtersState?.supervisor}
+                inputProps={{ id: "supervisor_native", name: "supervisor" }}
+              >
+                {supervisorsLoading && (
+                  <option key="0" value="">
+                    Cargando...
+                  </option>
+                )}
+    
+                {!supervisorsError && (
+                  <option key={`supervisor-none`} value={0}>
+                    {"NINGUNO"}
+                  </option>
+                )}
+    
+                {!supervisorsError &&
+                  supervisors?.map((supervisor: any) => (
+                    <option key={`zones-${supervisor?.miembro_id}`} value={supervisor?.miembro_id}>
+                      {supervisor.nombre_completo}
+                    </option>
+                  ))}
+              </NativeSelect>
+            </FormControl>
+          </Box>
 
 					<Box sx={{ marginLeft: { md: 1, xs: 0 } }}>
 						<FormControl sx={{ width: 180 }}>
