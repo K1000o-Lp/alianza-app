@@ -1,15 +1,15 @@
 import * as React from "react";
 import Drawer from "@mui/material/Drawer";
-import DashboardIcon from "@mui/icons-material/Dashboard";
-import PeopleIcon from "@mui/icons-material/People";
 // import AssignmentIcon from "@mui/icons-material/Assignment";
-import AddBoxIcon from "@mui/icons-material/AddBox";
+import { NavList } from "./NavList";
+import { NavItem } from "../../types";
 // import ChecklistIcon from '@mui/icons-material/Checklist';
 //import EventIcon from '@mui/icons-material/Event';
 
-import { NavList } from "./NavList";
-import { NavItem } from "../../types";
-import { Assignment } from "@mui/icons-material";
+import DashboardIcon from "@mui/icons-material/Dashboard";
+import PeopleIcon from "@mui/icons-material/People";
+import AddBoxIcon from "@mui/icons-material/AddBox";
+import Assignment from "@mui/icons-material/Assignment";
 
 interface Props {
   open: boolean;
@@ -44,6 +44,12 @@ export const DrawerMenu: React.FC<Props> = ({ open, toggleDrawer }) => {
       label: "Reporte de Consolidaciones",
       icon: <Assignment />,
       route: "/reportes/consolidaciones",
+    },
+    {
+      key: "/supervisores",
+      label: "Supervisores",
+      icon: <PeopleIcon />,
+      route: "/supervisores",
     }
   ];
 
