@@ -31,7 +31,7 @@ export const CountStatistics: React.FC<Props> = ({
   const zona = user?.zona?.id;
 
   const zonaAnalizada = () => {
-    if(!zona) return 1000;
+    if(!zona) return 0;
 
     return zona;
   }
@@ -63,10 +63,10 @@ export const CountStatistics: React.FC<Props> = ({
           {title}
         </Typography>
         <Typography component="p" variant="h4">
-          {data?.cantidad}
+          {data?.cantidad ?? 0}
         </Typography>
         <Typography color="text.secondary" sx={{ flex: 1 }}>
-          {`de ${data?.total_miembros} miembros`}
+          {`de ${data?.total_miembros ?? 0} miembros`}
         </Typography>
       </Paper>
     </Link>
