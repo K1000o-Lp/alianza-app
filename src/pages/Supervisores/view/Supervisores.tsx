@@ -195,8 +195,9 @@ export const Supervisores: React.FC = () => {
         </Typography>
       </Box>
 
-      { user?.zona === null && (
-        <Box sx={{ display: 'flex', width: "100%", mb: 2, justifyContent: 'space-between' }}>
+      
+      <Box sx={{ display: 'flex', width: "100%", mb: 2, justifyContent: user?.zona === null ? 'space-between' : 'flex-end', alignItems: 'end' }}>
+        { user?.zona === null && (
           <FormControl sx={{ width: 200 }}>
             <InputLabel htmlFor="zona_native">Zona</InputLabel>
             <NativeSelect
@@ -225,8 +226,10 @@ export const Supervisores: React.FC = () => {
                 ))}
             </NativeSelect>
           </FormControl>
+        ) }
+
+        <Box>
           <Button
-            size="small"
             variant="contained"
             startIcon={<AddIcon />}
             onClick={handleOpenSupervisorDialog}
@@ -234,8 +237,8 @@ export const Supervisores: React.FC = () => {
             Crear Supervisor
           </Button>
         </Box>
-      ) }
-
+      </Box>
+      
       <Paper
         sx={{
           display: "flex",
@@ -297,7 +300,7 @@ export const Supervisores: React.FC = () => {
           {"Agregar Supervisor"}
         </DialogTitle>
 
-        <DialogContent sx={{ maxWidth: 500, minWidth: 200 }}>
+        <DialogContent sx={{ minWidth: 250, maxWidth: 500 }}>
           <form id="supervisor_create_form" onSubmit={supervisorHandleSubmit(onSubmitSupervisor)}>
             <Controller
               control={supervisorControl}
