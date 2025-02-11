@@ -50,8 +50,6 @@ export const Miembros: React.FC = () => {
   const handleFilterChange = (event: React.ChangeEvent<HTMLSelectElement> | any) => {
 		const { name, value } = event.target;
 
-    console.log(name, value);
-
 		setFiltersState((prevState) => ({
 			...prevState,
 			[name]: value,
@@ -222,7 +220,7 @@ export const Miembros: React.FC = () => {
           <InputLabel htmlFor="supervisor_native">Supervisor</InputLabel>
           <NativeSelect
             onChange={handleFilterChange}
-            value={filtersState?.supervisor}
+            value={filtersState?.supervisor ?? 0}
             inputProps={{ id: "supervisor_native", name: "supervisor" }}
           >
             {supervisorsLoading && (
