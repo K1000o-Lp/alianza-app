@@ -1,10 +1,10 @@
-import { Alert, Box, Button, Chip, CircularProgress, Dialog, DialogActions, DialogContent, DialogTitle, FormControl, FormHelperText, Input, InputLabel, MenuItem, NativeSelect, Paper, Select, SelectChangeEvent, Snackbar, Typography } from "@mui/material";
+import { Alert, Autocomplete, Box, Button, Chip, CircularProgress, Dialog, DialogActions, DialogContent, DialogTitle, FormControl, InputLabel, NativeSelect, Paper, Snackbar, TextField, Typography } from "@mui/material";
 import { DataGrid, GridActionsCellItem, GridColDef } from "@mui/x-data-grid";
 import DeleteIcon from '@mui/icons-material/Delete';
 import * as React from "react";
 import {  useDeleteSupervisorsMutation, useGetMembersWithLastResultQuery, useGetSupervisorsQuery, useGetZonesQuery, usePostSupervisorsMutation } from "../../../redux/services";
 import { useAppSelector } from "../../../redux/store";
-import { filterMembers, snackBarStatus, SupervisorForm } from "../../../types";
+import { filterMembers, ResponseMember, snackBarStatus, SupervisorForm } from "../../../types";
 
 import AddIcon from "@mui/icons-material/Add";
 import { Controller, SubmitHandler, useForm } from "react-hook-form";
@@ -12,7 +12,7 @@ import { LoadingButton } from "@mui/lab";
 
 export const Supervisores: React.FC = () => {
   const { user } = useAppSelector((state) => state.auth);
-  const [ selectedMembers, setSelectedMembers ] = React.useState<string[]>([]);
+  const [ selectedMembers, setSelectedMembers ] = React.useState<ResponseMember[]>([]);
   const [ snackBarStatus, setSnackBarStatus ] = React.useState<snackBarStatus>({ is_open: false, message: "", severity: "success" });
   const [ openSupervisorDialog, setOpenSupervisorDialog ] = React.useState<boolean>(false);
   const [ deleteDialog, setDeleteDialog ] = React.useState<{open: boolean, id?: number}>({ open: false, id: undefined });
@@ -31,7 +31,7 @@ export const Supervisores: React.FC = () => {
     isLoading: supervisorsLoading,
   } = useGetSupervisorsQuery({ zona_id: filtersState.zona }, { refetchOnMountOrArgChange: true });
 
-  const { data: members, isLoading: membersLoading, isError: membersError } = useGetMembersWithLastResultQuery({ zona: filtersState?.zona }, { refetchOnMountOrArgChange: true });
+  const { data: members } = useGetMembersWithLastResultQuery({ zona: filtersState?.zona }, { refetchOnMountOrArgChange: true });
 
   const [ postSupervisor, postSupervisorResult ] = usePostSupervisorsMutation();
   const errorMessageInPostSupervisor = postSupervisorResult.error && "data" in postSupervisorResult.error ? (postSupervisorResult.error.data as { message: string }).message : "Error desconocido";
@@ -40,11 +40,13 @@ export const Supervisores: React.FC = () => {
   const [ deleteSupervisor, deleteSupervisorResult ] = useDeleteSupervisorsMutation();
   const errorMessageInDeleteSupervisor = deleteSupervisorResult.error && "data" in deleteSupervisorResult.error ? (deleteSupervisorResult.error.data as { message: string }).message : "Error desconocido";
 
-  const { control: supervisorControl, handleSubmit: supervisorHandleSubmit, setValue: supervisorSetValue } = useForm<SupervisorForm>({ defaultValues: { zona_id: filtersState.zona ?? undefined } });
+  const { control: supervisorControl, handleSubmit: supervisorHandleSubmit, setValue: supervisorSetValue, reset: resetSupervisorForm } = useForm<SupervisorForm>({ defaultValues: { zona_id: filtersState.zona ?? undefined } });
 
   const onSubmitSupervisor: SubmitHandler<SupervisorForm> = async (data) => {
     await postSupervisor(data);
     setOpenSupervisorDialog(false);
+    setSelectedMembers([]);
+    resetSupervisorForm();
   }
   
   const handleFilterChange = (event: React.ChangeEvent<HTMLSelectElement> | any) => {
@@ -94,14 +96,10 @@ export const Supervisores: React.FC = () => {
     setOpenSupervisorDialog(false);
   }
 
-  const handleMultipleMembersChange = (event: SelectChangeEvent<typeof selectedMembers>) => {
-    const { target: { value } } = event;
+  const handleMultipleMembersChange = (event: React.SyntheticEvent<Element, Event>, value: ResponseMember[]) => {
+    setSelectedMembers(value);
 
-    setSelectedMembers(
-      typeof value === 'string' ? value.split(',') : value
-    );
-
-    supervisorSetValue('miembro_ids', typeof value === 'string' ? value.split(',') : value);
+    supervisorSetValue('miembro_ids', value.map((member) => member.id));
   }
 
   React.useEffect(()=> {
@@ -316,43 +314,35 @@ export const Supervisores: React.FC = () => {
               rules={{ required: "Campo obligatorio" }}
               render={({ fieldState: { invalid, error } }) => (
                 <FormControl sx={{ mt: 2 }} error={invalid} fullWidth>
-                  <InputLabel id="miembro_multiple" htmlFor="miembro_multiple">Miembro</InputLabel>
-                  <Select
-                    labelId='miembro_multiple'
+                  <Autocomplete
                     multiple
-                    onChange={handleMultipleMembersChange}
+                    id="multiple-members"
+                    options={members || []}
+                    disableCloseOnSelect
+                    getOptionKey={(option) => option.id}
+                    getOptionLabel={(option) => option.nombre_completo}
                     value={selectedMembers}
-                    input={<Input id="miembro_multiple" />}
-                    renderValue={(selected) => (
-                      <Box sx={{display: 'flex', flexWrap: 'wrap', gap: 0.5}}>
-                        {selected.map((value) => (
-                          <Chip key={value} label={members?.find((member) => member?.id === Number(value))?.nombre_completo} />
-                        ))}
-                      </Box>
+                    onChange={handleMultipleMembersChange}
+                    renderTags={(value, getTagProps) =>
+                      value.map((option, index) => (
+                        <Chip
+                          variant="outlined"
+                          label={option.nombre_completo}
+                          {...getTagProps({ index })}
+                        />
+                      ))
+                    }
+                    renderInput={(params) => (
+                      <TextField
+                        {...params}
+                        variant="standard"
+                        label="Miembros"
+                        placeholder="Miembros"
+                        error={invalid}
+                        helperText={error?.message}
+                      />
                     )}
-                  >
-                    <MenuItem key="-1" value="" hidden></MenuItem>
-
-                    {membersLoading && (
-                      <MenuItem key="0" value="">
-                        Cargando...
-                      </MenuItem>
-                    )}
-
-                    {!membersError &&
-                      members?.map(({ id, nombre_completo }) => (
-                        <MenuItem key={`miembros-${id}`} value={id}>
-                          {nombre_completo}
-                        </MenuItem>
-                      ))}
-
-                    {!membersError && members?.length === 0 && (
-                      <MenuItem key="0" value="">
-                        {"No hay miembros disponibles"}
-                      </MenuItem>
-                    )}  
-                  </Select>
-                  <FormHelperText>{error?.message}</FormHelperText>
+                  />
                 </FormControl>
               )} 
             />
