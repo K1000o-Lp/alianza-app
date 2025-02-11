@@ -96,7 +96,7 @@ export const Supervisores: React.FC = () => {
     setOpenSupervisorDialog(false);
   }
 
-  const handleMultipleMembersChange = (event: React.SyntheticEvent<Element, Event>, value: ResponseMember[]) => {
+  const handleMultipleMembersChange = (___: any, value: ResponseMember[]) => {
     setSelectedMembers(value);
 
     supervisorSetValue('miembro_ids', value.map((member) => member.id));
