@@ -220,3 +220,8 @@ export interface SupervisorForm {
   zona_id: number;
   miembro_ids: any[];
 }
+
+export interface ScrollPosition {
+  top: number;
+  left: number;
+}
