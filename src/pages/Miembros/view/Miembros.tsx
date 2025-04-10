@@ -153,16 +153,20 @@ export const Miembros: React.FC = () => {
   React.useEffect(() => {
     const scrollStorage = sessionStorage.getItem('scrollPosition');
     const scrollObject = JSON.parse(scrollStorage || '{}') as ScrollPosition;
-    sessionStorage.removeItem('scrollPosition');
     
     if(!scrollStorage) {
       return;
     }
+    
+    if(isLoading) {
+      return;
+    }
 
+    sessionStorage.removeItem('scrollPosition');
     setTimeout(() => {
       apiRef.current.scroll(scrollObject);
     }, 0);
-  }, [apiRef]);
+  }, [apiRef, isLoading]);
 
   const CustomToolbar = () => {
     return (
