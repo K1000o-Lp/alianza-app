@@ -1,12 +1,12 @@
 import { Box, Button, CircularProgress, Dialog, DialogActions, DialogTitle, FormControl, InputLabel, NativeSelect, Paper, Typography } from "@mui/material";
-import { DataGrid, GridActionsCellItem, GridColDef, GridRowId, GridToolbarContainer } from "@mui/x-data-grid";
+import { DataGrid, GridActionsCellItem, GridColDef, GridRowId, GridToolbarContainer, useGridApiRef } from "@mui/x-data-grid";
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import * as React from "react";
 import { useGetMembersWithLastResultQuery, useGetSupervisorsQuery, useGetZonesQuery, usePutMembersMutation } from "../../../redux/services";
 import { useRouter } from "../../../router/hooks";
 import { useAppSelector } from "../../../redux/store";
-import { filterMembers } from "../../../types";
+import { filterMembers, ScrollPosition } from "../../../types";
 import { config } from "../../../config";
 import FileDownloadIcon from '@mui/icons-material/FileDownload';
 import queryString from "query-string";
@@ -14,7 +14,7 @@ import dayjs from "dayjs";
 
 export const Miembros: React.FC = () => {
   const { user } = useAppSelector((state) => state.auth);
-  const  [openDialog, setOpenDialog] = React.useState<{open: boolean, id?: number}>({ open: false, id: undefined });
+  const [ openDialog, setOpenDialog ] = React.useState<{open: boolean, id?: number}>({ open: false, id: undefined });
   const [ filtersState, setFiltersState ] = React.useState<filterMembers>({ 
 		zona: user?.zona !== null ? user?.zona.id as number : 0,
     supervisor: undefined,
@@ -30,13 +30,17 @@ export const Miembros: React.FC = () => {
 
   const { data, isLoading } = useGetMembersWithLastResultQuery({ zona: filtersState?.zona, supervisor: filtersState.supervisor }, { refetchOnMountOrArgChange: true });
 
-
   const [ updateMember ] = usePutMembersMutation();
 
   const router = useRouter();
 
+  const apiRef = useGridApiRef();
+
   const editMember = (id:  GridRowId) => {
     if(!id) return;
+
+    const scrollPosition = apiRef.current.getScrollPosition();
+    sessionStorage.setItem('scrollPosition', JSON.stringify(scrollPosition));
 
     router.push(`${id}/editar`);
   }
@@ -146,6 +150,20 @@ export const Miembros: React.FC = () => {
     },
   ];
 
+  React.useEffect(() => {
+    const scrollStorage = sessionStorage.getItem('scrollPosition');
+    const scrollObject = JSON.parse(scrollStorage || '{}') as ScrollPosition;
+    sessionStorage.removeItem('scrollPosition');
+    
+    if(!scrollStorage) {
+      return;
+    }
+
+    setTimeout(() => {
+      apiRef.current.scroll(scrollObject);
+    }, 0);
+  }, [apiRef]);
+
   const CustomToolbar = () => {
     return (
       <GridToolbarContainer>
@@ -245,8 +263,6 @@ export const Miembros: React.FC = () => {
         </FormControl>
       </Box>
 
-
-
       <Paper
         sx={{
           display: "flex",
@@ -264,6 +280,7 @@ export const Miembros: React.FC = () => {
           : Array.isArray(data) && data.length > 0 
           ? (
             <DataGrid
+              apiRef={apiRef}
               rows={data ?? []}
               columns={columns}
               loading={isLoading}
