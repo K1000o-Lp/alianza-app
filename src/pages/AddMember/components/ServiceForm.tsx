@@ -126,7 +126,6 @@ export const ServiceForm: React.FC = () => {
           <Controller
             control={control}
             name="historial.supervisor_id"
-            rules={{ required: "Campo obligatorio" }}
             defaultValue=""
             render={({
               field: { onChange, value },
