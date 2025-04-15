@@ -39,9 +39,6 @@ export const Miembros: React.FC = () => {
   const editMember = (id:  GridRowId) => {
     if(!id) return;
 
-    const scrollPosition = apiRef.current.getScrollPosition();
-    sessionStorage.setItem('scrollPosition', JSON.stringify(scrollPosition));
-
     router.push(`${id}/editar`);
   }
 
@@ -151,8 +148,25 @@ export const Miembros: React.FC = () => {
   ];
 
   React.useEffect(() => {
+    const virtualScroller = document.querySelector('.MuiDataGrid-virtualScroller');
+
+    if (!virtualScroller) return;
+
+    virtualScroller.addEventListener('scroll', () => {
+      const scrollPosition = apiRef.current.getScrollPosition();
+      const currentPage = apiRef.current.state.pagination.paginationModel.page;
+      console.log('scrollPosition', scrollPosition);
+      console.log('currentPage', currentPage);
+      sessionStorage.setItem('currentPage', JSON.stringify(currentPage));
+      sessionStorage.setItem('scrollPosition', JSON.stringify(scrollPosition));
+    });
+  }, [])
+
+  React.useEffect(() => {
     const scrollStorage = sessionStorage.getItem('scrollPosition');
+    const currentPageStorage = sessionStorage.getItem('currentPage');
     const scrollObject = JSON.parse(scrollStorage || '{}') as ScrollPosition;
+    const currentPage = JSON.parse(currentPageStorage || '{}') as number;
     
     if(!scrollStorage) {
       return;
@@ -163,8 +177,10 @@ export const Miembros: React.FC = () => {
     }
 
     sessionStorage.removeItem('scrollPosition');
+    sessionStorage.removeItem('currentPage');
     setTimeout(() => {
       apiRef.current.scroll(scrollObject);
+      apiRef.current.setPage(currentPage);
     }, 0);
   }, [apiRef, isLoading]);
 
