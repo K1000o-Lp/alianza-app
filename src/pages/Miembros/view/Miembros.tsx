@@ -155,8 +155,6 @@ export const Miembros: React.FC = () => {
     virtualScroller.addEventListener('scroll', () => {
       const scrollPosition = apiRef.current.getScrollPosition();
       const currentPage = apiRef.current.state.pagination.paginationModel.page;
-      console.log('scrollPosition', scrollPosition);
-      console.log('currentPage', currentPage);
       sessionStorage.setItem('currentPage', JSON.stringify(currentPage));
       sessionStorage.setItem('scrollPosition', JSON.stringify(scrollPosition));
     });
@@ -176,8 +174,6 @@ export const Miembros: React.FC = () => {
       return;
     }
 
-    sessionStorage.removeItem('scrollPosition');
-    sessionStorage.removeItem('currentPage');
     setTimeout(() => {
       apiRef.current.scroll(scrollObject);
       apiRef.current.setPage(currentPage);
