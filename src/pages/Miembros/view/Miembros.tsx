@@ -1,16 +1,15 @@
-import { Box, Button, CircularProgress, Dialog, DialogActions, DialogTitle, FormControl, InputLabel, NativeSelect, Paper, Typography } from "@mui/material";
-import { DataGrid, GridActionsCellItem, GridColDef, GridRowId, GridToolbarContainer, useGridApiRef } from "@mui/x-data-grid";
-import EditIcon from '@mui/icons-material/Edit';
-import DeleteIcon from '@mui/icons-material/Delete';
+import { Box, Button, Dialog, DialogActions, DialogTitle, FormControl, InputLabel, NativeSelect, Typography } from "@mui/material";
 import * as React from "react";
-import { useGetMembersWithLastResultQuery, useGetSupervisorsQuery, useGetZonesQuery, usePutMembersMutation } from "../../../redux/services";
+import { useGetMembersWithResultsAndPaginationInfiniteQuery, useGetSupervisorsQuery, useGetZonesQuery, usePutMembersMutation } from "../../../redux/services";
 import { useRouter } from "../../../router/hooks";
 import { useAppSelector } from "../../../redux/store";
-import { filterMembers, ScrollPosition } from "../../../types";
+import { filterMembers } from "../../../types";
 import { config } from "../../../config";
 import FileDownloadIcon from '@mui/icons-material/FileDownload';
 import queryString from "query-string";
 import dayjs from "dayjs";
+import { ListaMiembros } from "../components/ListaMiembros";
+import { ActionContext } from "../components/ActionContext";
 
 export const Miembros: React.FC = () => {
   const { user } = useAppSelector((state) => state.auth);
@@ -18,6 +17,8 @@ export const Miembros: React.FC = () => {
   const [ filtersState, setFiltersState ] = React.useState<filterMembers>({ 
 		zona: user?.zona !== null ? user?.zona.id as number : 0,
     supervisor: undefined,
+    limite: 24,
+    desplazamiento: 0,
 	});
   
   const {
@@ -28,24 +29,22 @@ export const Miembros: React.FC = () => {
   
   const { data: supervisors, isLoading: supervisorsLoading, isError: supervisorsError } = useGetSupervisorsQuery({ zona_id: filtersState?.zona }, { refetchOnMountOrArgChange: true });
 
-  const { data, isLoading } = useGetMembersWithLastResultQuery({ zona: filtersState?.zona, supervisor: filtersState.supervisor }, { refetchOnMountOrArgChange: true });
+  const { data, isFetching, fetchNextPage, refetch } = useGetMembersWithResultsAndPaginationInfiniteQuery({ ...filtersState }, { refetchOnMountOrArgChange: true });
 
   const [ updateMember ] = usePutMembersMutation();
 
   const router = useRouter();
 
-  const apiRef = useGridApiRef();
-
-  const editMember = (id:  GridRowId) => {
+  const editMember = (id:  number) => {
     if(!id) return;
 
     router.push(`${id}/editar`);
   }
 
-  const deleteMember = (id: number) => {
+  const deleteMember = async (id: number) => {
     if(!id) return;
-
-    updateMember({ id, historial: { zona_id: config().ZONA_0 } });
+    await updateMember({ id, historial: { zona_id: config().ZONA_0 } });
+    refetch();
   } 
 
   const handleFilterChange = (event: React.ChangeEvent<HTMLSelectElement> | any) => {
@@ -70,125 +69,23 @@ export const Miembros: React.FC = () => {
     handleCloseDialog();
   }
 
-  const columns: GridColDef[] = [
-    { 
-      field: "id", 
-      headerName: "ID", 
-      width: 50 
-    },
-    { 
-      field: "cedula", 
-      headerName: "CEDULA", 
-      valueGetter: (value) => {
-        return value || 'SIN CEDULA';
-      },
-      width: 120 
-    },
-    { 
-      field: "nombre_completo", 
-      headerName: "NOMBRE COMPLETO", 
-      width: 300 
-    },
-    {
-      field: "telefono",
-      headerName: "TELEFONO",
-      valueGetter: (value) => {
-        return value || 'SIN TELEFONO';
-      },
-      width: 120,
-    },
-    { 
-      field: "fecha_nacimiento",
-      headerName: "F. NACIMIENTO",
-      valueGetter: (value) => {
-        return value || 'SIN FECHA';
-      },
-      width: 120
-    },
-    { 
-      field: "edad",
-      headerName: "EDAD",
-      valueGetter: (value) => {
-        return value || 'N/S';
-      },
-      width: 70
-    },
-    { 
-      field: "hijos", 
-      headerName: "HIJOS", 
-      width: 75 
-    },
-    { 
-      field: "ultimo_requisito", 
-      valueGetter: (value) => {
-        return value || 'SIN PROGRESO';
-      },
-      headerName: "REQUISITO ALCANZADO", 
-      width: 200, 
-    },
-    { 
-      field: "historiales", 
-      valueGetter: (value: any) => {
-        const historial = value[0] ?? null;
-        return historial?.supervisor?.nombre_completo || 'SIN SUPERVISOR';
-      },
-      headerName: "SUPERVISOR", 
-      width: 300, 
-    },
-    {
-      field: 'actions',
-      type: 'actions',
-      width: 100,
-      getActions: (params) => [
-        <GridActionsCellItem icon={<EditIcon />} label="Edit" onClick={() => editMember(params?.id)} />,
-        <GridActionsCellItem icon={<DeleteIcon />} label="Delete" onClick={() => handleOpenDialog(params?.id as number)} />,
-      ],
-  
-    },
-  ];
-
   React.useEffect(() => {
-    const virtualScroller = document.querySelector('.MuiDataGrid-virtualScroller');
+    const handleScroll = async () => {
+      // Check if we're near the bottom of the page
+      const scrollPosition = window.scrollY + window.innerHeight;
+      const nearBottom = scrollPosition >= document.body.scrollHeight - 200; // 200px from bottom
+      // Check if we have data and are near the bottom
+      if (nearBottom && data?.pages && data?.pages?.length > 0 && !isFetching) {
+        await fetchNextPage();
+      }
+    };
 
-    if (!virtualScroller) return;
-
-    virtualScroller.addEventListener('scroll', () => {
-      const scrollPosition = apiRef.current.getScrollPosition();
-      const currentPage = apiRef.current.state.pagination.paginationModel.page;
-      sessionStorage.setItem('currentPage', JSON.stringify(currentPage));
-      sessionStorage.setItem('scrollPosition', JSON.stringify(scrollPosition));
-    });
-  }, [])
-
-  React.useEffect(() => {
-    const scrollStorage = sessionStorage.getItem('scrollPosition');
-    const currentPageStorage = sessionStorage.getItem('currentPage');
-    const scrollObject = JSON.parse(scrollStorage || '{}') as ScrollPosition;
-    const currentPage = JSON.parse(currentPageStorage || '{}') as number;
+    window.addEventListener('scroll', handleScroll);
     
-    if(!scrollStorage) {
-      return;
-    }
-    
-    if(isLoading) {
-      return;
-    }
-
-    setTimeout(() => {
-      apiRef.current.scroll(scrollObject);
-      apiRef.current.setPage(currentPage);
-    }, 0);
-  }, [apiRef, isLoading]);
-
-  const CustomToolbar = () => {
-    return (
-      <GridToolbarContainer>
-        <Button color="primary" variant="text" startIcon={<FileDownloadIcon />} onClick={handleClickExportToExcel}>
-          Exportar a Excel
-        </Button>
-      </GridToolbarContainer>
-    );
-  }
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+    };
+  }, [data?.pages, isFetching]);
 
   const handleClickExportToExcel = () => {
     const api = config().BACKEND_URL;
@@ -218,37 +115,37 @@ export const Miembros: React.FC = () => {
         </Typography>
       </Box>
 
-      <Box sx={{ display: 'flex', width: "100%", mb: 2 }}>
-      { user?.zona === null && (
-        <FormControl sx={{ width: 200 }}>
-          <InputLabel htmlFor="zona_native">Zona</InputLabel>
-          <NativeSelect
-            onChange={handleFilterChange}
-            disabled={user?.zona !== null}
-            value={filtersState?.zona}
-            inputProps={{ id: "zona_native", name: "zona" }}
-          >
-            {zonesLoading && (
-              <option key="0" value="">
-                Cargando...
-              </option>
-            )}
-
-            {!zonesError && (
-              <option key={`zones-all`} value={0}>
-                {"TODAS"}
-              </option>
-            )}
-
-            {!zonesError &&
-              zones?.map(({ id, descripcion }) => (
-                <option key={`zones-${id}`} value={id}>
-                  {descripcion}
+      <Box sx={{ display: 'flex', width: "100%", mb: 2, alignItems: 'end' }}>
+        { user?.zona === null && (
+          <FormControl sx={{ width: 200 }}>
+            <InputLabel htmlFor="zona_native">Zona</InputLabel>
+            <NativeSelect
+              onChange={handleFilterChange}
+              disabled={user?.zona !== null}
+              value={filtersState?.zona}
+              inputProps={{ id: "zona_native", name: "zona" }}
+            >
+              {zonesLoading && (
+                <option key="0" value="">
+                  Cargando...
                 </option>
-              ))}
-          </NativeSelect>
-        </FormControl>
-      )}
+              )}
+
+              {!zonesError && (
+                <option key={`zones-all`} value={0}>
+                  {"TODAS"}
+                </option>
+              )}
+
+              {!zonesError &&
+                zones?.map(({ id, descripcion }) => (
+                  <option key={`zones-${id}`} value={id}>
+                    {descripcion}
+                  </option>
+                ))}
+            </NativeSelect>
+          </FormControl>
+        )}
 
         <FormControl sx={{ width: 300, ml: 2 }}>
           <InputLabel htmlFor="supervisor_native">Supervisor</InputLabel>
@@ -277,45 +174,24 @@ export const Miembros: React.FC = () => {
               ))}
           </NativeSelect>
         </FormControl>
+        
+        <Box>
+          <Button
+            variant="contained"
+            color="primary"
+            size="medium"
+            onClick={handleClickExportToExcel}
+            sx={{ ml: 2 }}
+            startIcon={<FileDownloadIcon /> }
+          >
+            Exportar a Excel
+          </Button>
+        </Box>
       </Box>
 
-      <Paper
-        sx={{
-          display: "flex",
-          height: "calc(100vh - 240px)",
-          flexDirection: "column",
-        }}
-      >
-        {
-          isLoading 
-          ? (
-            <Box sx={{display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%'}}>
-              <CircularProgress />
-            </Box>
-          )
-          : Array.isArray(data) && data.length > 0 
-          ? (
-            <DataGrid
-              apiRef={apiRef}
-              rows={data ?? []}
-              columns={columns}
-              loading={isLoading}
-              getRowId={(row) => row?.id || null}
-              slots={{
-                toolbar: CustomToolbar,
-                noRowsOverlay: () => <Box sx={{display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%'}}><Typography>No hay datos</Typography></Box> 
-              }}
-              initialState={{ pagination: { paginationModel: { pageSize: 100 } } }}
-              disableRowSelectionOnClick
-            />
-          )
-          : (
-            <Box sx={{display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%'}}>
-              <Typography>No hay datos</Typography>
-            </Box>
-          )
-        }
-      </Paper>
+      <ActionContext.Provider value={{ editMember, handleOpenDialog }}>
+        <ListaMiembros miembros={(data?.pages?.flat() || [])} loading={isFetching} />
+      </ActionContext.Provider>
 
       <Dialog
         open={openDialog.open}

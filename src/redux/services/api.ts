@@ -38,7 +38,7 @@ export const alianzaApi = createApi({
   reducerPath: "alianzaApi",
   baseQuery: customBaseQuery,
   tagTypes: [
-    'Zones', 'Services', 'Members', 'Results', 'Statistics', 'CivilStatuses', 'Educations',
+    'Zones', 'Services', 'Members', 'Results', 'InfiniteResults', 'Statistics', 'CivilStatuses', 'Educations',
     'Disabilities', 'Occupations', 'Supervisors'
   ],
   endpoints: (builder) => ({
@@ -74,6 +74,19 @@ export const alianzaApi = createApi({
         params: options,
       }),
       providesTags: ['Statistics'],
+    }),
+    getMembersWithResultsAndPagination: builder.infiniteQuery<ResponseMember[], { desplazamiento?: number; limite?: number }, number>({
+      infiniteQueryOptions: {
+        initialPageParam: 0,
+        getNextPageParam: (_, __, lastPageParam, ____) =>
+          lastPageParam + 24,
+      },
+      query: ({ queryArg, pageParam }) => ({
+        url: 'persona/miembros',
+        params: { ...queryArg, desplazamiento: pageParam },
+      }),
+      providesTags: (result, _, { desplazamiento }) =>
+        result ? [{ type: 'InfiniteResults', id: desplazamiento }] : [],
     }),
     getMembersWithResults: builder.query<ResponseMember[], Partial<Options>>({
       query: (options) => ({
@@ -163,7 +176,7 @@ export const alianzaApi = createApi({
           }
         }
       }),
-      invalidatesTags: ['Members', 'Statistics'],
+      invalidatesTags: ['Members', 'Statistics', 'InfiniteResults'],
     }),
     putMembers: builder.mutation<ResponseMember, Partial<MemberForm>>({
       query: ({ id, ...newMember }) => ({
@@ -178,7 +191,9 @@ export const alianzaApi = createApi({
           }
         }
       }),
-      invalidatesTags: ['Results', 'Members'],
+      invalidatesTags: (_, __, { pageParam }) => {
+        return ['Results', 'Members', { type: 'InfiniteResults', id: pageParam }];
+      }
     }),
     postConsolidationResults: builder.mutation<ResponseResultado, consolidationForm>({
       query: (newConsolidation) => ({
@@ -193,10 +208,12 @@ export const alianzaApi = createApi({
           }
         }
       }),
-      invalidatesTags: ['Results', 'Members'],
+      invalidatesTags: (_, __, { pageParam }) => {
+        return ['Results', 'Members', { type: 'InfiniteResults', id: pageParam }];
+      }
     }),
-    deleteConsolidationResults: builder.mutation<Object, number>({
-      query: (id) => ({
+    deleteConsolidationResults: builder.mutation<Object, {id: number; pageParam: number;}>({
+      query: ({ id }) => ({
         url: `formacion/resultados/${id}`,
         method: 'DELETE',
         rejectValue: (error: FetchBaseQueryError) => {
@@ -207,7 +224,9 @@ export const alianzaApi = createApi({
           }
         }
       }),
-      invalidatesTags: ['Results', 'Members'],
+      invalidatesTags: (_, __, { pageParam}) => {
+        return ['Results', 'Members', { type: 'InfiniteResults', id: pageParam }];
+      }
     }),
     getRequirements: builder.query<Requirement[], Partial<RequirementsOption> | null | void >({
       query: (options) => ({ url: "formacion/requisitos", params: options || undefined }),
@@ -300,6 +319,7 @@ export const {
   useIniciarSesionMutation,
   useGetCountStatisticsQuery,
   useGetMembersWithResultsQuery,
+  useGetMembersWithResultsAndPaginationInfiniteQuery,
   useGetMembersWithLastResultQuery,
   usePostConsolidationResultsMutation,
   useDeleteConsolidationResultsMutation,

@@ -144,12 +144,14 @@ export interface MemberForm {
   requisito: {
     requisito_ids: number[];
   }
+  pageParam: number;
 }
 
 export interface consolidationForm {
   miembro_id: number;
   requisito_ids: any[];
   fecha_consolidacion: Date | dayjs.Dayjs;
+  pageParam?: number;
 }
 
 export interface EventForm {
@@ -201,6 +203,8 @@ export interface filterConsolidation {
 export interface filterMembers {
   zona: number;
   supervisor?: number;
+  limite?: number;
+  desplazamiento?: number;
 }
 
 export interface Supervisor {
@@ -219,9 +223,4 @@ export interface SupervisorOptions {
 export interface SupervisorForm {
   zona_id: number;
   miembro_ids: any[];
-}
-
-export interface ScrollPosition {
-  top: number;
-  left: number;
 }
