@@ -18,6 +18,7 @@ import { Timeline, TimelineConnector, TimelineContent, TimelineDot, TimelineItem
 import { Add } from '@mui/icons-material';
 import { DatePicker } from '@mui/x-date-pickers';
 import ClearIcon from '@mui/icons-material/Clear';
+import { calcularPageParam } from '../../../helpers/calcularPageParam';
 
 dayjs.extend(quarterOfYear);
 
@@ -68,9 +69,13 @@ export const EditMember: React.FC = () => {
   const memberFormMethods = useForm<MemberForm>();
   const { control: consolidationControl, handleSubmit: consolidationHandleSubmit, setValue } = useForm<consolidationForm>({ defaultValues: { miembro_id: Number(id) ?? undefined }});
 
-  const onSubmitUpdateMember: SubmitHandler<MemberForm> = (data) => updateMember({ id: Number(id), ...data });
+  const onSubmitUpdateMember: SubmitHandler<MemberForm> = async (data) => {
+    const pageParam = calcularPageParam(Number(id));
+    await updateMember({ ...data, id: Number(id), pageParam });
+  }
   const onSubmitConsolidation: SubmitHandler<consolidationForm> = async (data) => {
-    await postConsolidationResults(data);
+    const pageParam = calcularPageParam(Number(id));
+    await postConsolidationResults({... data, pageParam });
     setOpenDialog(false);
   };
 
@@ -101,7 +106,8 @@ export const EditMember: React.FC = () => {
   }
 
   const handleDeleteConsolidation = async () => {
-    await deleteConsolidationResults(openDeleteDialog.id as number);
+    const pageParam = calcularPageParam(openDeleteDialog.id as number);
+    await deleteConsolidationResults({id: openDeleteDialog.id as number, pageParam});
     setOpenDeleteDialog({ open: false, id: undefined });
   }
 
