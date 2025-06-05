@@ -419,6 +419,7 @@ export const EditMember: React.FC = () => {
                       sx={{ mt: 2 }}
                       onChange={(date) => onChange(date)}
                       value={ value ? dayjs(value) : null }
+                      defaultValue={dayjs()}
                       minDate={startOfQuarter}
                       maxDate={endOfQuarter}
                       format='DD/MM/YYYY'
