@@ -1,4 +1,4 @@
-import { Box, Button, Dialog, DialogActions, DialogTitle, FormControl, InputLabel, NativeSelect, Typography } from "@mui/material";
+import { Box, Button, Dialog, DialogActions, DialogTitle, Divider, FormControl, IconButton, InputBase, InputLabel, NativeSelect, Paper, Typography } from "@mui/material";
 import * as React from "react";
 import { useGetMembersWithResultsAndPaginationInfiniteQuery, useGetSupervisorsQuery, useGetZonesQuery, usePutMembersMutation } from "../../../redux/services";
 import { useRouter } from "../../../router/hooks";
@@ -6,6 +6,8 @@ import { useAppSelector } from "../../../redux/store";
 import { filterMembers } from "../../../types";
 import { config } from "../../../config";
 import FileDownloadIcon from '@mui/icons-material/FileDownload';
+import SearchIcon from '@mui/icons-material/Search';
+import CloseIcon from '@mui/icons-material/Close';
 import queryString from "query-string";
 import dayjs from "dayjs";
 import { ListaMiembros } from "../components/ListaMiembros";
@@ -19,7 +21,9 @@ export const Miembros: React.FC = () => {
     supervisor: undefined,
     limite: 24,
     desplazamiento: 0,
+    q: undefined,
 	});
+  const [ search, setSearch ] = React.useState<string>("");
   
   const {
     data: zones,
@@ -187,6 +191,49 @@ export const Miembros: React.FC = () => {
             Exportar a Excel
           </Button>
         </Box>
+      </Box>
+
+      <Box sx={{ display: "flex", width: "auto", mb: 2, justifyContent: "end" }}>
+        <Paper
+          component="form"
+          sx={{ p: '2px 4px', display: 'flex', alignItems: 'center', width: 400 }}
+          onSubmit={(e) => e.preventDefault()}
+        >
+          <InputBase
+            sx={{ ml: 1, flex: 1 }}
+            placeholder="Buscar Miembro"
+            inputProps={{ 'aria-label': 'buscar miembro' }}
+            value={search}
+            onChange={(e) => {
+              setSearch(e.target.value);
+              if(e.target.value === "") setFiltersState((prev) => ({ ...prev, q: undefined }));
+            }}
+
+          />
+          <IconButton 
+            type="button" 
+            sx={{ p: '10px' }} 
+            aria-label="buscar" 
+            onClick={() => {
+              setFiltersState((prev) => ({ ...prev, q: search }));
+            }}
+          >
+            <SearchIcon />
+          </IconButton>
+          <Divider sx={{ height: 27, m: 0.5 }} orientation="vertical" />
+          <IconButton 
+            color="error" 
+            sx={{ p: '10px' }}
+            aria-label="delete"
+            disabled={search === ""}
+            onClick={() => {
+              setSearch("");
+              setFiltersState((prev) => ({ ...prev, q: undefined }));
+            }}
+          >
+            <CloseIcon />
+          </IconButton>
+        </Paper>
       </Box>
 
       <ActionContext.Provider value={{ editMember, handleOpenDialog }}>

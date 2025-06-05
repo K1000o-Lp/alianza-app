@@ -205,6 +205,7 @@ export interface filterMembers {
   supervisor?: number;
   limite?: number;
   desplazamiento?: number;
+  q?: string;
 }
 
 export interface Supervisor {
