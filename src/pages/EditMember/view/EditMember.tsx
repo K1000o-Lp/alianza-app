@@ -74,7 +74,7 @@ export const EditMember: React.FC<EditMemberProps> = ({ id: propId, isModal = fa
   const errorMessageInDeleteConsolidation = resultDeleteConsolidation.error && "data" in resultDeleteConsolidation.error ? (resultDeleteConsolidation.error.data as { message: string }).message : "Error desconocido";
 
   const memberFormMethods = useForm<MemberForm>();
-  const { control: consolidationControl, handleSubmit: consolidationHandleSubmit, setValue } = useForm<consolidationForm>({ defaultValues: { miembro_id: Number(id) ?? undefined }});
+  const { control: consolidationControl, handleSubmit: consolidationHandleSubmit, setValue, reset: consolidationReset } = useForm<consolidationForm>({ defaultValues: { miembro_id: Number(id) ?? undefined, fecha_consolidacion: dayjs() }});
 
   const onSubmitUpdateMember: SubmitHandler<MemberForm> = async (data) => {
     const pageParam = calcularPageParam(Number(id));
@@ -189,7 +189,7 @@ export const EditMember: React.FC<EditMemberProps> = ({ id: propId, isModal = fa
   React.useEffect(() => {
 
     if(!openDialog) {
-      consolidationControl._reset();
+      consolidationReset();
       setSelectedRequirements([]);
     }
 
@@ -262,7 +262,7 @@ export const EditMember: React.FC<EditMemberProps> = ({ id: propId, isModal = fa
   // If in modal mode, show a simplified view
   if (isModal) {
     return (
-      <Box>
+      <Box sx={{ p: 3 }}>
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
           <Typography component="h1" variant="h6">
             EDITAR MIEMBRO: { memberData?.[0]?.nombre_completo ?? '' }
@@ -393,6 +393,7 @@ export const EditMember: React.FC<EditMemberProps> = ({ id: propId, isModal = fa
                     <Controller
                       control={consolidationControl}
                       name="fecha_consolidacion"
+                      defaultValue={dayjs()}
                       rules={{ required: "Campo obligatorio" }}
                       render={({
                         field: { onChange, value },
@@ -402,7 +403,6 @@ export const EditMember: React.FC<EditMemberProps> = ({ id: propId, isModal = fa
                           sx={{ mt: 2 }}
                           onChange={(date) => onChange(date)}
                           value={ value ? dayjs(value) : null }
-                          defaultValue={dayjs()}
                           minDate={startOfQuarter}
                           maxDate={endOfQuarter}
                           format='DD/MM/YYYY'
@@ -635,6 +635,7 @@ export const EditMember: React.FC<EditMemberProps> = ({ id: propId, isModal = fa
                   control={consolidationControl}
                   name="fecha_consolidacion"
                   rules={{ required: "Campo obligatorio" }}
+                  defaultValue={dayjs()}
                   render={({
                     field: { onChange, value },
                     fieldState: { invalid, error },
@@ -643,7 +644,6 @@ export const EditMember: React.FC<EditMemberProps> = ({ id: propId, isModal = fa
                       sx={{ mt: 2 }}
                       onChange={(date) => onChange(date)}
                       value={ value ? dayjs(value) : null }
-                      defaultValue={dayjs()}
                       minDate={startOfQuarter}
                       maxDate={endOfQuarter}
                       format='DD/MM/YYYY'
