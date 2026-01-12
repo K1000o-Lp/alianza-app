@@ -1,7 +1,6 @@
 import { Box, Button, Dialog, DialogActions, DialogTitle, Divider, FormControl, IconButton, InputBase, InputLabel, NativeSelect, Paper, Typography } from "@mui/material";
 import * as React from "react";
 import { useGetMembersWithResultsAndPaginationInfiniteQuery, useGetSupervisorsQuery, useGetZonesQuery, usePutMembersMutation } from "../../../redux/services";
-import { useRouter } from "../../../router/hooks";
 import { useAppSelector } from "../../../redux/store";
 import { filterMembers } from "../../../types";
 import { config } from "../../../config";
@@ -12,10 +11,12 @@ import queryString from "query-string";
 import dayjs from "dayjs";
 import { ListaMiembros } from "../components/ListaMiembros";
 import { ActionContext } from "../components/ActionContext";
+import { EditMember } from "../../EditMember/view/EditMember";
 
 export const Miembros: React.FC = () => {
   const { user } = useAppSelector((state) => state.auth);
   const [ openDialog, setOpenDialog ] = React.useState<{open: boolean, id?: number}>({ open: false, id: undefined });
+  const [ openEditDialog, setOpenEditDialog ] = React.useState<{open: boolean, id?: number}>({ open: false, id: undefined });
   const [ filtersState, setFiltersState ] = React.useState<filterMembers>({ 
 		zona: user?.zona !== null ? user?.zona.id as number : 0,
     supervisor: undefined,
@@ -37,12 +38,13 @@ export const Miembros: React.FC = () => {
 
   const [ updateMember ] = usePutMembersMutation();
 
-  const router = useRouter();
-
   const editMember = (id:  number) => {
     if(!id) return;
+    setOpenEditDialog({ open: true, id });
+  }
 
-    router.push(`${id}/editar`);
+  const handleCloseEditDialog = () => {
+    setOpenEditDialog({ open: false, id: undefined });
   }
 
   const deleteMember = async (id: number) => {
@@ -255,6 +257,22 @@ export const Miembros: React.FC = () => {
             Si
           </Button>
         </DialogActions>
+      </Dialog>
+
+      <Dialog
+        open={openEditDialog.open}
+        onClose={handleCloseEditDialog}
+        maxWidth="lg"
+        fullWidth
+        aria-labelledby="edit-member-dialog"
+      >
+        {openEditDialog.id && (
+          <EditMember 
+            id={openEditDialog.id} 
+            isModal={true} 
+            onClose={handleCloseEditDialog}
+          />
+        )}
       </Dialog>
     </Box>
   );
