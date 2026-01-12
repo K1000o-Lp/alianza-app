@@ -1,21 +1,29 @@
-import { Box, CircularProgress, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Typography } from '@mui/material';
-import React from 'react';
+import { Box, CircularProgress, IconButton, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Typography } from '@mui/material';
+import React, { useContext } from 'react';
+import { Delete as DeleteIcon, Edit as EditIcon } from '@mui/icons-material';
+import { ActionContext } from './ActionContext';
 
 interface Header {
     title: string;
-    field: string;
+    field?: string;
     getValue?: (item: any) => React.ReactNode;
     width?: string | number;
     align?: 'right' | 'left' | 'center';
     getActionButtons?: (item: any) => React.ReactNode;
 }
 
-interface Data {
-    id: number|string;
-    
+interface Member {
+    id: number | string;
+    nombre_completo?: string;
+    cedula?: string | null;
+    telefono?: string | null;
+    fecha_nacimiento?: string | Date | null;
+    hijos?: number | null;
+    resultados?: any[];
+    historiales?: any[];
 }
 
-interface Props<T> {
+interface Props<T extends Member> {
     headers: Header[];
     data: T[];
     loading: boolean;
@@ -23,7 +31,29 @@ interface Props<T> {
     sx?: object;
 }
 
-export const Tabla = <T,>({ loading, data, headers, emptyMessage, sx }: Props<T>) => {
+// Local helpers (kept simple and consistent with ListaMiembros)
+const obtenerNacimiento = (nacimiento: Date | string | null | undefined) => {
+    if (!nacimiento) return '';
+    return new Date(nacimiento).toISOString().split('T')[0];
+}
+
+const obtenerEdadLocal = (nacimiento: Date | string | null | undefined) => {
+    if (!nacimiento) return '';
+    return new Date().getFullYear() - new Date(nacimiento).getFullYear();
+}
+
+const obtenerUltimoProceso = (resultados: any[] = []) => {
+    return resultados?.length > 0 ? resultados[resultados.length - 1]?.requisito?.nombre : 'NINGUNO';
+}
+
+const obtenerSupervisor = (historiales: any[] = []) => {
+    const last = historiales[historiales.length - 1];
+    return last?.supervisor?.nombre_completo || 'SIN SUPERVISOR';
+}
+
+export const Tabla = <T extends Member>({ loading, data, headers, emptyMessage, sx }: Props<T>) => {
+  const { editMember, handleOpenDialog } = useContext(ActionContext);
+
   return (
     <>
         <TableContainer component={Paper} sx={sx}>
@@ -46,14 +76,14 @@ export const Tabla = <T,>({ loading, data, headers, emptyMessage, sx }: Props<T>
                             <TableCell>{miembro.nombre_completo}</TableCell>
                             <TableCell>{miembro.cedula || 'SIN CEDULA'}</TableCell>
                             <TableCell>{miembro.telefono || 'SIN TELEFONO'}</TableCell>
-                            <TableCell>{obtenerNacimiento(miembro.fecha_nacimiento)} ({obtenerEdad(miembro.fecha_nacimiento)} años)</TableCell>
+                            <TableCell>{obtenerNacimiento(miembro.fecha_nacimiento)} ({obtenerEdadLocal(miembro.fecha_nacimiento)} años)</TableCell>
                             <TableCell>{miembro.hijos ?? 0}</TableCell>
                             <TableCell>{obtenerUltimoProceso(miembro.resultados) || 'NINGUNO'}</TableCell>
                             <TableCell>{obtenerSupervisor(miembro.historiales || [])}</TableCell>
                             <TableCell>
                                 <Box sx={{ display: 'flex', gap: 1 }}>
-                                    <IconButton aria-label="edit" onClick={() =>  editMember && editMember(miembro.id)} sx={{ marginRight: { md: 1 } }}><EditIcon /></IconButton>
-                                    <IconButton  aria-label="delete" onClick={() => handleOpenDialog && handleOpenDialog(miembro.id)} color="error"><DeleteIcon /></IconButton>
+                                    <IconButton aria-label="edit" onClick={() =>  editMember && editMember(Number(miembro.id))} sx={{ marginRight: { md: 1 } }}><EditIcon /></IconButton>
+                                    <IconButton  aria-label="delete" onClick={() => handleOpenDialog && handleOpenDialog(Number(miembro.id))} color="error"><DeleteIcon /></IconButton>
                                 </Box>
                             </TableCell>
                         </TableRow>
