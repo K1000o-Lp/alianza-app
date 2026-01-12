@@ -44,8 +44,15 @@ const requirementsJson: any = {
   11: 'LIDER',
 }
 
-export const EditMember: React.FC = () => {
-  const { id } = useParams();
+interface EditMemberProps {
+  id?: string | number;
+  isModal?: boolean;
+  onClose?: () => void;
+}
+
+export const EditMember: React.FC<EditMemberProps> = ({ id: propId, isModal = false, onClose }) => {
+  const { id: paramId } = useParams();
+  const id = propId || paramId;
   const router = useRouter();
   
   const [ snackBarStatus, setSnackBarStatus ] = React.useState<snackBarStatus>({ is_open: false, message: "", severity: "success" });
@@ -58,7 +65,7 @@ export const EditMember: React.FC = () => {
   const { startOfQuarter,  endOfQuarter } = getQuarterStartEnd();
 
   const { data: requirementsData, isLoading: requirementsIsLoading, isError: requirementsError } = useGetRequirementsQuery({ requisitos: requirements }, { refetchOnMountOrArgChange: true });
-  const { data: memberData, isLoading: memberIsLoading, isError: memberIsError } = useGetMembersWithResultsQuery({ id }, { refetchOnMountOrArgChange: true });
+  const { data: memberData, isLoading: memberIsLoading, isError: memberIsError } = useGetMembersWithResultsQuery({ id: String(id) }, { refetchOnMountOrArgChange: true });
   const [ updateMember, resultMember ] = usePutMembersMutation();
   const [ postConsolidationResults, resultPostConsolidation ] = usePostConsolidationResultsMutation();
   const errorMessageInPostConsolidation = resultPostConsolidation.error && "data" in resultPostConsolidation.error ? (resultPostConsolidation.error.data as { message: string }).message : "Error desconocido";
@@ -250,6 +257,223 @@ export const EditMember: React.FC = () => {
         </Grid>
       </Grid>
     )
+  }
+
+  // If in modal mode, show a simplified view
+  if (isModal) {
+    return (
+      <Box>
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
+          <Typography component="h1" variant="h6">
+            EDITAR MIEMBRO: { memberData?.[0]?.nombre_completo ?? '' }
+          </Typography>
+          <Button variant='outlined' size='small' onClick={onClose}>
+            Cerrar
+          </Button>
+        </Box>
+        <Box sx={{ display: 'flex', gap: 3, flexDirection: { xs: 'column', md: 'row' } }}>
+          <Box sx={{ flex: 1 }}>
+            <Paper variant="outlined" sx={{ p: 3 }}>
+              <FormProvider {...memberFormMethods} >
+                <Box sx={{ marginBottom: 5 }} >
+                  <PersonalForm />
+                </Box>
+                <Box sx={{ marginBottom: 5 }} >
+                  <ProfessionForm />
+                </Box>
+                <Box>
+                  <ServiceForm />
+                </Box>
+                <Box sx={{display: 'flex', justifyContent: 'end', marginTop: 5}}>
+                  <LoadingButton onClick={handleSubmitUpdateMember} type="submit" variant='contained' loading={resultMember.isLoading}>
+                    Guardar Informacion
+                  </LoadingButton>
+                </Box>
+              </FormProvider>
+            </Paper>
+          </Box>
+          <Box sx={{ flex: { xs: 1, md: 0.8 } }}>
+            <Typography variant='h6' sx={{ marginBottom: 3, textAlign: 'center' }}>
+              Linea de tiempo
+            </Typography>
+            <Timeline>
+              {
+                !memberIsError && (memberData?.[0]?.resultados ?? []).map(({ id, creado_en, requisito: { nombre } }, index) => (
+                  <TimelineItem key={`resultados-${index}`}>
+                    <TimelineOppositeContent color="text.secondary" sx={{ fontSize: '0.75rem' }}>
+                      { dayjs(creado_en).format('DD/MM/YYYY') }
+                    </TimelineOppositeContent>
+                    <TimelineSeparator>
+                      <TimelineDot sx={{ width: 24, height: 24 }} />
+                      <TimelineConnector />
+                    </TimelineSeparator>
+                    <TimelineContent sx={{ fontSize: '0.875rem' }}>
+                      { nombre }
+                      <IconButton onClick={() => setOpenDeleteDialog({ open: true, id})} aria-label="clear" color='error' size='small'>
+                        <ClearIcon fontSize='small' />
+                      </IconButton>
+                    </TimelineContent>
+                  </TimelineItem>
+                ))
+              }
+            </Timeline>
+
+            <Box sx={{ display: 'flex', width: '100%', justifyContent: 'center' }}>
+              <Fab size="small" color="primary" aria-label="Consolidar resultado" onClick={handleClickOpenDialog}>
+                <Add fontSize='small' />
+              </Fab>
+
+              <Dialog
+                open={openDialog}
+                onClose={handleCloseDialog}
+                aria-labelledby='dialog-title'
+                aria-describedby='dialog-description'
+              >
+                <DialogTitle id='dialog-title'>
+                  {"Consolidar Resultado"}
+                </DialogTitle>
+
+                <DialogContent sx={{ maxWidth: 500 }}>
+                  <form id="consolidation_results_form" onSubmit={consolidationHandleSubmit(onSubmitConsolidation)}>
+                    <Controller
+                      control={consolidationControl}
+                      name={`miembro_id`}
+                      render={({ field: { value, onChange } }) => (
+                        <input type="hidden" value={value} onChange={onChange}/>
+                      )} 
+                    />
+
+                    <Controller
+                      control={consolidationControl}
+                      name='requisito_ids'
+                      rules={{ required: "Campo obligatorio" }}
+                      render={({ fieldState: { invalid, error } }) => (
+                        <FormControl sx={{ mt: 2 }} error={invalid} fullWidth>
+                          <InputLabel id="requisito_multiple" htmlFor="requisito_multiple">Requisito</InputLabel>
+                          <Select
+                            labelId='requisito_multiple'
+                            multiple
+                            onChange={handleMultipleRequirementsChange}
+                            value={selectedRequirements}
+                            input={<Input id="requisito_multiple" />}
+                            renderValue={(selected) => (
+                              <Box sx={{display: 'flex', flexWrap: 'wrap', gap: 0.5}}>
+                                {selected.map((value) => (
+                                  <Chip key={value} label={requirementsJson[value]} />
+                                ))}
+                              </Box>
+                            )}
+                          >
+                            <MenuItem key="-1" value="" hidden></MenuItem>
+
+                            {requirementsIsLoading && (
+                              <MenuItem key="0" value="">
+                                Cargando...
+                              </MenuItem>
+                            )}
+
+                            {!requirementsError &&
+                              requirementsData?.map(({ id, nombre }) => (
+                                <MenuItem key={`requisitos-${id}`} value={id}>
+                                  {nombre}
+                                </MenuItem>
+                              ))}
+
+                            {!requirementsError && requirementsData?.length === 0 && (
+                              <MenuItem key="0" value="">
+                                {"No hay requisitos disponibles para consolidar"}
+                              </MenuItem>
+                            )}  
+                          </Select>
+                          <FormHelperText>{error?.message}</FormHelperText>
+                        </FormControl>
+                      )} 
+                    />
+
+                    <Controller
+                      control={consolidationControl}
+                      name="fecha_consolidacion"
+                      rules={{ required: "Campo obligatorio" }}
+                      render={({
+                        field: { onChange, value },
+                        fieldState: { invalid, error },
+                      }) => (
+                        <DatePicker
+                          sx={{ mt: 2 }}
+                          onChange={(date) => onChange(date)}
+                          value={ value ? dayjs(value) : null }
+                          defaultValue={dayjs()}
+                          minDate={startOfQuarter}
+                          maxDate={endOfQuarter}
+                          format='DD/MM/YYYY'
+                          slotProps={{
+                            textField: {
+                              variant: "standard",
+                              label: "Fecha",
+                              error: invalid,
+                              helperText: error?.message,
+                              fullWidth: true,
+                            },
+                          }}
+                        />
+                      )}
+                    />
+
+                    <DialogActions>
+                      <Button onClick={handleCloseDialog} color='primary'>
+                        Cancelar
+                      </Button>
+                      <LoadingButton 
+                        type='submit'
+                        variant='contained'
+                        color='primary'
+                        loading={resultPostConsolidation.isLoading}
+                      >
+                        Guardar
+                      </LoadingButton>
+                    </DialogActions>
+                  </form>
+                </DialogContent>
+
+              </Dialog>
+            </Box>
+          </Box>
+        </Box>
+
+        <Snackbar 
+          anchorOrigin={{vertical: 'bottom', horizontal: 'right'}} 
+          open={snackBarStatus.is_open} 
+          autoHideDuration={2000} 
+          onClose={handleCloseSnackBar}
+        >
+          <Alert
+            onClose={handleCloseSnackBar}
+            severity={snackBarStatus?.severity || "success"}
+            variant="filled"
+            sx={{ width: '100%' }}
+          >
+            {snackBarStatus.message}
+          </Alert>
+        </Snackbar>
+
+        <Dialog
+          open={openDeleteDialog.open}
+          onClose={handleCloseDeleteDialog}
+          aria-labelledby="alert-dialog-title"
+          aria-describedby="alert-dialog-description"
+        >
+          <DialogTitle id="alert-dialog-title">
+            {"Estas seguro de eliminar el resultado consolidado actual?"}
+          </DialogTitle>
+          <DialogActions>
+            <Button onClick={handleCloseDeleteDialog}>No</Button>
+            <Button onClick={handleDeleteConsolidation} autoFocus>
+              Si
+            </Button>
+          </DialogActions>
+        </Dialog>
+      </Box>
+    );
   }
 
   return (
