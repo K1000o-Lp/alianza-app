@@ -4,7 +4,8 @@ import {
   FormHelperText,
   Grid2 as Grid,
   InputLabel,
-  NativeSelect,
+  MenuItem,
+  Select,
   Typography,
 } from "@mui/material";
 import { Controller, useFormContext } from "react-hook-form";
@@ -55,28 +56,28 @@ export const ServiceForm: React.FC = () => {
               field: { onChange, value },
               fieldState: { invalid, error },
             }) => (
-              <FormControl error={invalid} fullWidth>
+              <FormControl error={invalid} fullWidth variant="standard">
                 <InputLabel htmlFor="servicio_native">Servicio</InputLabel>
-                <NativeSelect
+                <Select
                   inputProps={{ id: "servicio_native" }}
                   onChange={onChange}
                   value={value}
                 >
-                  <option key="-1" value="" hidden></option>
+                  <MenuItem key="-1" value="" hidden></MenuItem>
 
                   {servicesLoading && (
-                    <option key="0" value="">
+                    <MenuItem key="0" value="">
                       Cargando...
-                    </option>
+                    </MenuItem>
                   )}
 
                   {!servicesError &&
                     services?.map(({ id, descripcion }) => (
-                      <option key={id} value={id}>
+                      <MenuItem key={id} value={id}>
                         {descripcion}
-                      </option>
+                      </MenuItem>
                     ))}
-                </NativeSelect>
+                </Select>
                 <FormHelperText>{error?.message}</FormHelperText>
               </FormControl>
             )}
@@ -93,29 +94,29 @@ export const ServiceForm: React.FC = () => {
               field: { onChange, value },
               fieldState: { invalid, error },
             }) => (
-              <FormControl error={invalid} fullWidth>
+              <FormControl error={invalid} fullWidth variant="standard">
                 <InputLabel htmlFor="zona_native">Zona</InputLabel>
-                <NativeSelect
+                <Select
                   inputProps={{ id: "zona_native" }}
                   onChange={onChange}
                   value={value}
                   disabled={user?.zona !== null}
                 >
-                  <option key="-1" value="" hidden></option>
+                  <MenuItem key="-1" value="" hidden></MenuItem>
 
                   {zonesLoading && (
-                    <option key="0" value="">
+                    <MenuItem key="0" value="">
                       Cargando...
-                    </option>
+                    </MenuItem>
                   )}
 
                   {!zonesError &&
                     zones?.map(({ id, descripcion }) => (
-                      <option key={id} value={id}>
+                      <MenuItem key={id} value={id}>
                         {descripcion}
-                      </option>
+                      </MenuItem>
                     ))}
-                </NativeSelect>
+                </Select>
                 <FormHelperText>{error?.message}</FormHelperText>
               </FormControl>
             )}
@@ -131,34 +132,34 @@ export const ServiceForm: React.FC = () => {
               field: { onChange, value },
               fieldState: { invalid, error },
             }) => (
-              <FormControl error={invalid} fullWidth>
+              <FormControl error={invalid} fullWidth variant="standard">
                 <InputLabel htmlFor="supervisor_native">Supervisor</InputLabel>
-                <NativeSelect
+                <Select
                   inputProps={{ id: "supervisor_native" }}
                   onChange={onChange}
                   value={value}
                 >
-                  <option key="-1" value="" hidden></option>
+                  <MenuItem key="-1" value="" hidden></MenuItem>
 
                   {supervisorsLoading && (
-                    <option key="0" value="">
+                    <MenuItem key="0" value="">
                       Cargando...
-                    </option>
+                    </MenuItem>
                   )}
 
                   {!supervisorsError &&
                     supervisors?.map((supervisor: any) => (
-                      <option key={supervisor?.miembro_id} value={supervisor?.miembro_id}>
+                      <MenuItem key={supervisor?.miembro_id} value={supervisor?.miembro_id}>
                         {supervisor?.nombre_completo}
-                      </option>
+                      </MenuItem>
                     ))}
 
                   {!supervisorsError && supervisors?.length === 0 && (
-                    <option key="0" value="">
+                    <MenuItem key="0" value="">
                       No hay supervisores disponibles
-                    </option>
+                    </MenuItem>
                   )}
-                </NativeSelect>
+                </Select>
                 <FormHelperText>{error?.message}</FormHelperText>
               </FormControl>
             )}
