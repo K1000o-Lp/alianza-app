@@ -393,28 +393,28 @@ export const ReportesConsolidaciones: React.FC = () => {
 					</Box>
 
 					<Box>
-						<FormControl sx={{ width: 250 }}>
-							<InputLabel htmlFor="requisito_native">Proceso de formacion</InputLabel>
-							<NativeSelect
-								onChange={handleFilterChange}
-								value={filtersState?.requisito}
-								inputProps={{ id: "requisito_native", name: "requisito" }}
-							>
-								{requirementsIsLoading && (
-									<option key="0" value="">
-										Cargando...
-									</option>
-								)}
+					<FormControl sx={{ width: 250 }} variant="standard">
+						<InputLabel htmlFor="requisito_native">Proceso de formacion</InputLabel>
+						<Select
+							onChange={handleFilterChange}
+							value={filtersState?.requisito}
+							inputProps={{ id: "requisito_native", name: "requisito" }}
+						>
+							{requirementsIsLoading && (
+								<MenuItem key="0" value="">
+									Cargando...
+								</MenuItem>
+							)}
 
-								{!requirementsError &&
-									requirementsData?.map(({ id, nombre }) => (
-										<option key={`requisitos-${id}`} value={id}>
-											{nombre}
-										</option>
-									))}
-							</NativeSelect>
-						</FormControl>
-					</Box>
+							{!requirementsError &&
+								requirementsData?.map(({ id, nombre }) => (
+									<MenuItem key={`requisitos-${id}`} value={id}>
+										{nombre}
+									</MenuItem>
+								))}
+						</Select>
+					</FormControl>
+				</Box>
 
 					<Box sx={{ marginLeft: { md: 2, xs: 0 }, marginRight: 1 }}>
 						<DatePicker
