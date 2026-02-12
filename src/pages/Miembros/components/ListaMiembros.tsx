@@ -1,15 +1,18 @@
-import { Box, CircularProgress, IconButton, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Typography } from "@mui/material";
-import React, { useContext } from "react";
+import { Box, Chip, IconButton } from "@mui/material";
+import React, { useContext, useMemo } from "react";
 import { ActionContext } from "./ActionContext";
 import { Delete as DeleteIcon, Edit as EditIcon } from "@mui/icons-material";
+import { InfiniteScrollTable, ColumnDefinition } from "../../../components";
+import { ResponseMember } from "../../../types";
 
 interface Props {
-    miembros: any;
+    miembros: ResponseMember[];
     loading: boolean;
+    onFetchMore?: () => Promise<void>;
     error?: boolean;
 }
 
-export const ListaMiembros: React.FC<Props> = ({ miembros, loading }) => {
+export const ListaMiembros: React.FC<Props> = ({ miembros, loading, onFetchMore = async () => {} }) => {
     const { editMember, handleOpenDialog } = useContext(ActionContext);
     
     const obtenerNacimiento = (nacimiento: Date) => {
@@ -20,80 +23,155 @@ export const ListaMiembros: React.FC<Props> = ({ miembros, loading }) => {
         return new Date().getFullYear() - new Date(nacimiento).getFullYear();
     }
 
-    const obtenerUltimoProceso = (resultados: any[]) => {
-        return resultados?.length > 0 ? resultados[resultados.length - 1]?.requisito?.nombre : 'NINGUNO';
-    }
-
     const obtenerSupervisor = (historiales: any[]) => {
         const lastHistorial = historiales[historiales.length - 1];
-        console.log('lastHistorial', lastHistorial);
         return lastHistorial?.supervisor?.nombre_completo || 'SIN SUPERVISOR';
     }
 
+    // Función para capitalizar solo la primera palabra
+    const capitalizeFirstWord = (text: string) => {
+        return text.charAt(0).toUpperCase() + text.slice(1).toLowerCase();
+    }
+
+    const requisitosOrdenados = [
+        'GRUPO DE CONEXION',
+        'PRIMEROS PASOS',
+        'BAUTISMO',
+        'ENCUENTRO',
+        'POS ENCUENTRO',
+        'DOCTRINAS 1',
+        'DOCTRINAS 2',
+        'ENTRENAMIENTO DE LIDERAZGO',
+        'LIDERAZGO',
+        'ENCUENTRO DE ORACION',
+        'LIDER'
+    ];
+
+    // Extraer requisitos únicos del backend que existen en los miembros
+    const requisitosEncontrados = useMemo(() => {
+        const requisitos = new Set<string>();
+        miembros?.forEach((miembro: any) => {
+            if (miembro.resultadosPorRequisito) {
+                Object.keys(miembro.resultadosPorRequisito).forEach(req => requisitos.add(req));
+            }
+        });
+        // Retornar ordenados según requisitosOrdenados
+        return requisitosOrdenados.filter(req => requisitos.has(req));
+    }, [miembros]);
+
+    const columns: ColumnDefinition<ResponseMember>[] = useMemo(() => {
+        const baseColumns: ColumnDefinition<ResponseMember>[] = [
+            {
+                id: 'nombre_completo',
+                label: 'Nombre Completo',
+                width: '12%',
+                sticky: 'left',
+                render: (miembro: ResponseMember) => miembro.nombre_completo,
+            },
+            {
+                id: 'cedula',
+                label: 'Cédula',
+                width: '5%',
+                render: (miembro: ResponseMember) => miembro.cedula || 'SIN CEDULA',
+            },
+            {
+                id: 'telefono',
+                label: 'Teléfono',
+                width: '5%',
+                render: (miembro: ResponseMember) => miembro.telefono || 'SIN TELEFONO',
+            },
+            {
+                id: 'fecha_nacimiento',
+                label: 'Fecha Nac.',
+                width: '5.5%',
+                render: (miembro: ResponseMember) => `${obtenerNacimiento(miembro.fecha_nacimiento)} (${obtenerEdad(miembro.fecha_nacimiento)}a)`,
+            },
+            {
+                id: 'hijos',
+                label: 'Hijos',
+                width: '3%',
+                render: (miembro: ResponseMember) => miembro.hijos ?? 0,
+            },
+            {
+                id: 'supervisor',
+                label: 'Supervisor',
+                width: '6%',
+                render: (miembro: ResponseMember) => obtenerSupervisor(miembro.historiales || []),
+            },
+        ];
+
+        // Agregar columnas dinámicas para cada requisito encontrado
+        const requisitosColumns = requisitosEncontrados.map((requisito) => {
+            const labelCapitalizado = capitalizeFirstWord(requisito);
+            
+            return {
+                id: `requisito_${requisito.replace(/\s+/g, '_')}`,
+                label: labelCapitalizado,
+                width: '35px',
+                render: (miembro: ResponseMember) => {
+                    const resultado = miembro.resultadosPorRequisito?.[requisito];
+                    return resultado ? (
+                        <Chip 
+                            label="✓" 
+                            size="small" 
+                            color="success" 
+                            variant="filled"
+                            sx={{ minWidth: '32px', fontWeight: 'bold' }}
+                        />
+                    ) : (
+                        <Chip 
+                            label="✗" 
+                            size="small" 
+                            color="default" 
+                            variant="outlined"
+                            sx={{ minWidth: '32px', fontWeight: 'bold', opacity: 0.5 }}
+                        />
+                    );
+                },
+            };
+        });
+
+        return [
+            ...baseColumns,
+            ...requisitosColumns,
+            {
+                id: 'acciones',
+                label: 'Acciones',
+                width: '5%',
+                sticky: 'right',
+                render: (miembro: ResponseMember) => (
+                    <Box sx={{ display: 'flex', gap: 0.5 }}>
+                        <IconButton 
+                            size="small" 
+                            aria-label="edit" 
+                            onClick={() => editMember && editMember(miembro.id)} 
+                        >
+                            <EditIcon />
+                        </IconButton>
+                        <IconButton 
+                            size="small" 
+                            aria-label="delete" 
+                            onClick={() => handleOpenDialog && handleOpenDialog(miembro.id)} 
+                            color="error"
+                        >
+                            <DeleteIcon />
+                        </IconButton>
+                    </Box>
+                ),
+            },
+        ];
+    }, [editMember, handleOpenDialog, requisitosEncontrados]);
+
     return (
-        <>
-            <TableContainer component={Paper} sx={{ marginTop: 2 }}>
-                <Table aria-label="tabla de miembros">
-                    <TableHead>
-                        <TableRow>
-                            <TableCell><strong>Nombre Completo</strong></TableCell>
-                            <TableCell><strong>Cédula</strong></TableCell>
-                            <TableCell><strong>Teléfono</strong></TableCell>
-                            <TableCell><strong>Fecha Nacimiento</strong></TableCell>
-                            <TableCell><strong>Hijos</strong></TableCell>
-                            <TableCell><strong>Resultados</strong></TableCell>
-                            <TableCell><strong>Supervisor</strong></TableCell>
-                            <TableCell><strong>Acciones</strong></TableCell>
-                        </TableRow>
-                    </TableHead>
-                    <TableBody>
-                        {/* Carga de miembros */}
-                        {miembros?.map((miembro: any) => (
-                            <TableRow 
-                                key={miembro.id}
-                                hover
-                                sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
-                            >
-                                <TableCell>{miembro.nombre_completo}</TableCell>
-                                <TableCell>{miembro.cedula || 'SIN CEDULA'}</TableCell>
-                                <TableCell>{miembro.telefono || 'SIN TELEFONO'}</TableCell>
-                                <TableCell>{obtenerNacimiento(miembro.fecha_nacimiento)} ({obtenerEdad(miembro.fecha_nacimiento)} años)</TableCell>
-                                <TableCell>{miembro.hijos ?? 0}</TableCell>
-                                <TableCell>{obtenerUltimoProceso(miembro.resultados) || 'NINGUNO'}</TableCell>
-                                <TableCell>{obtenerSupervisor(miembro.historiales || [])}</TableCell>
-                                <TableCell>
-                                    <Box sx={{ display: 'flex', gap: 1 }}>
-                                        <IconButton aria-label="edit" onClick={() =>  editMember && editMember(miembro.id)} sx={{ marginRight: { md: 1 } }}><EditIcon /></IconButton>
-                                        <IconButton  aria-label="delete" onClick={() => handleOpenDialog && handleOpenDialog(miembro.id)} color="error"><DeleteIcon /></IconButton>
-                                    </Box>
-                                </TableCell>
-                            </TableRow>
-                        ))}
-
-                        {/* Skeleton de carga */}
-                        {loading && (
-                            <TableRow>
-                                <TableCell sx={{ padding: 2 }} colSpan={8}>
-                                    <Box sx={{ display: 'flex', justifyContent: 'center', width: '100%' }}>
-                                        <CircularProgress />
-                                    </Box>
-                                </TableCell>
-                            </TableRow>
-                        )}
-
-                        {/* Si no hay datos, mostrar mensaje de feedback */}
-                        {!loading && (!miembros || miembros.length === 0) && (
-                            <TableRow>
-                                <TableCell colSpan={8} sx={{ padding: 2 }}>
-                                    <Box textAlign="center" sx={{ width: '100%' }}>
-                                        <Typography variant="body1">No hay miembros registrados</Typography>
-                                    </Box>
-                                </TableCell>
-                            </TableRow>
-                        )}
-                    </TableBody>
-                </Table>
-            </TableContainer>
-        </>
-    )
-}
+        <InfiniteScrollTable
+            data={miembros}
+            loading={loading}
+            columns={columns}
+            onFetchMore={onFetchMore}
+            emptyMessage="No hay miembros registrados"
+            rowKey={(item) => item.id}
+            tableWidth="100%"
+            enableColumnToggle={true}
+        />
+    );
+};
