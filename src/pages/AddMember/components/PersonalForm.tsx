@@ -6,7 +6,8 @@ import {
   FormHelperText,
   Grid2 as Grid,
   InputLabel,
-  NativeSelect,
+  MenuItem,
+  Select,
   TextField,
 } from "@mui/material";
 import { DatePicker } from "@mui/x-date-pickers";
@@ -155,32 +156,32 @@ export const PersonalForm: React.FC = () => {
               field: { onChange, value },
               fieldState: { invalid, error },
             }) => (
-              <FormControl error={invalid} fullWidth>
+              <FormControl error={invalid} fullWidth variant="standard">
                 <InputLabel htmlFor="estado_civil_label">
                   Estado civil
                 </InputLabel>
-                <NativeSelect
+                <Select
                   inputProps={{
                     id: "estado_civil_label",
                   }}
                   onChange={onChange}
                   value={value}
                 >
-                  <option key="-1" value="" hidden></option>
+                  <MenuItem key="-1" value="" hidden></MenuItem>
 
                   {civilstatusesLoading && (
-                    <option key="0" value="">
+                    <MenuItem key="0" value="">
                       Cargando...
-                    </option>
+                    </MenuItem>
                   )}
 
                   {!civiliStatusesError &&
                     civilStatuses?.map(({ id, descripcion }) => (
-                      <option key={id} value={id}>
+                      <MenuItem key={id} value={id}>
                         {descripcion}
-                      </option>
+                      </MenuItem>
                     ))}
-                </NativeSelect>
+                </Select>
                 <FormHelperText>{error?.message}</FormHelperText>
               </FormControl>
             )}
