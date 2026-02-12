@@ -95,7 +95,7 @@ export const ListaMiembros: React.FC<Props> = ({ miembros, loading, onFetchMore 
             {
                 id: 'supervisor',
                 label: 'Supervisor',
-                width: '120px',
+                width: '225px',
                 render: (miembro: ResponseMember) => obtenerSupervisor(miembro.historiales || []),
             },
         ];
