@@ -64,38 +64,38 @@ export const ListaMiembros: React.FC<Props> = ({ miembros, loading, onFetchMore 
             {
                 id: 'nombre_completo',
                 label: 'Nombre Completo',
-                width: '12%',
+                width: '225px',
                 sticky: 'left',
                 render: (miembro: ResponseMember) => miembro.nombre_completo,
             },
             {
                 id: 'cedula',
                 label: 'Cédula',
-                width: '5%',
+                width: '80px',
                 render: (miembro: ResponseMember) => miembro.cedula || 'SIN CEDULA',
             },
             {
                 id: 'telefono',
                 label: 'Teléfono',
-                width: '5%',
+                width: '100px',
                 render: (miembro: ResponseMember) => miembro.telefono || 'SIN TELEFONO',
             },
             {
                 id: 'fecha_nacimiento',
                 label: 'Fecha Nac.',
-                width: '5.5%',
+                width: '110px',
                 render: (miembro: ResponseMember) => `${obtenerNacimiento(miembro.fecha_nacimiento)} (${obtenerEdad(miembro.fecha_nacimiento)}a)`,
             },
             {
                 id: 'hijos',
                 label: 'Hijos',
-                width: '3%',
+                width: '50px',
                 render: (miembro: ResponseMember) => miembro.hijos ?? 0,
             },
             {
                 id: 'supervisor',
                 label: 'Supervisor',
-                width: '6%',
+                width: '120px',
                 render: (miembro: ResponseMember) => obtenerSupervisor(miembro.historiales || []),
             },
         ];
@@ -137,7 +137,7 @@ export const ListaMiembros: React.FC<Props> = ({ miembros, loading, onFetchMore 
             {
                 id: 'acciones',
                 label: 'Acciones',
-                width: '5%',
+                width: '80px',
                 sticky: 'right',
                 render: (miembro: ResponseMember) => (
                     <Box sx={{ display: 'flex', gap: 0.5 }}>
