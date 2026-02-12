@@ -7,18 +7,18 @@ import { useParams } from 'react-router-dom';
 import { useDeleteConsolidationResultsMutation, useGetMembersWithResultsQuery, useGetRequirementsQuery, usePostConsolidationResultsMutation, usePutMembersMutation } from '../../../redux/services';
 import { Controller, FormProvider, SubmitHandler, useForm } from 'react-hook-form';
 import { consolidationForm, MemberForm, snackBarStatus } from '../../../types';
-import { Alert, Button, Chip, Dialog, DialogActions, DialogContent, DialogTitle, Fab, FormControl, FormHelperText, Grid2 as Grid, IconButton, Input, InputLabel, MenuItem, Select, SelectChangeEvent, Skeleton, Snackbar } from '@mui/material';
+import { Alert, Button, Chip, Dialog, DialogActions, DialogContent, DialogTitle, Fab, FormControl, FormHelperText, Grid2 as Grid, Input, InputLabel, MenuItem, Select, SelectChangeEvent, Skeleton, Snackbar, Divider, alpha } from '@mui/material';
 import { useRouter } from '../../../router/hooks';
 import { PersonalForm } from '../../AddMember/components/PersonalForm';
 import { ProfessionForm } from '../../AddMember/components/ProfessionForm';
 import { ServiceForm } from '../../AddMember/components/ServiceForm';
 import dayjs from 'dayjs';
 import quarterOfYear from 'dayjs/plugin/quarterOfYear';
-import { Timeline, TimelineConnector, TimelineContent, TimelineDot, TimelineItem, TimelineOppositeContent, TimelineSeparator } from '@mui/lab';
-import { Add } from '@mui/icons-material';
+import { Add, Edit as EditIcon, ArrowBack } from '@mui/icons-material';
 import { DatePicker } from '@mui/x-date-pickers';
 import ClearIcon from '@mui/icons-material/Clear';
 import { calcularPageParam } from '../../../helpers/calcularPageParam';
+import { CustomTimeline } from '../components/CustomTimeline';
 
 dayjs.extend(quarterOfYear);
 
@@ -65,7 +65,7 @@ export const EditMember: React.FC<EditMemberProps> = ({ id: propId, isModal = fa
   const { startOfQuarter,  endOfQuarter } = getQuarterStartEnd();
 
   const { data: requirementsData, isLoading: requirementsIsLoading, isError: requirementsError } = useGetRequirementsQuery({ requisitos: requirements }, { refetchOnMountOrArgChange: true });
-  const { data: memberData, isLoading: memberIsLoading, isError: memberIsError } = useGetMembersWithResultsQuery({ id: String(id) }, { refetchOnMountOrArgChange: true });
+  const { data: memberData, isLoading: memberIsLoading } = useGetMembersWithResultsQuery({ id: String(id) }, { refetchOnMountOrArgChange: true });
   const [ updateMember, resultMember ] = usePutMembersMutation();
   const [ postConsolidationResults, resultPostConsolidation ] = usePostConsolidationResultsMutation();
   const errorMessageInPostConsolidation = resultPostConsolidation.error && "data" in resultPostConsolidation.error ? (resultPostConsolidation.error.data as { message: string }).message : "Error desconocido";
@@ -237,23 +237,18 @@ export const EditMember: React.FC<EditMemberProps> = ({ id: propId, isModal = fa
             }, 
           }} 
         >
-          <Typography variant='h5' sx={{ marginBottom: 5, textAlign: 'center' }}>
-            Linea de tiempo
-          </Typography>
-          <Timeline>
-            <TimelineItem>
-              <TimelineOppositeContent color="text.secondary">
-                <Skeleton variant='text' width={100} />
-              </TimelineOppositeContent>
-              <TimelineSeparator>
-                <TimelineDot />
-                <TimelineConnector />
-              </TimelineSeparator>
-              <TimelineContent>
-                <Skeleton variant='text' width={200} />
-              </TimelineContent>
-            </TimelineItem>
-          </Timeline>
+          <Paper
+            sx={{
+              p: { xs: 3, md: 4 },
+              boxShadow: 1,
+              display: 'flex',
+              flexDirection: 'column',
+              height: '100%',
+              minHeight: { xs: 'auto', md: 500 }
+            }}
+          >
+            <Skeleton variant='rectangular' height={400} />
+          </Paper>
         </Grid>
       </Grid>
     )
@@ -262,181 +257,210 @@ export const EditMember: React.FC<EditMemberProps> = ({ id: propId, isModal = fa
   // If in modal mode, show a simplified view
   if (isModal) {
     return (
-      <Box sx={{ p: 3 }}>
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-          <Typography component="h1" variant="h6">
-            EDITAR MIEMBRO: { memberData?.[0]?.nombre_completo ?? '' }
+      <Box sx={{ p: { xs: 2, sm: 3, md: 4 } }}>
+        {/* Header */}
+        <Box sx={{ 
+          display: 'flex', 
+          justifyContent: 'space-between', 
+          alignItems: 'center', 
+          mb: 4,
+          pb: 2,
+          borderBottom: `2px solid ${alpha('#000', 0.05)}`
+        }}>
+          <Typography component="h1" variant="h6" sx={{ fontWeight: 600 }}>
+            ✎ EDITAR: { memberData?.[0]?.nombre_completo ?? '' }
           </Typography>
-          <Button variant='outlined' size='small' onClick={onClose}>
+          <Button 
+            variant='outlined' 
+            size='small' 
+            onClick={onClose}
+            startIcon={<ClearIcon />}
+          >
             Cerrar
           </Button>
         </Box>
+
         <Box sx={{ display: 'flex', gap: 3, flexDirection: { xs: 'column', md: 'row' } }}>
+          {/* Formulario */}
           <Box sx={{ flex: 1 }}>
-            <Paper variant="outlined" sx={{ p: 3 }}>
+            <Paper variant="outlined" sx={{ p: 3, boxShadow: 1, height: 'auto', display: 'flex', flexDirection: 'column' }}>
               <FormProvider {...memberFormMethods} >
-                <Box sx={{ marginBottom: 5 }} >
+                <Box sx={{ marginBottom: 4 }} >
+                  <Typography variant='subtitle1' sx={{ fontWeight: 600, mb: 2, color: 'primary.main' }}>
+                    Información Personal
+                  </Typography>
                   <PersonalForm />
                 </Box>
-                <Box sx={{ marginBottom: 5 }} >
+                <Divider sx={{ my: 3 }} />
+                <Box sx={{ marginBottom: 4 }} >
+                  <Typography variant='subtitle1' sx={{ fontWeight: 600, mb: 2, color: 'primary.main' }}>
+                    Información Profesional
+                  </Typography>
                   <ProfessionForm />
                 </Box>
-                <Box>
+                <Divider sx={{ my: 3 }} />
+                <Box sx={{ marginBottom: 3 }}>
+                  <Typography variant='subtitle1' sx={{ fontWeight: 600, mb: 2, color: 'primary.main' }}>
+                    Servicio y Zona
+                  </Typography>
                   <ServiceForm />
                 </Box>
-                <Box sx={{display: 'flex', justifyContent: 'end', marginTop: 5}}>
-                  <LoadingButton onClick={handleSubmitUpdateMember} type="submit" variant='contained' loading={resultMember.isLoading}>
-                    Guardar Informacion
+                <Box sx={{display: 'flex', justifyContent: 'flex-end', marginTop: 4, gap: 2}}>
+                  <Button onClick={onClose} variant='outlined'>
+                    Cancelar
+                  </Button>
+                  <LoadingButton 
+                    onClick={handleSubmitUpdateMember} 
+                    type="submit" 
+                    variant='contained' 
+                    loading={resultMember.isLoading}
+                    startIcon={<EditIcon />}
+                  >
+                    Guardar Cambios
                   </LoadingButton>
                 </Box>
               </FormProvider>
             </Paper>
           </Box>
-          <Box sx={{ flex: { xs: 1, md: 0.8 } }}>
-            <Typography variant='h6' sx={{ marginBottom: 3, textAlign: 'center' }}>
-              Linea de tiempo
-            </Typography>
-            <Timeline>
-              {
-                !memberIsError && (memberData?.[0]?.resultados ?? []).map(({ id, creado_en, requisito: { nombre } }, index) => (
-                  <TimelineItem key={`resultados-${index}`}>
-                    <TimelineOppositeContent color="text.secondary" sx={{ fontSize: '0.75rem' }}>
-                      { dayjs(creado_en).format('DD/MM/YYYY') }
-                    </TimelineOppositeContent>
-                    <TimelineSeparator>
-                      <TimelineDot sx={{ width: 24, height: 24 }} />
-                      <TimelineConnector />
-                    </TimelineSeparator>
-                    <TimelineContent sx={{ fontSize: '0.875rem' }}>
-                      { nombre }
-                      <IconButton onClick={() => setOpenDeleteDialog({ open: true, id})} aria-label="clear" color='error' size='small'>
-                        <ClearIcon fontSize='small' />
-                      </IconButton>
-                    </TimelineContent>
-                  </TimelineItem>
-                ))
-              }
-            </Timeline>
 
-            <Box sx={{ display: 'flex', width: '100%', justifyContent: 'center' }}>
-              <Fab size="small" color="primary" aria-label="Consolidar resultado" onClick={handleClickOpenDialog}>
-                <Add fontSize='small' />
-              </Fab>
+          {/* Timeline */}
+          <Box sx={{ flex: { xs: 1, md: 0.9 } }}>
+            <Paper variant="outlined" sx={{ p: 3, boxShadow: 1, height: 'auto', display: 'flex', flexDirection: 'column' }}>
+              <Typography variant='h6' sx={{ marginBottom: 3, textAlign: 'center', fontWeight: 600, color: 'primary.main' }}>
+                📅 Progreso
+              </Typography>
+              
+              <Box sx={{ flex: 1, overflowY: 'auto' }}>
+                <CustomTimeline 
+                  items={(memberData?.[0]?.resultados ?? []).map(({ id, creado_en, requisito: { nombre } }) => ({
+                    id,
+                    nombre,
+                    creado_en: creado_en as Date | null
+                  })) as any}
+                  onDelete={(id) => setOpenDeleteDialog({ open: true, id })}
+                />
+              </Box>
 
-              <Dialog
-                open={openDialog}
-                onClose={handleCloseDialog}
-                aria-labelledby='dialog-title'
-                aria-describedby='dialog-description'
-              >
-                <DialogTitle id='dialog-title'>
-                  {"Consolidar Resultado"}
-                </DialogTitle>
+              <Box sx={{ display: 'flex', width: '100%', justifyContent: 'center', pt: 3, mt: 'auto', borderTop: `1px solid ${alpha('#000', 0.08)}` }}>
+                <Fab size="small" color="primary" aria-label="Consolidar resultado" onClick={handleClickOpenDialog}>
+                  <Add fontSize='small' />
+                </Fab>
 
-                <DialogContent sx={{ maxWidth: 500 }}>
-                  <form id="consolidation_results_form" onSubmit={consolidationHandleSubmit(onSubmitConsolidation)}>
-                    <Controller
-                      control={consolidationControl}
-                      name={`miembro_id`}
-                      render={({ field: { value, onChange } }) => (
-                        <input type="hidden" value={value} onChange={onChange}/>
-                      )} 
-                    />
+                <Dialog
+                  open={openDialog}
+                  onClose={handleCloseDialog}
+                  aria-labelledby='dialog-title'
+                  maxWidth="sm"
+                  fullWidth
+                >
+                  <DialogTitle id='dialog-title' sx={{ fontWeight: 600 }}>
+                    ➕ Consolidar Resultado
+                  </DialogTitle>
 
-                    <Controller
-                      control={consolidationControl}
-                      name='requisito_ids'
-                      rules={{ required: "Campo obligatorio" }}
-                      render={({ fieldState: { invalid, error } }) => (
-                        <FormControl sx={{ mt: 2 }} error={invalid} fullWidth>
-                          <InputLabel id="requisito_multiple" htmlFor="requisito_multiple">Requisito</InputLabel>
-                          <Select
-                            labelId='requisito_multiple'
-                            multiple
-                            onChange={handleMultipleRequirementsChange}
-                            value={selectedRequirements}
-                            input={<Input id="requisito_multiple" />}
-                            renderValue={(selected) => (
-                              <Box sx={{display: 'flex', flexWrap: 'wrap', gap: 0.5}}>
-                                {selected.map((value) => (
-                                  <Chip key={value} label={requirementsJson[value]} />
-                                ))}
-                              </Box>
-                            )}
-                          >
-                            <MenuItem key="-1" value="" hidden></MenuItem>
+                  <DialogContent sx={{ pt: 3 }}>
+                    <form id="consolidation_results_form" onSubmit={consolidationHandleSubmit(onSubmitConsolidation)}>
+                      <Controller
+                        control={consolidationControl}
+                        name={`miembro_id`}
+                        render={({ field: { value, onChange } }) => (
+                          <input type="hidden" value={value} onChange={onChange}/>
+                        )} 
+                      />
 
-                            {requirementsIsLoading && (
-                              <MenuItem key="0" value="">
-                                Cargando...
-                              </MenuItem>
-                            )}
+                      <Controller
+                        control={consolidationControl}
+                        name='requisito_ids'
+                        rules={{ required: "Campo obligatorio" }}
+                        render={({ fieldState: { invalid, error } }) => (
+                          <FormControl sx={{ mb: 3 }} error={invalid} fullWidth>
+                            <InputLabel id="requisito_multiple">Requisito</InputLabel>
+                            <Select
+                              labelId='requisito_multiple'
+                              multiple
+                              onChange={handleMultipleRequirementsChange}
+                              value={selectedRequirements}
+                              input={<Input id="requisito_multiple" />}
+                              renderValue={(selected) => (
+                                <Box sx={{display: 'flex', flexWrap: 'wrap', gap: 0.5}}>
+                                  {selected.map((value) => (
+                                    <Chip key={value} label={requirementsJson[value]} size='small' />
+                                  ))}
+                                </Box>
+                              )}
+                            >
+                              <MenuItem key="-1" value="" hidden></MenuItem>
 
-                            {!requirementsError &&
-                              requirementsData?.map(({ id, nombre }) => (
-                                <MenuItem key={`requisitos-${id}`} value={id}>
-                                  {nombre}
+                              {requirementsIsLoading && (
+                                <MenuItem key="0" value="">
+                                  Cargando...
                                 </MenuItem>
-                              ))}
+                              )}
 
-                            {!requirementsError && requirementsData?.length === 0 && (
-                              <MenuItem key="0" value="">
-                                {"No hay requisitos disponibles para consolidar"}
-                              </MenuItem>
-                            )}  
-                          </Select>
-                          <FormHelperText>{error?.message}</FormHelperText>
-                        </FormControl>
-                      )} 
-                    />
+                              {!requirementsError &&
+                                requirementsData?.map(({ id, nombre }) => (
+                                  <MenuItem key={`requisitos-${id}`} value={id}>
+                                    {nombre}
+                                  </MenuItem>
+                                ))}
 
-                    <Controller
-                      control={consolidationControl}
-                      name="fecha_consolidacion"
-                      defaultValue={dayjs()}
-                      rules={{ required: "Campo obligatorio" }}
-                      render={({
-                        field: { onChange, value },
-                        fieldState: { invalid, error },
-                      }) => (
-                        <DatePicker
-                          sx={{ mt: 2 }}
-                          onChange={(date) => onChange(date)}
-                          value={ value ? dayjs(value) : null }
-                          minDate={startOfQuarter}
-                          maxDate={endOfQuarter}
-                          format='DD/MM/YYYY'
-                          slotProps={{
-                            textField: {
-                              variant: "standard",
-                              label: "Fecha",
-                              error: invalid,
-                              helperText: error?.message,
-                              fullWidth: true,
-                            },
-                          }}
-                        />
-                      )}
-                    />
+                              {!requirementsError && requirementsData?.length === 0 && (
+                                <MenuItem key="0" value="">
+                                  {"No hay requisitos disponibles para consolidar"}
+                                </MenuItem>
+                              )}  
+                            </Select>
+                            <FormHelperText>{error?.message}</FormHelperText>
+                          </FormControl>
+                        )} 
+                      />
 
-                    <DialogActions>
-                      <Button onClick={handleCloseDialog} color='primary'>
-                        Cancelar
-                      </Button>
-                      <LoadingButton 
-                        type='submit'
-                        variant='contained'
-                        color='primary'
-                        loading={resultPostConsolidation.isLoading}
-                      >
-                        Guardar
-                      </LoadingButton>
-                    </DialogActions>
-                  </form>
-                </DialogContent>
+                      <Controller
+                        control={consolidationControl}
+                        name="fecha_consolidacion"
+                        defaultValue={dayjs()}
+                        rules={{ required: "Campo obligatorio" }}
+                        render={({
+                          field: { onChange, value },
+                          fieldState: { invalid, error },
+                        }) => (
+                          <DatePicker
+                            sx={{ width: '100%', mb: 2 }}
+                            onChange={(date) => onChange(date)}
+                            value={ value ? dayjs(value) : null }
+                            minDate={startOfQuarter}
+                            maxDate={endOfQuarter}
+                            format='DD/MM/YYYY'
+                            slotProps={{
+                              textField: {
+                                variant: "outlined",
+                                label: "Fecha de Consolidación",
+                                error: invalid,
+                                helperText: error?.message,
+                                fullWidth: true,
+                              },
+                            }}
+                          />
+                        )}
+                      />
 
-              </Dialog>
-            </Box>
+                      <DialogActions sx={{ pt: 2 }}>
+                        <Button onClick={handleCloseDialog} variant='outlined'>
+                          Cancelar
+                        </Button>
+                        <LoadingButton 
+                          type='submit'
+                          variant='contained'
+                          loading={resultPostConsolidation.isLoading}
+                        >
+                          Guardar
+                        </LoadingButton>
+                      </DialogActions>
+                    </form>
+                  </DialogContent>
+
+                </Dialog>
+              </Box>
+            </Paper>
           </Box>
         </Box>
 
@@ -460,15 +484,22 @@ export const EditMember: React.FC<EditMemberProps> = ({ id: propId, isModal = fa
           open={openDeleteDialog.open}
           onClose={handleCloseDeleteDialog}
           aria-labelledby="alert-dialog-title"
-          aria-describedby="alert-dialog-description"
         >
-          <DialogTitle id="alert-dialog-title">
-            {"Estas seguro de eliminar el resultado consolidado actual?"}
+          <DialogTitle id="alert-dialog-title" sx={{ fontWeight: 600 }}>
+            ⚠️ Confirmar eliminación
           </DialogTitle>
+          <DialogContent sx={{ pt: 2 }}>
+            <Typography>¿Estás seguro de que deseas eliminar este resultado consolidado?</Typography>
+          </DialogContent>
           <DialogActions>
-            <Button onClick={handleCloseDeleteDialog}>No</Button>
-            <Button onClick={handleDeleteConsolidation} autoFocus>
-              Si
+            <Button onClick={handleCloseDeleteDialog} variant='outlined'>No</Button>
+            <Button 
+              onClick={handleDeleteConsolidation} 
+              variant='contained'
+              color='error'
+              loading={resultDeleteConsolidation.isLoading}
+            >
+              Sí, eliminar
             </Button>
           </DialogActions>
         </Dialog>
@@ -477,211 +508,249 @@ export const EditMember: React.FC<EditMemberProps> = ({ id: propId, isModal = fa
   }
 
   return (
-    <Grid container spacing={1}>
+    <Grid container spacing={2} sx={{ p: { xs: 1, md: 3 } }}>
+      {/* Header */}
       <Grid size={12}>
-        <Button variant='outlined' sx={{ marginLeft: { xs: 0, md: 5 } }} onClick={() => router.back()}>
-          Atras
+        <Button 
+          variant='outlined' 
+          sx={{ marginLeft: { xs: 0, md: 2 } }}
+          startIcon={<ArrowBack />}
+          onClick={() => router.back()}
+        >
+          Atrás
         </Button>
       </Grid>
+
+      {/* Título */}
       <Grid size={12}>
-        <Box sx={{ display: 'flex', justifyContent: 'space-around', alignItems: 'center' }}>
-          <Typography component="h1" variant="h5">
-            MIEMBRO { memberData?.[0]?.nombre_completo ?? '' }
+        <Box sx={{ 
+          display: 'flex', 
+          justifyContent: 'center', 
+          alignItems: 'center',
+          py: 2,
+          backgroundColor: alpha('#000', 0.02),
+          borderRadius: 1,
+        }}>
+          <Typography component="h1" variant="h5" sx={{ fontWeight: 600 }}>
+            👤 EDITAR MIEMBRO: { memberData?.[0]?.nombre_completo ?? '' }
           </Typography>
         </Box>
       </Grid>
+
+      {/* Formulario */}
       <Grid size={{ xs: 12, md: 7}}>
         <Paper
           variant="outlined"
           sx={{ 
-            my: { 
-              xs: 1.5, 
-              md: 3 
-            }, 
-            mx: { 
-              md: 5 
-            }, 
-            p: { 
-              xs: 5,
-              md: 8 
-            } 
+            my: { xs: 1.5, md: 2 }, 
+            mx: { md: 2 }, 
+            p: { xs: 3, md: 4 },
+            boxShadow: 1,
+            height: 'auto',
+            display: 'flex',
+            flexDirection: 'column',
           }}
         >
           <FormProvider {...memberFormMethods} >
-            <Box sx={{ marginBottom: 5 }} >
+            <Box sx={{ mb: 4 }} >
+              <Typography variant='subtitle1' sx={{ fontWeight: 600, mb: 2.5, color: 'primary.main', fontSize: '1rem' }}>
+                👤 Información Personal
+              </Typography>
               <PersonalForm />
             </Box>
-            <Box sx={{ marginBottom: 5 }} >
+            <Divider sx={{ my: 4 }} />
+            
+            <Box sx={{ mb: 4 }} >
+              <Typography variant='subtitle1' sx={{ fontWeight: 600, mb: 2.5, color: 'primary.main', fontSize: '1rem' }}>
+                💼 Información Profesional
+              </Typography>
               <ProfessionForm />
             </Box>
-            <Box>
+            <Divider sx={{ my: 4 }} />
+            
+            <Box sx={{ mb: 4 }}>
+              <Typography variant='subtitle1' sx={{ fontWeight: 600, mb: 2.5, color: 'primary.main', fontSize: '1rem' }}>
+                🏢 Servicio y Zona
+              </Typography>
               <ServiceForm />
             </Box>
-            <Box sx={{display: 'flex', justifyContent: 'end', marginTop: 5}}>
-              <LoadingButton onClick={handleSubmitUpdateMember} type="submit" variant='contained' loading={resultMember.isLoading}>
-                Guardar Informacion
+            
+            <Box sx={{display: 'flex', justifyContent: 'flex-end', marginTop: 5, gap: 2, pt: 2}}>
+              <Button 
+                variant='outlined'
+                onClick={() => router.back()}
+              >
+                Cancelar
+              </Button>
+              <LoadingButton 
+                onClick={handleSubmitUpdateMember} 
+                type="submit" 
+                variant='contained' 
+                loading={resultMember.isLoading}
+                startIcon={<EditIcon />}
+              >
+                Guardar Cambios
               </LoadingButton>
             </Box>
           </FormProvider>
         </Paper>
       </Grid>
+
+      {/* Timeline */}
       <Grid 
         size={{xs: 12, md: 5}} 
-        sx={{ 
-          my: { 
-            xs: 3, 
-            md: 6 
-          },
-        }}
+        sx={{ my: { xs: 2, md: 0 } }}
       >
-        <Typography variant='h5' sx={{ marginBottom: 5, textAlign: 'center' }}>
-          Linea de tiempo
-        </Typography>
-        <Timeline>
-          {
-            !memberIsError && (memberData?.[0]?.resultados ?? []).map(({ id, creado_en, requisito: { nombre } }, index) => (
-              <TimelineItem key={`resultados-${index}`}>
-                <TimelineOppositeContent color="text.secondary">
-                  { dayjs(creado_en).format('DD/MM/YYYY') }
-                </TimelineOppositeContent>
-                <TimelineSeparator>
-                  <TimelineDot />
-                  <TimelineConnector />
-                </TimelineSeparator>
-                <TimelineContent>
-                  { nombre }
-                  <IconButton onClick={() => setOpenDeleteDialog({ open: true, id})} aria-label="clear" color='error' size='small'>
-                    <ClearIcon fontSize='small' />
-                  </IconButton>
-                </TimelineContent>
-              </TimelineItem>
-            ))
-          }
-        </Timeline>
+        <Paper
+          variant="outlined"
+          sx={{ 
+            p: { xs: 3, md: 4 },
+            boxShadow: 1,
+            display: 'flex',
+            flexDirection: 'column',
+            height: 'auto',
+            mx: { md: 2 },
+            my: { xs: 1.5, md: 2 }
+          }}
+        >
+          <Typography variant='h6' sx={{ mb: 3, textAlign: 'center', fontWeight: 600, color: 'primary.main' }}>
+            📅 Progreso
+          </Typography>
 
-        <Box sx={{ display: 'flex', width: '100%', justifyContent: 'center' }}>
-          <Fab size="medium" color="primary" aria-label="Consolidar resultado" onClick={handleClickOpenDialog}>
-            <Add />
-          </Fab>
+          <Box sx={{ flex: 1, overflowY: 'auto', pr: 1 }}>
+            <CustomTimeline 
+              items={(memberData?.[0]?.resultados ?? []).map(({ id, creado_en, requisito: { nombre } }) => ({
+                id,
+                nombre,
+                creado_en: creado_en as Date | null
+              })) as any}
+              onDelete={(id) => setOpenDeleteDialog({ open: true, id })}
+            />
+          </Box>
 
-          <Dialog
-            open={openDialog}
-            onClose={handleCloseDialog}
-            aria-labelledby='dialog-title'
-            aria-describedby='dialog-description'
-          >
-            <DialogTitle id='dialog-title'>
-              {"Consolidar Resultado"}
-            </DialogTitle>
+          <Box sx={{ display: 'flex', width: '100%', justifyContent: 'center', pt: 3, mt: 'auto', borderTop: `1px solid ${alpha('#000', 0.08)}` }}>
+            <Fab size="medium" color="primary" aria-label="Consolidar resultado" onClick={handleClickOpenDialog}>
+              <Add />
+            </Fab>
 
-            <DialogContent sx={{ maxWidth: 500 }}>
-              <form id="consolidation_results_form" onSubmit={consolidationHandleSubmit(onSubmitConsolidation)}>
-                <Controller
-                  control={consolidationControl}
-                  name={`miembro_id`}
-                  render={({ field: { value, onChange } }) => (
-                    <input type="hidden" value={value} onChange={onChange}/>
-                  )} 
-                />
+            <Dialog
+              open={openDialog}
+              onClose={handleCloseDialog}
+              aria-labelledby='dialog-title'
+              maxWidth="sm"
+              fullWidth
+            >
+              <DialogTitle id='dialog-title' sx={{ fontWeight: 600, display: 'flex', alignItems: 'center', gap: 1 }}>
+                ➕ Consolidar Resultado
+              </DialogTitle>
 
-                <Controller
-                  control={consolidationControl}
-                  name='requisito_ids'
-                  rules={{ required: "Campo obligatorio" }}
-                  render={({ fieldState: { invalid, error } }) => (
-                    <FormControl sx={{ mt: 2 }} error={invalid} fullWidth>
-                      <InputLabel id="requisito_multiple" htmlFor="requisito_multiple">Requisito</InputLabel>
-                      <Select
-                        labelId='requisito_multiple'
-                        multiple
-                        onChange={handleMultipleRequirementsChange}
-                        value={selectedRequirements}
-                        input={<Input id="requisito_multiple" />}
-                        renderValue={(selected) => (
-                          <Box sx={{display: 'flex', flexWrap: 'wrap', gap: 0.5}}>
-                            {selected.map((value) => (
-                              <Chip key={value} label={requirementsJson[value]} />
-                            ))}
-                          </Box>
-                        )}
-                      >
-                        <MenuItem key="-1" value="" hidden></MenuItem>
+              <DialogContent sx={{ pt: 3 }}>
+                <form id="consolidation_results_form" onSubmit={consolidationHandleSubmit(onSubmitConsolidation)}>
+                  <Controller
+                    control={consolidationControl}
+                    name={`miembro_id`}
+                    render={({ field: { value, onChange } }) => (
+                      <input type="hidden" value={value} onChange={onChange}/>
+                    )} 
+                  />
 
-                        {requirementsIsLoading && (
-                          <MenuItem key="0" value="">
-                            Cargando...
-                          </MenuItem>
-                        )}
+                  <Controller
+                    control={consolidationControl}
+                    name='requisito_ids'
+                    rules={{ required: "Campo obligatorio" }}
+                    render={({ fieldState: { invalid, error } }) => (
+                      <FormControl sx={{ mb: 3 }} error={invalid} fullWidth>
+                        <InputLabel id="requisito_multiple">Requisito</InputLabel>
+                        <Select
+                          labelId='requisito_multiple'
+                          multiple
+                          onChange={handleMultipleRequirementsChange}
+                          value={selectedRequirements}
+                          input={<Input id="requisito_multiple" />}
+                          renderValue={(selected: any[]) => (
+                            <Box sx={{display: 'flex', flexWrap: 'wrap', gap: 0.5}}>
+                              {selected.map((value) => (
+                                <Chip key={value} label={requirementsJson[value]} size='small' variant='outlined' />
+                              ))}
+                            </Box>
+                          )}
+                        >
+                          <MenuItem key="-1" value="" hidden></MenuItem>
 
-                        {!requirementsError &&
-                          requirementsData?.map(({ id, nombre }) => (
-                            <MenuItem key={`requisitos-${id}`} value={id}>
-                              {nombre}
+                          {requirementsIsLoading && (
+                            <MenuItem key="0" value="">
+                              Cargando...
                             </MenuItem>
-                          ))}
+                          )}
 
-                        {!requirementsError && requirementsData?.length === 0 && (
-                          <MenuItem key="0" value="">
-                            {"No hay requisitos disponibles para consolidar"}
-                          </MenuItem>
-                        )}  
-                      </Select>
-                      <FormHelperText>{error?.message}</FormHelperText>
-                    </FormControl>
-                  )} 
-                />
+                          {!requirementsError &&
+                            requirementsData?.map(({ id, nombre }) => (
+                              <MenuItem key={`requisitos-${id}`} value={id}>
+                                {nombre}
+                              </MenuItem>
+                            ))}
 
-                <Controller
-                  control={consolidationControl}
-                  name="fecha_consolidacion"
-                  rules={{ required: "Campo obligatorio" }}
-                  defaultValue={dayjs()}
-                  render={({
-                    field: { onChange, value },
-                    fieldState: { invalid, error },
-                  }) => (
-                    <DatePicker
-                      sx={{ mt: 2 }}
-                      onChange={(date) => onChange(date)}
-                      value={ value ? dayjs(value) : null }
-                      minDate={startOfQuarter}
-                      maxDate={endOfQuarter}
-                      format='DD/MM/YYYY'
-                      slotProps={{
-                        textField: {
-                          variant: "standard",
-                          label: "Fecha",
-                          error: invalid,
-                          helperText: error?.message,
-                          fullWidth: true,
-                        },
-                      }}
-                    />
-                  )}
-                />
+                          {!requirementsError && requirementsData?.length === 0 && (
+                            <MenuItem key="0" value="">
+                              {"No hay requisitos disponibles para consolidar"}
+                            </MenuItem>
+                          )}  
+                        </Select>
+                        <FormHelperText>{error?.message}</FormHelperText>
+                      </FormControl>
+                    )} 
+                  />
 
-                <DialogActions>
-                  <Button onClick={handleCloseDialog} color='primary'>
-                    Cancelar
-                  </Button>
-                  <LoadingButton 
-                    type='submit'
-                    variant='contained'
-                    color='primary'
-                    loading={resultPostConsolidation.isLoading}
-                  >
-                    Guardar
-                  </LoadingButton>
-                </DialogActions>
-              </form>
-            </DialogContent>
+                  <Controller
+                    control={consolidationControl}
+                    name="fecha_consolidacion"
+                    rules={{ required: "Campo obligatorio" }}
+                    defaultValue={dayjs()}
+                    render={({ field: { onChange, value }, fieldState: { invalid, error } }) => (
+                      <DatePicker
+                        sx={{ width: '100%', mb: 2 }}
+                        onChange={(date: any) => onChange(date)}
+                        value={ value ? dayjs(value) : null }
+                        minDate={startOfQuarter}
+                        maxDate={endOfQuarter}
+                        format='DD/MM/YYYY'
+                        slotProps={{
+                          textField: {
+                            variant: "outlined",
+                            label: "Fecha de Consolidación",
+                            error: invalid,
+                            helperText: error?.message,
+                            fullWidth: true,
+                          },
+                        }}
+                      />
+                    )}
+                  />
 
-          </Dialog>
-        </Box>
+                  <DialogActions sx={{ pt: 2, gap: 1 }}>
+                    <Button onClick={handleCloseDialog} variant='outlined'>
+                      Cancelar
+                    </Button>
+                    <LoadingButton 
+                      type='submit'
+                      variant='contained'
+                      loading={resultPostConsolidation.isLoading}
+                      startIcon={<Add />}
+                    >
+                      Guardar
+                    </LoadingButton>
+                  </DialogActions>
+                </form>
+              </DialogContent>
 
+            </Dialog>
+          </Box>
+        </Paper>
       </Grid>
+
+      {/* Snackbar */}
       <Snackbar 
-        anchorOrigin={{vertical: 'bottom', horizontal: 'right'}} 
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
         open={snackBarStatus.is_open} 
         autoHideDuration={2000} 
         onClose={handleCloseSnackBar}
@@ -696,19 +765,26 @@ export const EditMember: React.FC<EditMemberProps> = ({ id: propId, isModal = fa
         </Alert>
       </Snackbar>
 
+      {/* Delete Dialog */}
       <Dialog
         open={openDeleteDialog.open}
         onClose={handleCloseDeleteDialog}
         aria-labelledby="alert-dialog-title"
-        aria-describedby="alert-dialog-description"
       >
-        <DialogTitle id="alert-dialog-title">
-          {"Estas seguro de eliminar el resultado consolidado actual?"}
+        <DialogTitle id="alert-dialog-title" sx={{ fontWeight: 600 }}>
+          ⚠️ Confirmar eliminación
         </DialogTitle>
-        <DialogActions>
-          <Button onClick={handleCloseDeleteDialog}>No</Button>
-          <Button onClick={handleDeleteConsolidation} autoFocus>
-            Si
+        <DialogContent sx={{ pt: 2 }}>
+          <Typography>¿Estás seguro de que deseas eliminar este resultado consolidado?</Typography>
+        </DialogContent>
+        <DialogActions sx={{ gap: 1 }}>
+          <Button onClick={handleCloseDeleteDialog} variant='outlined'>No</Button>
+          <Button 
+            onClick={handleDeleteConsolidation} 
+            variant='contained'
+            color='error'
+          >
+            Sí, eliminar
           </Button>
         </DialogActions>
       </Dialog>
