@@ -45,12 +45,12 @@ export const InfiniteScrollTable = React.forwardRef<HTMLDivElement, InfiniteScro
       columns,
       onFetchMore,
       emptyMessage = "No hay datos registrados",
-      rowKey = (item, index) => index,
+      rowKey = (_item, index) => index,
       sx,
       tableWidth = '100%',
       enableColumnToggle = false,
     },
-    ref
+    _ref
   ) => {
     // Estado para columnas visibles (por defecto todas visibles excepto las marcadas como visible: false)
     const [visibleColumns, setVisibleColumns] = useState<Set<string>>(
@@ -98,7 +98,7 @@ export const InfiniteScrollTable = React.forwardRef<HTMLDivElement, InfiniteScro
     }, [data, loading, onFetchMore]);
 
     // Calcular posiciones sticky
-    const getStickyStyle = (column: ColumnDefinition<any>, index: number) => {
+    const getStickyStyle = (column: ColumnDefinition<any>, _index: number) => {
       if (!column.sticky) return {};
 
       const stickyColumns = filteredColumns.filter(col => col.sticky === column.sticky);
