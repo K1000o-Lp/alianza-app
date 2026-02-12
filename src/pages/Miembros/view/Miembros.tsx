@@ -14,7 +14,7 @@ import { ActionContext } from "../components/ActionContext";
 import { EditMember } from "../../EditMember/view/EditMember";
 
 export const Miembros: React.FC = () => {
-  const { user } = useAppSelector((state) => state.auth);
+  const user = useAppSelector((state) => state.auth.user);
   const [ openDialog, setOpenDialog ] = React.useState<{open: boolean, id?: number}>({ open: false, id: undefined });
   const [ openEditDialog, setOpenEditDialog ] = React.useState<{open: boolean, id?: number}>({ open: false, id: undefined });
   const [ filtersState, setFiltersState ] = React.useState<filterMembers>({ 
@@ -52,6 +52,10 @@ export const Miembros: React.FC = () => {
     await updateMember({ id, historial: { zona_id: config().ZONA_0 } });
     refetch();
   } 
+
+  const handleFetchMore = async () => {
+    await fetchNextPage();
+  }
 
   const handleFilterChange = (event: React.ChangeEvent<HTMLSelectElement> | any) => {
 		const { name, value } = event.target;
@@ -239,7 +243,7 @@ export const Miembros: React.FC = () => {
       </Box>
 
       <ActionContext.Provider value={{ editMember, handleOpenDialog }}>
-        <ListaMiembros miembros={(data?.pages?.flat() || [])} loading={isFetching} />
+        <ListaMiembros miembros={(data?.pages?.flat() || [])} loading={isFetching} onFetchMore={handleFetchMore} />
       </ActionContext.Provider>
 
       <Dialog
