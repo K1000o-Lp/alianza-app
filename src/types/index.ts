@@ -87,6 +87,7 @@ export interface ResponseMember {
   eliminado_en?: Date;
   historiales?: any;
   resultados: Resultado[];
+  resultadosPorRequisito?: Record<string, Resultado>; // Requisitos como keys dinámicas
   ultimo_requisito?: string;
 }
 
