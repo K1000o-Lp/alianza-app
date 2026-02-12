@@ -1,5 +1,5 @@
 import React from "react";
-import { Box, Button, Checkbox, CircularProgress, Dialog, DialogActions, DialogTitle, FormControl, FormControlLabel, Grid2 as Grid, InputLabel, NativeSelect, Paper, Typography } from "@mui/material";
+import { Box, Button, Checkbox, CircularProgress, Dialog, DialogActions, DialogTitle, FormControl, FormControlLabel, Grid2 as Grid, InputLabel, MenuItem, Paper, Select, Typography } from "@mui/material";
 import { DataGrid, GridActionsCellItem, GridColDef, GridRowId, GridToolbarContainer } from "@mui/x-data-grid";
 import { useGetMembersWithResultsQuery, useGetRequirementsQuery, useGetSupervisorsQuery, useGetZonesQuery, usePutMembersMutation } from "../../../redux/services";
 import { DatePicker } from "@mui/x-date-pickers";
@@ -321,63 +321,63 @@ export const ReportesConsolidaciones: React.FC = () => {
 					}}
 				>
 					<Box>
-						<FormControl sx={{ width: 200 }}>
+						<FormControl sx={{ width: 200 }} variant="standard">
 							<InputLabel htmlFor="zona_native">Zona</InputLabel>
-							<NativeSelect
+							<Select
 								onChange={handleFilterChange}
 								disabled={user?.zona !== null}
 								value={filtersState?.zona}
 								inputProps={{ id: "zona_native", name: "zona" }}
 							>
 								{zonesLoading && (
-									<option key="0" value="">
+									<MenuItem key="0" value="">
 										Cargando...
-									</option>
+									</MenuItem>
 								)}
 
 								{!zonesError && (
-									<option key={`zones-all`} value={0}>
+									<MenuItem key={`zones-all`} value={0}>
 										{"TODAS"}
-									</option>
+									</MenuItem>
 								)}
 
 								{!zonesError &&
 									zones?.map(({ id, descripcion }) => (
-										<option key={`zones-${id}`} value={id}>
+										<MenuItem key={`zones-${id}`} value={id}>
 											{descripcion}
-										</option>
+										</MenuItem>
 									))}
-							</NativeSelect>
+							</Select>
 						</FormControl>
 					</Box>
 
           <Box>
-            <FormControl sx={{ width: 300, ml: 2 }}>
+            <FormControl sx={{ width: 300, ml: 2 }} variant="standard">
               <InputLabel htmlFor="supervisor_native">Supervisor</InputLabel>
-              <NativeSelect
+              <Select
                 onChange={handleFilterChange}
                 value={filtersState?.supervisor}
                 inputProps={{ id: "supervisor_native", name: "supervisor" }}
               >
                 {supervisorsLoading && (
-                  <option key="0" value="">
+                  <MenuItem key="0" value="">
                     Cargando...
-                  </option>
+                  </MenuItem>
                 )}
     
                 {!supervisorsError && (
-                  <option key={`supervisor-none`} value={0}>
+                  <MenuItem key={`supervisor-none`} value={0}>
                     {"NINGUNO"}
-                  </option>
+                  </MenuItem>
                 )}
     
                 {!supervisorsError &&
                   supervisors?.map((supervisor: any) => (
-                    <option key={`zones-${supervisor?.miembro_id}`} value={supervisor?.miembro_id}>
+                    <MenuItem key={`zones-${supervisor?.miembro_id}`} value={supervisor?.miembro_id}>
                       {supervisor.nombre_completo}
-                    </option>
+                    </MenuItem>
                   ))}
-              </NativeSelect>
+              </Select>
             </FormControl>
           </Box>
 

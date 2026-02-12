@@ -1,4 +1,4 @@
-import { Alert, Autocomplete, Box, Button, Chip, CircularProgress, Dialog, DialogActions, DialogContent, DialogTitle, FormControl, InputLabel, NativeSelect, Paper, Snackbar, TextField, Typography } from "@mui/material";
+import { Alert, Autocomplete, Box, Button, Chip, CircularProgress, Dialog, DialogActions, DialogContent, DialogTitle, FormControl, InputLabel, MenuItem, Paper, Select, Snackbar, TextField, Typography } from "@mui/material";
 import { DataGrid, GridActionsCellItem, GridColDef } from "@mui/x-data-grid";
 import DeleteIcon from '@mui/icons-material/Delete';
 import * as React from "react";
@@ -196,33 +196,33 @@ export const Supervisores: React.FC = () => {
       
       <Box sx={{ display: 'flex', width: "100%", mb: 2, justifyContent: user?.zona === null ? 'space-between' : 'flex-end', alignItems: 'end' }}>
         { user?.zona === null && (
-          <FormControl sx={{ width: 200 }}>
+          <FormControl sx={{ width: 200 }} variant="standard">
             <InputLabel htmlFor="zona_native">Zona</InputLabel>
-            <NativeSelect
+            <Select
               onChange={handleFilterChange}
               disabled={user?.zona !== null}
               value={filtersState?.zona}
               inputProps={{ id: "zona_native", name: "zona" }}
             >
               {zonesLoading && (
-                <option key="0" value="">
+                <MenuItem key="0" value="">
                   Cargando...
-                </option>
+                </MenuItem>
               )}
 
               {!zonesError && (
-                <option key={`zones-all`} value={0}>
+                <MenuItem key={`zones-all`} value={0}>
                   {"TODAS"}
-                </option>
+                </MenuItem>
               )}
 
               {!zonesError &&
                 zones?.map(({ id, descripcion }) => (
-                  <option key={`zones-${id}`} value={id}>
+                  <MenuItem key={`zones-${id}`} value={id}>
                     {descripcion}
-                  </option>
+                  </MenuItem>
                 ))}
-            </NativeSelect>
+            </Select>
           </FormControl>
         ) }
 
