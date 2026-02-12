@@ -52,10 +52,13 @@ export const InfiniteScrollTable = React.forwardRef<HTMLDivElement, InfiniteScro
     },
     _ref
   ) => {
-    // Estado para columnas visibles (por defecto todas visibles excepto las marcadas como visible: false)
-    const [visibleColumns, setVisibleColumns] = useState<Set<string>>(
-      new Set(columns.filter(col => col.visible !== false).map(col => col.id))
-    );
+    // Estado para columnas ocultas por el usuario (solo las que ha ocultado manualmente)
+    const [hiddenColumns, setHiddenColumns] = useState<Set<string>>(new Set());
+
+    // Calcular columnas visibles dinámicamente sin useEffect
+    const defaultVisibleColumns = new Set(columns.filter(col => col.visible !== false).map(col => col.id));
+    const visibleColumns = new Set(Array.from(defaultVisibleColumns).filter(id => !hiddenColumns.has(id)));
+    
     const [anchorEl, setAnchorEl] = useState<HTMLButtonElement | null>(null);
 
     const handleOpenSettings = (event: React.MouseEvent<HTMLButtonElement>) => {
@@ -67,13 +70,13 @@ export const InfiniteScrollTable = React.forwardRef<HTMLDivElement, InfiniteScro
     };
 
     const handleColumnToggle = (columnId: string) => {
-      const newVisible = new Set(visibleColumns);
-      if (newVisible.has(columnId)) {
-        newVisible.delete(columnId);
+      const newHidden = new Set(hiddenColumns);
+      if (newHidden.has(columnId)) {
+        newHidden.delete(columnId);
       } else {
-        newVisible.add(columnId);
+        newHidden.add(columnId);
       }
-      setVisibleColumns(newVisible);
+      setHiddenColumns(newHidden);
     };
 
     const filteredColumns = columns.filter(col => visibleColumns.has(col.id));
