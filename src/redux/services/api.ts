@@ -85,6 +85,41 @@ export const alianzaApi = createApi({
         url: 'persona/miembros',
         params: { ...queryArg, desplazamiento: pageParam },
       }),
+      transformResponse: (response: ResponseMember[]) =>
+        response.map(
+          ({
+            id,
+            cedula,
+            nombre_completo,
+            telefono,
+            fecha_nacimiento,
+            hijos,
+            resultados,
+            ...rest
+          }) => {
+            const resultadosPorRequisito: Record<string, any> = {};
+
+            if(resultados?.length > 0) {
+              // Transformar resultados a objetos con clave por nombre de requisito
+              resultados.forEach((resultado) => {
+                const requisitName = resultado.requisito?.nombre || 'desconocido';
+                resultadosPorRequisito[requisitName] = resultado;
+              });
+            }
+
+            return ({
+              id,
+              cedula,
+              nombre_completo,
+              telefono,
+              fecha_nacimiento,
+              hijos,
+              resultados,
+              resultadosPorRequisito,
+              ...rest
+            })
+          }
+        ),
       providesTags: (result, _, { desplazamiento }) =>
         result ? [{ type: 'InfiniteResults', id: desplazamiento }] : [],
     }),
@@ -106,9 +141,15 @@ export const alianzaApi = createApi({
             ...rest
           }) => {
             let consolidado_en: Date | undefined;
+            const resultadosPorRequisito: Record<string, any> = {};
 
             if(resultados?.length > 0) {
               consolidado_en = resultados[0].creado_en as Date | undefined;
+              // Transformar resultados a objetos con clave por nombre de requisito
+              resultados.forEach((resultado) => {
+                const requisitName = resultado.requisito?.nombre || 'desconocido';
+                resultadosPorRequisito[requisitName] = resultado;
+              });
             }
 
             return ({
@@ -119,6 +160,7 @@ export const alianzaApi = createApi({
               fecha_nacimiento,
               hijos,
               resultados,
+              resultadosPorRequisito,
               consolidado_en,
               ...rest
             })
