@@ -4,7 +4,8 @@ import {
   FormHelperText,
   Grid2 as Grid,
   InputLabel,
-  NativeSelect,
+  MenuItem,
+  Select,
   Typography,
 } from "@mui/material";
 import { Controller, useFormContext } from "react-hook-form";
@@ -53,28 +54,28 @@ export const ProfessionForm: React.FC = () => {
               field: { onChange, value },
               fieldState: { invalid, error },
             }) => (
-              <FormControl error={invalid} fullWidth>
+              <FormControl error={invalid} fullWidth variant="standard">
                 <InputLabel htmlFor="discpacidad_native">
                   Discapacidad
                 </InputLabel>
-                <NativeSelect
+                <Select
                   inputProps={{ id: "discpacidad_native" }}
                   onChange={onChange}
                   value={value}
                 >
-                  <option key="-1" value="" hidden></option>
+                  <MenuItem key="-1" value="" hidden></MenuItem>
 
                   {disabilitiesLoading && (
-                    <option key="0" value="">
+                    <MenuItem key="0" value="">
                       Cargando...
-                    </option>
+                    </MenuItem>
                   )}
 
                   {!disabilitiesError &&
                     disabilities?.map(({ id, descripcion }) => (
-                      <option key={id} value={id}>{descripcion}</option>
+                      <MenuItem key={id} value={id}>{descripcion}</MenuItem>
                     ))}
-                </NativeSelect>
+                </Select>
                 <FormHelperText>{error?.message}</FormHelperText>
               </FormControl>
             )}
@@ -93,28 +94,28 @@ export const ProfessionForm: React.FC = () => {
               field: { onChange, value },
               fieldState: { invalid, error },
             }) => (
-              <FormControl error={invalid} fullWidth>
+              <FormControl error={invalid} fullWidth variant="standard">
                 <InputLabel htmlFor="educacion_native">Educación</InputLabel>
-                <NativeSelect
+                <Select
                   inputProps={{ id: "educacion_native" }}
                   onChange={onChange}
                   value={value}
                 >
-                  <option key="-1" value="" hidden></option>
+                  <MenuItem key="-1" value="" hidden></MenuItem>
 
                   {educationsLoading && (
-                    <option key="0" value="" hidden>
+                    <MenuItem key="0" value="" hidden>
                       Cargando...
-                    </option>
+                    </MenuItem>
                   )}
 
                   {!educationsError &&
                     educations?.map(({ id, descripcion }) => (
-                      <option key={id} value={id}>
+                      <MenuItem key={id} value={id}>
                         {descripcion}
-                      </option>
+                      </MenuItem>
                     ))}
-                </NativeSelect>
+                </Select>
                 <FormHelperText>{error?.message}</FormHelperText>
               </FormControl>
             )}
@@ -133,28 +134,28 @@ export const ProfessionForm: React.FC = () => {
               field: { onChange, value },
               fieldState: { invalid, error },
             }) => (
-              <FormControl error={invalid} fullWidth>
+              <FormControl error={invalid} fullWidth variant="standard">
                 <InputLabel htmlFor="ocupacion_native">Ocupación</InputLabel>
-                <NativeSelect
+                <Select
                   inputProps={{ id: "ocupacion_native" }}
                   onChange={onChange}
                   value={value}
                 >
-                  <option key="-1" value="" hidden></option>
+                  <MenuItem key="-1" value="" hidden></MenuItem>
 
                   {occupationsLoading && (
-                    <option key="0" value="">
+                    <MenuItem key="0" value="">
                       Cargando...
-                    </option>
+                    </MenuItem>
                   )}
 
                   {!occupationsError &&
                     occupations?.map(({ id, descripcion }) => (
-                      <option key={id} value={id}>
+                      <MenuItem key={id} value={id}>
                         {descripcion}
-                      </option>
+                      </MenuItem>
                     ))}
-                </NativeSelect>
+                </Select>
                 <FormHelperText>{error?.message}</FormHelperText>
               </FormControl>
             )}
