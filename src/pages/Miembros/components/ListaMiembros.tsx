@@ -64,7 +64,7 @@ export const ListaMiembros: React.FC<Props> = ({ miembros, loading, onFetchMore 
             {
                 id: 'nombre_completo',
                 label: 'Nombre Completo',
-                width: '225px',
+                width: '125px',
                 sticky: 'left',
                 render: (miembro: ResponseMember) => miembro.nombre_completo,
             },
@@ -89,13 +89,13 @@ export const ListaMiembros: React.FC<Props> = ({ miembros, loading, onFetchMore 
             {
                 id: 'hijos',
                 label: 'Hijos',
-                width: '50px',
+                width: '25px',
                 render: (miembro: ResponseMember) => miembro.hijos ?? 0,
             },
             {
                 id: 'supervisor',
                 label: 'Supervisor',
-                width: '225px',
+                width: '125px',
                 render: (miembro: ResponseMember) => obtenerSupervisor(miembro.historiales || []),
             },
         ];
@@ -107,7 +107,8 @@ export const ListaMiembros: React.FC<Props> = ({ miembros, loading, onFetchMore 
             return {
                 id: `requisito_${requisito.replace(/\s+/g, '_')}`,
                 label: labelCapitalizado,
-                width: '35px',
+                width: '40px',
+                maxWidth: '50px',
                 render: (miembro: ResponseMember) => {
                     const resultado = miembro.resultadosPorRequisito?.[requisito];
                     return resultado ? (

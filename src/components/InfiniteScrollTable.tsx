@@ -20,6 +20,7 @@ export interface ColumnDefinition<T> {
   id: string;
   label: string;
   width?: string;
+  maxWidth?: string;
   render: (item: T, index: number) => React.ReactNode;
   sticky?: 'left' | 'right'; // Posición sticky si aplica
   visible?: boolean; // Visible por defecto
@@ -183,12 +184,28 @@ export const InfiniteScrollTable = React.forwardRef<HTMLDivElement, InfiniteScro
                     key={column.id}
                     sx={{
                       width: column.width || "auto",
-                      padding: "12px 8px",
+                      maxWidth: column.maxWidth || undefined,
+                      padding: column.maxWidth ? "12px 4px" : "12px 8px",
                       whiteSpace: 'nowrap',
+                      verticalAlign: 'bottom',
                       ...getStickyStyle(column, 0),
                     }}
                   >
-                    <strong>{column.label}</strong>
+                    {column.maxWidth ? (
+                      <Box sx={{
+                        writingMode: 'vertical-rl',
+                        transform: 'rotate(180deg)',
+                        fontWeight: 'bold',
+                        fontSize: '0.75rem',
+                        lineHeight: 1.2,
+                        textAlign: 'left',
+                        pb: 0.5,
+                      }}>
+                        {column.label}
+                      </Box>
+                    ) : (
+                      <strong>{column.label}</strong>
+                    )}
                   </TableCell>
                 ))}
               </TableRow>
@@ -206,6 +223,7 @@ export const InfiniteScrollTable = React.forwardRef<HTMLDivElement, InfiniteScro
                       key={column.id}
                       sx={{
                         width: column.width || "auto",
+                        maxWidth: column.maxWidth || undefined,
                         padding: "10px 8px",
                         ...getStickyStyle(column, 0),
                       }}
