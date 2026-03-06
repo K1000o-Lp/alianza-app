@@ -132,8 +132,8 @@ export interface MemberForm {
   nombre_completo: string;
   telefono?: string;
   fecha_nacimiento?: Date|dayjs.Dayjs;
-  hijos: number;
-  educacion_id: number;
+  hijos?: number;
+  educacion_id?: number;
   estado_civil_id: number;
   ocupacion_id: number;
   discapacidad_id: number;

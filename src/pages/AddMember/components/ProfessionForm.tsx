@@ -12,7 +12,6 @@ import { Controller, useFormContext } from "react-hook-form";
 
 import {
   useGetDisabilitiesQuery,
-  useGetEducationsQuery,
   useGetOccupationsQuery,
 } from "../../../redux/services";
 
@@ -24,12 +23,6 @@ export const ProfessionForm: React.FC = () => {
     isLoading: disabilitiesLoading,
     isError: disabilitiesError,
   } = useGetDisabilitiesQuery();
-
-  const {
-    data: educations,
-    isLoading: educationsLoading,
-    isError: educationsError,
-  } = useGetEducationsQuery();
 
   const {
     data: occupations,
@@ -83,46 +76,6 @@ export const ProfessionForm: React.FC = () => {
         </Grid>
 
         <Grid size={{ xs: 3, md: 6 }} />
-
-        <Grid size={{ xs: 8, md: 6 }} >
-          <Controller
-            control={control}
-            name="educacion_id"
-            rules={{ required: "Campo obligatorio" }}
-            defaultValue=""
-            render={({
-              field: { onChange, value },
-              fieldState: { invalid, error },
-            }) => (
-              <FormControl error={invalid} fullWidth variant="standard">
-                <InputLabel htmlFor="educacion_native">Educación</InputLabel>
-                <Select
-                  inputProps={{ id: "educacion_native" }}
-                  onChange={onChange}
-                  value={value}
-                >
-                  <MenuItem key="-1" value="" hidden></MenuItem>
-
-                  {educationsLoading && (
-                    <MenuItem key="0" value="" hidden>
-                      Cargando...
-                    </MenuItem>
-                  )}
-
-                  {!educationsError &&
-                    educations?.map(({ id, descripcion }) => (
-                      <MenuItem key={id} value={id}>
-                        {descripcion}
-                      </MenuItem>
-                    ))}
-                </Select>
-                <FormHelperText>{error?.message}</FormHelperText>
-              </FormControl>
-            )}
-          />
-        </Grid>
-
-        <Grid size={{ xs: 4, md: 6 }} />
 
         <Grid size={{ xs: 12, md: 7 }} >
           <Controller

@@ -188,7 +188,7 @@ export const PersonalForm: React.FC = () => {
           />
         </Grid>
 
-        <Grid size={{ xs: 4, md: 2 }} >
+        {/* <Grid size={{ xs: 4, md: 2 }} >
           <Controller
             control={control}
             name="hijos"
@@ -213,7 +213,7 @@ export const PersonalForm: React.FC = () => {
               />
             )}
           />
-        </Grid>
+        </Grid> */}
 
         <Grid size={{ xs: 2, md: 6 }} />
       </Grid>

@@ -10,12 +10,11 @@ interface Props {
     cedula: string;
     telefono: string;
     nacimiento: Date;
-    hijos: number;
     resultados: any[];
     historiales: any[];
 }
 
-export const TarjetaMiembro: React.FC<Props> = ({ id, nombre_completo, cedula, telefono, nacimiento, hijos, resultados, historiales }) => {
+export const TarjetaMiembro: React.FC<Props> = ({ id, nombre_completo, cedula, telefono, nacimiento, resultados, historiales }) => {
     const { editMember, handleOpenDialog } = useContext(ActionContext);
     const [ tooltipOpen, setTooltipOpen ] = React.useState(false);
 
@@ -62,10 +61,6 @@ export const TarjetaMiembro: React.FC<Props> = ({ id, nombre_completo, cedula, t
             <GridSeparatorIcon sx={{ display: { xs: 'none', md: 'inline-block' } }} />
 
             <Typography fontSize={13}>🎂 { obtenerNacimiento(nacimiento) } ({ obtenerEdad(nacimiento) } años) </Typography>
-            
-            <GridSeparatorIcon sx={{ display: { xs: 'none', md: 'inline-block' } }} />
-
-            <Typography fontSize={13}>👶 { hijos ?? 0 }</Typography>
             
             <GridSeparatorIcon sx={{ display: { xs: 'none', md: 'inline-block' } }} />
 

@@ -67,7 +67,7 @@ export const AddMember: React.FC = () => {
         "estado_civil_id",
         "hijos",
       ],
-      ["educacion_id", "ocupacion_id", "discapacidad_id"],
+      ["ocupacion_id", "discapacidad_id"],
       [
         "historial.servicio_id",
         "historial.zona_id",

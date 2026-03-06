@@ -77,7 +77,6 @@ export const Tabla = <T extends Member>({ loading, data, headers, emptyMessage, 
                             <TableCell>{miembro.cedula || 'SIN CEDULA'}</TableCell>
                             <TableCell>{miembro.telefono || 'SIN TELEFONO'}</TableCell>
                             <TableCell>{obtenerNacimiento(miembro.fecha_nacimiento)} ({obtenerEdadLocal(miembro.fecha_nacimiento)} años)</TableCell>
-                            <TableCell>{miembro.hijos ?? 0}</TableCell>
                             <TableCell>{obtenerUltimoProceso(miembro.resultados) || 'NINGUNO'}</TableCell>
                             <TableCell>{obtenerSupervisor(miembro.historiales || [])}</TableCell>
                             <TableCell>
@@ -92,7 +91,7 @@ export const Tabla = <T extends Member>({ loading, data, headers, emptyMessage, 
                     {/* Skeleton de carga */}
                     {loading && (
                         <TableRow>
-                            <TableCell sx={{ padding: 2 }} colSpan={8}>
+                            <TableCell sx={{ padding: 2 }} colSpan={headers.length}>
                                 <Box sx={{ display: 'flex', justifyContent: 'center', width: '100%' }}>
                                     <CircularProgress />
                                 </Box>
@@ -103,7 +102,7 @@ export const Tabla = <T extends Member>({ loading, data, headers, emptyMessage, 
                     {/* Si no hay datos, mostrar mensaje de feedback */}
                     {!loading && (!data || data.length === 0) && (
                         <TableRow>
-                            <TableCell colSpan={8} sx={{ padding: 2 }}>
+                            <TableCell colSpan={headers.length} sx={{ padding: 2 }}>
                                 <Box textAlign="center" sx={{ width: '100%' }}>
                                     <Typography variant="body1">{ emptyMessage || 'No hay miembros registrados'}</Typography>
                                 </Box>

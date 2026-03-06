@@ -87,12 +87,6 @@ export const ListaMiembros: React.FC<Props> = ({ miembros, loading, onFetchMore 
                 render: (miembro: ResponseMember) => `${obtenerNacimiento(miembro.fecha_nacimiento)} (${obtenerEdad(miembro.fecha_nacimiento)}a)`,
             },
             {
-                id: 'hijos',
-                label: 'Hijos',
-                width: '25px',
-                render: (miembro: ResponseMember) => miembro.hijos ?? 0,
-            },
-            {
                 id: 'supervisor',
                 label: 'Supervisor',
                 width: '125px',
