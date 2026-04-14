@@ -319,6 +319,13 @@ export const alianzaApi = createApi({
         ),
       providesTags: ['Members'],
     }),
+    importarMiembros: builder.mutation<
+      { importados: number; transferidos: number; omitidos: number; fallidos: number; detalle: { nombre_completo: string; cedula?: string; exito: boolean; error?: string; transferido?: boolean; omitido?: boolean }[] },
+      { miembros: { nombre_completo: string; zona_id: number; cedula?: string; telefono?: string; bautizado?: boolean; fecha_nacimiento?: string }[]; transferir?: boolean }
+    >({
+      query: (body) => ({ url: 'persona/miembros/importar', method: 'POST', body }),
+      invalidatesTags: ['Members', 'Statistics', 'InfiniteResults'],
+    }),
     postMembers: builder.mutation<ResponseMember, MemberForm>({
       query: (newMember) => ({
         url: 'persona/miembros',
@@ -545,4 +552,5 @@ export const {
   useActualizarRolUsuarioMutation,
   useResetContrasenaUsuarioMutation,
   useEliminarUsuarioMutation,
+  useImportarMiembrosMutation,
 } = alianzaApi;

@@ -12,11 +12,13 @@ import dayjs from "dayjs";
 import { ListaMiembros } from "../components/ListaMiembros";
 import { ActionContext } from "../components/ActionContext";
 import { EditMember } from "../../EditMember/view/EditMember";
+import { ImportarMiembros } from "../components/ImportarMiembros";
 
 export const Miembros: React.FC = () => {
   const user = useAppSelector((state) => state.auth.user);
   const [ openDialog, setOpenDialog ] = React.useState<{open: boolean, id?: number}>({ open: false, id: undefined });
   const [ openEditDialog, setOpenEditDialog ] = React.useState<{open: boolean, id?: number}>({ open: false, id: undefined });
+  const [ openImportDialog, setOpenImportDialog ] = React.useState(false);
   const [ filtersState, setFiltersState ] = React.useState<filterMembers>({ 
 		zona: user?.zona !== null ? user?.zona.id as number : 0,
     supervisor: undefined,
@@ -196,6 +198,18 @@ export const Miembros: React.FC = () => {
           >
             Exportar a Excel
           </Button>
+          {user?.rol?.nombre === 'admin' && (
+            <Button
+              variant="outlined"
+              color="primary"
+              size="medium"
+              onClick={() => setOpenImportDialog(true)}
+              sx={{ ml: 1 }}
+              startIcon={<FileDownloadIcon sx={{ transform: 'rotate(180deg)' }} />}
+            >
+              Importar
+            </Button>
+          )}
         </Box>
       </Box>
 
@@ -278,6 +292,11 @@ export const Miembros: React.FC = () => {
           />
         )}
       </Dialog>
+
+      <ImportarMiembros
+        open={openImportDialog}
+        onClose={() => { setOpenImportDialog(false); refetch(); }}
+      />
     </Box>
   );
 };

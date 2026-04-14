@@ -62,6 +62,7 @@ export const RegistroCompleto: React.FC = () => {
   const [activeStep, setActiveStep] = useState(0);
   const [showPass, setShowPass] = useState(false);
   const [existingMember, setExistingMember] = useState<ExistingMember | null>(null);
+  const [tieneUsuario, setTieneUsuario] = useState(false);
   const [pendingFormData, setPendingFormData] = useState<Omit<RegistroCompletoForm, 'confirmar_contrasena'> | null>(null);
 
   const { user, isLogged } = useAppSelector((state) => state.auth);
@@ -121,7 +122,9 @@ export const RegistroCompleto: React.FC = () => {
     };
     setPendingFormData(data);
     registrar(payload).unwrap().catch((err: any) => {
-      if (err?.status === 409 && err?.data?.miembro) {
+      if (err?.status === 409 && err?.data?.tieneUsuario) {
+        setTieneUsuario(true);
+      } else if (err?.status === 409 && err?.data?.miembro) {
         setExistingMember(err.data.miembro as ExistingMember);
       }
     });
@@ -291,13 +294,27 @@ export const RegistroCompleto: React.FC = () => {
             ))}
           </Stepper>
 
-          {isError && !existingMember && (
+          {isError && !existingMember && !tieneUsuario && (
             <Alert severity="error" sx={{ mb: 3 }}>
               {errorMessage}
             </Alert>
           )}
 
-          {existingMember && (
+          {tieneUsuario && (
+            <Alert
+              severity="info"
+              sx={{ mb: 3 }}
+              action={
+                <Button color="inherit" size="small" onClick={() => navigate("/auth/signin")}>
+                  Iniciar sesión
+                </Button>
+              }
+            >
+              Este miembro ya tiene una cuenta registrada.
+            </Alert>
+          )}
+
+          {existingMember && !tieneUsuario && (
             <Alert
               severity="warning"
               sx={{ mb: 3 }}
