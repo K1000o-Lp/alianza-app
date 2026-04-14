@@ -1,4 +1,4 @@
-import { createApi, fetchBaseQuery, FetchBaseQueryError } from "@reduxjs/toolkit/query/react";
+import { createApi, fetchBaseQuery, FetchBaseQueryError, BaseQueryFn, FetchArgs, FetchBaseQueryMeta } from "@reduxjs/toolkit/query/react";
 import {
   CivilStatus,
   consolidationForm,
@@ -11,35 +11,77 @@ import {
   Options,
   Requirement,
   RequirementsOption,
+  RegistroForm,
   ResponseEvent,
   ResponseMember,
   ResponseResultado,
   ResponseStatistic,
+  Rol,
   Service,
   Sesion,
   Supervisor,
   SupervisorForm,
   SupervisorOptions,
   User,
+  UsuarioAdmin,
   Zone,
 } from "../../types";
 import { jwtDecode } from "jwt-decode";
-import { setUser } from "../features/authSlice";
+import { setUser, logOut } from "../features/authSlice";
 import { config } from "../../config";
 import { obtenerEdad } from "../../helpers/obtenerEdad";
 
 const BACKEND_URL = config()?.BACKEND_URL;
 
-const customBaseQuery = fetchBaseQuery({ 
+const rawBaseQuery = fetchBaseQuery({
   baseUrl: BACKEND_URL,
- });
+  credentials: 'include',
+  prepareHeaders: (headers) => {
+    const token = localStorage.getItem('token');
+    if (token) {
+      headers.set('Authorization', `Bearer ${token}`);
+    }
+    return headers;
+  },
+});
+
+const baseQueryWithReauth: BaseQueryFn<
+  string | FetchArgs,
+  unknown,
+  FetchBaseQueryError,
+  object,
+  FetchBaseQueryMeta
+> = async (args, api, extraOptions) => {
+  let result = await rawBaseQuery(args, api, extraOptions);
+
+  if (result.error?.status === 401) {
+    const refreshResult = await rawBaseQuery(
+      { url: 'auth/refresh', method: 'POST' },
+      api,
+      extraOptions,
+    );
+
+    if (refreshResult.data) {
+      const { access_token } = refreshResult.data as { access_token: string };
+      localStorage.setItem('token', access_token);
+      const { session }: { session: User } = jwtDecode(access_token);
+      api.dispatch(setUser(session));
+      result = await rawBaseQuery(args, api, extraOptions);
+    } else {
+      api.dispatch(logOut());
+      localStorage.removeItem('token');
+    }
+  }
+
+  return result;
+};
 
 export const alianzaApi = createApi({
   reducerPath: "alianzaApi",
-  baseQuery: customBaseQuery,
+  baseQuery: baseQueryWithReauth,
   tagTypes: [
     'Zones', 'Services', 'Members', 'Results', 'InfiniteResults', 'Statistics', 'CivilStatuses', 'Educations',
-    'Disabilities', 'Occupations', 'Supervisors'
+    'Disabilities', 'Occupations', 'Supervisors', 'Usuarios'
   ],
   endpoints: (builder) => ({
     iniciarSesion: builder.mutation<Sesion, IniciarSesionForm>({
@@ -55,7 +97,47 @@ export const alianzaApi = createApi({
   
           localStorage.setItem('token', access_token);
           dispatch(setUser(session));
-  
+        } catch(error) {
+          console.log(error);
+        }
+      }
+    }),
+    refrescarSesion: builder.mutation<{ access_token: string }, void>({
+      query: () => ({ url: 'auth/refresh', method: 'POST' }),
+    }),
+    cerrarSesion: builder.mutation<void, void>({
+      query: () => ({ url: 'auth/logout', method: 'POST' }),
+      onQueryStarted: async (_, { dispatch, queryFulfilled }) => {
+        try {
+          await queryFulfilled;
+        } catch {
+          // log out locally even if the server request fails
+        } finally {
+          dispatch(logOut());
+          localStorage.removeItem('token');
+        }
+      },
+    }),
+    registrarUsuario: builder.mutation<{ access_token: string }, RegistroForm>({
+      query: (dto) => ({ url: 'auth/registrar', method: 'POST', body: dto }),
+      onCacheEntryAdded: async (_, { dispatch, cacheDataLoaded }) => {
+        try {
+          const { data: { access_token } } = await cacheDataLoaded;
+          const { session }: { session: User } = jwtDecode(access_token);
+          localStorage.setItem('token', access_token);
+          dispatch(setUser(session));
+        } catch(error) {
+          console.log(error);
+        }
+      }
+    }),
+    registroCompleto: builder.mutation<{ access_token: string }, { nombre_completo: string; cedula: string; telefono: string; fecha_nacimiento: Date; zona_id: number; nombre_usuario: string; contrasena: string; transferir?: boolean }>({
+      query: (dto) => ({ url: 'auth/registro-completo', method: 'POST', body: dto }),
+      onCacheEntryAdded: async (_, { dispatch, cacheDataLoaded }) => {
+        try {
+          const { data: { access_token } } = await cacheDataLoaded;
+          const { session }: { session: User } = jwtDecode(access_token);
+          localStorage.setItem('token', access_token);
           dispatch(setUser(session));
         } catch(error) {
           console.log(error);
@@ -122,6 +204,38 @@ export const alianzaApi = createApi({
         ),
       providesTags: (result, _, { desplazamiento }) =>
         result ? [{ type: 'InfiniteResults', id: desplazamiento }] : [],
+    }),
+    getMembersConsolidation: builder.infiniteQuery<ResponseMember[], {
+      zona?: number;
+      supervisor?: number;
+      no_completado?: boolean;
+      requisito?: number;
+      results_since?: string;
+      results_until?: string;
+      limite?: number;
+    }, number>({
+      infiniteQueryOptions: {
+        initialPageParam: 0,
+        getNextPageParam: (_, __, lastPageParam) => lastPageParam + 24,
+      },
+      query: ({ queryArg, pageParam }) => ({
+        url: 'persona/miembros',
+        params: { ...queryArg, desplazamiento: pageParam },
+      }),
+      transformResponse: (response: ResponseMember[]) =>
+        response.map(({ id, cedula, nombre_completo, telefono, fecha_nacimiento, hijos, resultados, ...rest }) => {
+          let consolidado_en: Date | undefined;
+          const resultadosPorRequisito: Record<string, any> = {};
+          if (resultados?.length > 0) {
+            consolidado_en = resultados[0].creado_en as Date | undefined;
+            resultados.forEach((resultado) => {
+              const requisitName = resultado.requisito?.nombre || 'desconocido';
+              resultadosPorRequisito[requisitName] = resultado;
+            });
+          }
+          return { id, cedula, nombre_completo, telefono, fecha_nacimiento, hijos, resultados, resultadosPorRequisito, consolidado_en, ...rest };
+        }),
+      providesTags: ['Results'],
     }),
     getMembersWithResults: builder.query<ResponseMember[], Partial<Options>>({
       query: (options) => ({
@@ -270,6 +384,14 @@ export const alianzaApi = createApi({
         return ['Results', 'Members', { type: 'InfiniteResults', id: pageParam }];
       }
     }),
+    postResultadoSesion: builder.mutation<ResponseResultado, { requisito_id: number }>({
+      query: (dto) => ({
+        url: 'formacion/resultados/sesion',
+        method: 'POST',
+        body: dto,
+      }),
+      invalidatesTags: ['Results', 'Members'],
+    }),
     getRequirements: builder.query<Requirement[], Partial<RequirementsOption> | null | void >({
       query: (options) => ({ url: "formacion/requisitos", params: options || undefined }),
     }),
@@ -353,18 +475,57 @@ export const alianzaApi = createApi({
         },
       }),
       invalidatesTags: ['Supervisors'],
-    })
+    }),
+    getUsuarios: builder.query<UsuarioAdmin[], void>({
+      query: () => 'usuarios',
+      providesTags: ['Usuarios'],
+    }),
+    getRoles: builder.query<Rol[], void>({
+      query: () => 'usuarios/roles',
+    }),
+    crearUsuario: builder.mutation<UsuarioAdmin, { nombre_usuario: string; contrasena: string; rol_nombre: string; zona_id?: number; miembro_id?: number }>({
+      query: (dto) => ({ url: 'usuarios', method: 'POST', body: dto }),
+      invalidatesTags: ['Usuarios'],
+    }),
+    actualizarRolUsuario: builder.mutation<void, { id: number; rol_id: number }>({
+      query: ({ id, rol_id }) => ({
+        url: `usuarios/${id}/rol`,
+        method: 'PUT',
+        body: { rol_id },
+      }),
+      invalidatesTags: ['Usuarios'],
+    }),
+    resetContrasenaUsuario: builder.mutation<void, { id: number; nueva_contrasena: string }>({
+      query: ({ id, nueva_contrasena }) => ({
+        url: `usuarios/${id}/contrasena`,
+        method: 'PATCH',
+        body: { nueva_contrasena },
+      }),
+    }),
+    eliminarUsuario: builder.mutation<void, number>({
+      query: (id) => ({
+        url: `usuarios/${id}`,
+        method: 'DELETE',
+      }),
+      invalidatesTags: ['Usuarios'],
+    }),
   }),
 });
 
 export const {
   useIniciarSesionMutation,
+  useRefrescarSesionMutation,
+  useCerrarSesionMutation,
+  useRegistrarUsuarioMutation,
+  useRegistroCompletoMutation,
   useGetCountStatisticsQuery,
   useGetMembersWithResultsQuery,
+  useGetMembersConsolidationInfiniteQuery,
   useGetMembersWithResultsAndPaginationInfiniteQuery,
   useGetMembersWithLastResultQuery,
   usePostConsolidationResultsMutation,
   useDeleteConsolidationResultsMutation,
+  usePostResultadoSesionMutation,
   useGetRequirementsQuery,
   usePostMembersMutation,
   usePutMembersMutation,
@@ -378,4 +539,10 @@ export const {
   useGetSupervisorsQuery,
   usePostSupervisorsMutation,
   useDeleteSupervisorsMutation,
+  useGetUsuariosQuery,
+  useGetRolesQuery,
+  useCrearUsuarioMutation,
+  useActualizarRolUsuarioMutation,
+  useResetContrasenaUsuarioMutation,
+  useEliminarUsuarioMutation,
 } = alianzaApi;

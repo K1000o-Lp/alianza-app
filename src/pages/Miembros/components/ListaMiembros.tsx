@@ -1,6 +1,7 @@
 import { Box, Chip, IconButton } from "@mui/material";
 import React, { useContext, useMemo } from "react";
 import { ActionContext } from "./ActionContext";
+import { useAppSelector } from "../../../redux/store";
 import { Delete as DeleteIcon, Edit as EditIcon } from "@mui/icons-material";
 import { InfiniteScrollTable, ColumnDefinition } from "../../../components";
 import { ResponseMember } from "../../../types";
@@ -14,6 +15,7 @@ interface Props {
 
 export const ListaMiembros: React.FC<Props> = ({ miembros, loading, onFetchMore = async () => {} }) => {
     const { editMember, handleOpenDialog } = useContext(ActionContext);
+    const { user } = useAppSelector((state) => state.auth);
     
     const obtenerNacimiento = (nacimiento: Date) => {
         return new Date(nacimiento).toISOString().split('T')[0];
@@ -143,19 +145,21 @@ export const ListaMiembros: React.FC<Props> = ({ miembros, loading, onFetchMore 
                         >
                             <EditIcon />
                         </IconButton>
-                        <IconButton 
-                            size="small" 
-                            aria-label="delete" 
-                            onClick={() => handleOpenDialog && handleOpenDialog(miembro.id)} 
-                            color="error"
-                        >
-                            <DeleteIcon />
-                        </IconButton>
+                        {user?.rol?.nombre === 'admin' && (
+                            <IconButton 
+                                size="small" 
+                                aria-label="delete" 
+                                onClick={() => handleOpenDialog && handleOpenDialog(miembro.id)} 
+                                color="error"
+                            >
+                                <DeleteIcon />
+                            </IconButton>
+                        )}
                     </Box>
                 ),
             },
         ];
-    }, [editMember, handleOpenDialog, requisitosEncontrados]);
+    }, [editMember, handleOpenDialog, requisitosEncontrados, user]);
 
     return (
         <InfiniteScrollTable

@@ -1,11 +1,19 @@
 import * as React from "react";
 
 import { CountStatistics } from "../components/CountStatistics";
+import { HomeMiembro } from "../components/HomeMiembro";
 
 import { Statistic } from "../../../types";
 import { Grid2 as Grid } from "@mui/material";
+import { useAppSelector } from "../../../redux/store";
 
 export const Home: React.FC = () => {
+  const { user } = useAppSelector((state) => state.auth);
+
+  if (user?.rol?.nombre === "miembros") {
+    return <HomeMiembro />;
+  }
+
   const statisticsList: Statistic[] = [
     {
       key: "grupo-conexion",

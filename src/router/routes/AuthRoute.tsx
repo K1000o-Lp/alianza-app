@@ -1,5 +1,6 @@
 import { Outlet, RouteObject } from "react-router-dom";
 import { SignIn } from "../../pages/SignIn";
+import { Registro } from "../../pages/Registro";
 import { PublicRoute } from "../components";
 
 export const AuthRoute: RouteObject = {
@@ -14,6 +15,10 @@ export const AuthRoute: RouteObject = {
       index: true,
       path: "signin",
       element: <SignIn />,
+    },
+    {
+      path: "registro",
+      element: <Registro />,
     },
   ],
 };

@@ -1,19 +1,18 @@
 import React from "react";
-import { Box, Button, Checkbox, CircularProgress, Dialog, DialogActions, DialogTitle, FormControl, FormControlLabel, Grid2 as Grid, InputLabel, MenuItem, Paper, Select, Typography } from "@mui/material";
-import { DataGrid, GridActionsCellItem, GridColDef, GridRowId, GridToolbarContainer } from "@mui/x-data-grid";
-import { useGetMembersWithResultsQuery, useGetRequirementsQuery, useGetSupervisorsQuery, useGetZonesQuery, usePutMembersMutation } from "../../../redux/services";
+import { Box, Button, Checkbox, Dialog, DialogActions, DialogTitle, FormControl, FormControlLabel, Grid2 as Grid, InputLabel, MenuItem, Paper, Select, Typography } from "@mui/material";
+import { useGetMembersConsolidationInfiniteQuery, useGetRequirementsQuery, useGetSupervisorsQuery, useGetZonesQuery, usePutMembersMutation } from "../../../redux/services";
 import { DatePicker } from "@mui/x-date-pickers";
 import dayjs from "dayjs";
 import quarterOfYear from 'dayjs/plugin/quarterOfYear';
-import EditIcon from '@mui/icons-material/Edit';
 import FileDownloadIcon from '@mui/icons-material/FileDownload';
-import DeleteIcon from '@mui/icons-material/Delete';
 import { useAppSelector } from "../../../redux/store";
 import { filterConsolidation } from "../../../types";
 import { useRouter } from "../../../router/hooks";
 import queryString from "query-string";
 import { useLocation } from "react-router-dom";
 import { config } from "../../../config";
+import { ListaReportes } from "../components/ListaReportes";
+import { EditMember } from "../../EditMember/view/EditMember";
 
 dayjs.extend(quarterOfYear);
 
@@ -88,6 +87,7 @@ export const ReportesConsolidaciones: React.FC = () => {
 	});
   
   const  [openDialog, setOpenDialog] = React.useState<{open: boolean, id?: number}>({ open: false, id: undefined });
+  const  [openEditDialog, setOpenEditDialog] = React.useState<{open: boolean, id?: number}>({ open: false, id: undefined });
 
 	const {
     data: zones,
@@ -109,8 +109,9 @@ export const ReportesConsolidaciones: React.FC = () => {
 
   const { 
 		data: memberData, 
-		isLoading: memberIsLoading,
-	} = useGetMembersWithResultsQuery({ 
+		isFetching: memberIsFetching,
+    fetchNextPage,
+	} = useGetMembersConsolidationInfiniteQuery({ 
     zona: filtersState?.zona, 
     supervisor: filtersState?.supervisor,
     no_completado: filtersState?.no_completado,
@@ -147,17 +148,20 @@ export const ReportesConsolidaciones: React.FC = () => {
     }));
   }
 
-  const editMember = (id:  GridRowId | null) => {
+  const editMember = (id: number) => {
     if(!id) return;
-
-    router.push(`/miembros/${id}/editar`);
+    setOpenEditDialog({ open: true, id });
   }
 
-  const deleteMember = async (id: GridRowId | null) => {
+  const deleteMember = async (id: number) => {
     if(!id) return;
 
-    updateMember({ id: id as number, historial: { zona_id: config().ZONA_0 } });
+    updateMember({ id, historial: { zona_id: config().ZONA_0 } });
   } 
+
+  const handleFetchMore = async () => {
+    await fetchNextPage();
+  }
 
   const handleCloseDialog = () => {
     setOpenDialog({open: false, id: undefined});
@@ -200,79 +204,6 @@ export const ReportesConsolidaciones: React.FC = () => {
       a.click();
     })
     .catch(error => console.error(error));
-  }
-
-	const columns: GridColDef[] = [
-    { 
-      field: "id", 
-      headerName: "ID", 
-      width: 90 
-    },
-    { 
-      field: "cedula", 
-      headerName: "CEDULA", 
-      valueGetter: (value) => {
-        return value || 'SIN CEDULA';
-      },
-      width: 120 
-    },
-    { 
-      field: "nombre_completo", 
-      headerName: "NOMBRE COMPLETO", 
-      width: 350 
-    },
-    {
-      field: "telefono",
-      headerName: "TELEFONO",
-      valueGetter: (value) => {
-        return value || 'SIN TELEFONO';
-      },
-      width: 150,
-    },
-    { 
-      field: "resultados", 
-		  valueGetter: (value) => {
-			  const resultados = value as Array<any>;
-			  if(resultados.length === 0) return 'SIN PROGRESO';
-
-				return resultados[0]?.requisito?.nombre;
-			},
-      headerName: "REQUISITO ALCANZADO", 
-      width: 200, 
-    },
-    {
-      field: "consolidado_en",
-      valueGetter: (value) => {
-
-        if(!value) return 'SIN FECHA';
-
-        return dayjs(value).format("DD/MM/YYYY");
-      },
-      headerName: "FECHA DE CONSOLIDACION",
-      width: 200
-    },
-    {
-      field: 'actions',
-      type: 'actions',
-      width: 100,
-      getActions: (params) => [
-        <GridActionsCellItem icon={<EditIcon />} label="Edit" onClick={() => editMember(params?.id)} />,
-        <GridActionsCellItem icon={<DeleteIcon />} label="Delete" onClick={() => handleOpenDialog(params.id as number)} />,
-      ],
-	  },
-  ];
-
-  const CustomToolbar = () => {
-    return (
-      <GridToolbarContainer>
-        <Button color="primary" variant="text" startIcon={<FileDownloadIcon />} onClick={handleClickExportToExcel}>
-          Exportar lista a Excel
-        </Button>
-        <Button color="primary" variant="text" startIcon={<FileDownloadIcon />} onClick={handleClickExportResumeToExcel}>
-          Exportar resumen a Excel
-        </Button>
-      </GridToolbarContainer>
-    );
   }
 
   React.useEffect(() => {
@@ -326,7 +257,7 @@ export const ReportesConsolidaciones: React.FC = () => {
 							<Select
 								onChange={handleFilterChange}
 								disabled={user?.zona !== null}
-								value={filtersState?.zona}
+							value={zonesLoading ? "" : filtersState?.zona}
 								inputProps={{ id: "zona_native", name: "zona" }}
 							>
 								{zonesLoading && (
@@ -397,7 +328,7 @@ export const ReportesConsolidaciones: React.FC = () => {
 						<InputLabel htmlFor="requisito_native">Proceso de formacion</InputLabel>
 						<Select
 							onChange={handleFilterChange}
-							value={filtersState?.requisito}
+							value={requirementsIsLoading ? "" : filtersState?.requisito}
 							inputProps={{ id: "requisito_native", name: "requisito" }}
 						>
 							{requirementsIsLoading && (
@@ -452,42 +383,22 @@ export const ReportesConsolidaciones: React.FC = () => {
 			</Grid>
 
 			<Grid size={12}>
-				<Paper
-					sx={{ 
-						display: "flex",
-						height: "calc(100vh - 310px)",
-						flexDirection: "column",
-					}}
-				>
-          {
-            memberIsLoading || updateMemberIsLoading 
-            ? (
-              <Box sx={{display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%'}}>
-                <CircularProgress />
-              </Box>
-            )
-            : Array.isArray(memberData) && memberData.length > 0 
-            ? (
-              <DataGrid
-                rows={memberData ?? []}
-                columns={columns}
-                loading={memberIsLoading || updateMemberIsLoading}
-                getRowId={(row) => row?.id || null}
-                slots={{ 
-                  toolbar: CustomToolbar, 
-                  noRowsOverlay: () => <Box sx={{display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%'}}><Typography>No hay datos</Typography></Box> 
-                }}
-                initialState={{ pagination: { paginationModel: { pageSize: 50 } } }}
-                disableRowSelectionOnClick
-              />
-            ) 
-            : (
-              <Box sx={{display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%'}}>
-                <Typography>No hay datos</Typography>
-              </Box>
-            )
-          }
-				</Paper>
+				<Box sx={{ display: 'flex', gap: 1, mb: 1 }}>
+					<Button color="primary" variant="outlined" startIcon={<FileDownloadIcon />} onClick={handleClickExportToExcel}>
+						Exportar lista a Excel
+					</Button>
+					<Button color="primary" variant="outlined" startIcon={<FileDownloadIcon />} onClick={handleClickExportResumeToExcel}>
+						Exportar resumen a Excel
+					</Button>
+				</Box>
+
+				<ListaReportes
+					miembros={memberData?.pages?.flat() ?? []}
+					loading={memberIsFetching || updateMemberIsLoading}
+					onFetchMore={handleFetchMore}
+					onEdit={editMember}
+					onDelete={handleOpenDialog}
+				/>
 
         <Dialog
           open={openDialog.open}
@@ -504,6 +415,22 @@ export const ReportesConsolidaciones: React.FC = () => {
               Si
             </Button>
           </DialogActions>
+        </Dialog>
+
+        <Dialog
+          open={openEditDialog.open}
+          onClose={() => setOpenEditDialog({ open: false, id: undefined })}
+          maxWidth="lg"
+          fullWidth
+          aria-labelledby="edit-member-dialog"
+        >
+          {openEditDialog.id && (
+            <EditMember
+              id={openEditDialog.id}
+              isModal={true}
+              onClose={() => setOpenEditDialog({ open: false, id: undefined })}
+            />
+          )}
         </Dialog>
 			</Grid>
 		</Grid>

@@ -123,6 +123,13 @@ export function SignIn() {
             >
               Acceder
             </Button>
+            <Grid container justifyContent="flex-end">
+              <Grid item>
+                <Link href="/auth/registro" variant="body2">
+                  ¿Eres miembro y no tienes cuenta? Regístrate
+                </Link>
+              </Grid>
+            </Grid>
             <Copyright sx={{ mt: 5 }} />
           </Box>
         </Box>

@@ -3,11 +3,26 @@ import { ReactElement } from "react";
 
 
 
+export interface Rol {
+  id: number;
+  nombre: string; // 'admin' | 'pastores' | 'miembros'
+  descripcion?: string;
+}
+
+export interface UsuarioAdmin {
+  id: number;
+  nombre_usuario: string;
+  rol: Rol | null;
+  miembro?: { id: number; nombre_completo: string; cedula?: string };
+  zona?: { id: number; descripcion: string };
+}
+
 export interface User {
   id: number;
   nombre_usuario: string;
-  miembro: ResponseMember
+  miembro: ResponseMember;
   zona: Zone;
+  rol: Rol | null;
 }
 
 export interface NavItem {
@@ -134,18 +149,18 @@ export interface MemberForm {
   fecha_nacimiento?: Date|dayjs.Dayjs;
   hijos?: number;
   educacion_id?: number;
-  estado_civil_id: number;
-  ocupacion_id: number;
-  discapacidad_id: number;
-  historial: {
+  estado_civil_id?: number;
+  ocupacion_id?: number;
+  discapacidad_id?: number;
+  historial?: {
     servicio_id?: number;
-    zona_id: number;
+    zona_id?: number;
     supervisor_id?: number;
   };
-  requisito: {
+  requisito?: {
     requisito_ids: number[];
   }
-  pageParam: number;
+  pageParam?: number;
 }
 
 export interface consolidationForm {
@@ -225,4 +240,12 @@ export interface SupervisorOptions {
 export interface SupervisorForm {
   zona_id: number;
   miembro_ids: any[];
+}
+
+export interface RegistroForm {
+  cedula?: string;
+  nombre_completo?: string;
+  zona_id?: number;
+  nombre_usuario: string;
+  contrasena: string;
 }

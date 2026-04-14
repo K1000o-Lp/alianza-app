@@ -11,14 +11,14 @@ import Avatar from "@mui/material/Avatar";
 import Tooltip from "@mui/material/Tooltip";
 import MenuItem from "@mui/material/MenuItem";
 import { DrawerMenu } from "./DrawerMenu";
-import { useAppDispatch, useAppSelector } from "../../redux/store";
-import { logOut } from "../../redux/features/authSlice";
+import { useAppSelector } from "../../redux/store";
+import { useCerrarSesionMutation } from "../../redux/services";
 
 import bannerImgUrl from "/banner.webp";
 
 export function ResponsiveAppBar() {
-  const dispatch = useAppDispatch();
   const { user } = useAppSelector((state) => state.auth);
+  const [cerrarSesion] = useCerrarSesionMutation();
   const [open, setOpen] = React.useState<boolean>(false);
 
   const [anchorElUser, setAnchorElUser] = React.useState<null | HTMLElement>(
@@ -49,8 +49,7 @@ export function ResponsiveAppBar() {
     {
       label: 'Cerrar Sesion',
       action: () => {
-        localStorage.removeItem('token');
-        dispatch(logOut());
+        cerrarSesion();
       }
     }
   ];

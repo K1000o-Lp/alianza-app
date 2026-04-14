@@ -4,14 +4,12 @@ import Paper from "@mui/material/Paper";
 import LoadingButton from '@mui/lab/LoadingButton';
 import Typography from "@mui/material/Typography";
 import { useParams } from 'react-router-dom';
-import { useDeleteConsolidationResultsMutation, useGetMembersWithResultsQuery, useGetRequirementsQuery, usePostConsolidationResultsMutation, usePutMembersMutation } from '../../../redux/services';
-import { Controller, FormProvider, SubmitHandler, useForm } from 'react-hook-form';
+import { useDeleteConsolidationResultsMutation, useGetMembersWithResultsQuery, useGetRequirementsQuery, useGetSupervisorsQuery, useGetZonesQuery, usePostConsolidationResultsMutation, usePutMembersMutation } from '../../../redux/services';
+import { Controller, SubmitHandler, useForm } from 'react-hook-form';
 import { consolidationForm, MemberForm, snackBarStatus } from '../../../types';
-import { Alert, Button, Chip, Dialog, DialogActions, DialogContent, DialogTitle, Fab, FormControl, FormHelperText, Grid2 as Grid, Input, InputLabel, MenuItem, Select, SelectChangeEvent, Skeleton, Snackbar, Divider, alpha } from '@mui/material';
+import { Alert, Button, Chip, Dialog, DialogActions, DialogContent, DialogTitle, Fab, FormControl, FormHelperText, Grid2 as Grid, Input, InputLabel, MenuItem, Select, SelectChangeEvent, Skeleton, Snackbar, TextField, alpha } from '@mui/material';
 import { useRouter } from '../../../router/hooks';
-import { PersonalForm } from '../../AddMember/components/PersonalForm';
-import { ProfessionForm } from '../../AddMember/components/ProfessionForm';
-import { ServiceForm } from '../../AddMember/components/ServiceForm';
+import { useAppSelector } from '../../../redux/store';
 import dayjs from 'dayjs';
 import quarterOfYear from 'dayjs/plugin/quarterOfYear';
 import { Add, Edit as EditIcon, ArrowBack } from '@mui/icons-material';
@@ -75,6 +73,13 @@ export const EditMember: React.FC<EditMemberProps> = ({ id: propId, isModal = fa
 
   const memberFormMethods = useForm<MemberForm>();
   const { control: consolidationControl, handleSubmit: consolidationHandleSubmit, setValue, reset: consolidationReset } = useForm<consolidationForm>({ defaultValues: { miembro_id: Number(id) ?? undefined, fecha_consolidacion: dayjs() }});
+  const { user } = useAppSelector((state) => state.auth);
+  const zonaId = memberFormMethods.watch('historial.zona_id');
+  const { data: zones } = useGetZonesQuery();
+  const { data: supervisors, isLoading: supervisorsLoading } = useGetSupervisorsQuery(
+    { zona_id: zonaId },
+    { skip: !zonaId, refetchOnMountOrArgChange: true }
+  );
 
   const onSubmitUpdateMember: SubmitHandler<MemberForm> = async (data) => {
     const pageParam = calcularPageParam(Number(id));
@@ -284,42 +289,142 @@ export const EditMember: React.FC<EditMemberProps> = ({ id: propId, isModal = fa
           {/* Formulario */}
           <Box sx={{ flex: 1 }}>
             <Paper variant="outlined" sx={{ p: 3, boxShadow: 1, height: 'auto', display: 'flex', flexDirection: 'column' }}>
-              <FormProvider {...memberFormMethods} >
-                <Box sx={{ marginBottom: 4 }} >
-                  <Typography variant='subtitle1' sx={{ fontWeight: 600, mb: 2, color: 'primary.main' }}>
-                    Información Personal
-                  </Typography>
-                  <PersonalForm />
-                </Box>
-                <Divider sx={{ my: 3 }} />
-                <Box sx={{ marginBottom: 4 }} >
-                  <Typography variant='subtitle1' sx={{ fontWeight: 600, mb: 2, color: 'primary.main' }}>
-                    Información Profesional
-                  </Typography>
-                  <ProfessionForm />
-                </Box>
-                <Divider sx={{ my: 3 }} />
-                <Box sx={{ marginBottom: 3 }}>
-                  <Typography variant='subtitle1' sx={{ fontWeight: 600, mb: 2, color: 'primary.main' }}>
-                    Servicio y Zona
-                  </Typography>
-                  <ServiceForm />
-                </Box>
-                <Box sx={{display: 'flex', justifyContent: 'flex-end', marginTop: 4, gap: 2}}>
-                  <Button onClick={onClose} variant='outlined'>
-                    Cancelar
-                  </Button>
-                  <LoadingButton 
-                    onClick={handleSubmitUpdateMember} 
-                    type="submit" 
-                    variant='contained' 
-                    loading={resultMember.isLoading}
-                    startIcon={<EditIcon />}
-                  >
-                    Guardar Cambios
-                  </LoadingButton>
-                </Box>
-              </FormProvider>
+              <Grid container spacing={3}>
+                <Grid size={12}>
+                  <Controller
+                    control={memberFormMethods.control}
+                    name="nombre_completo"
+                    defaultValue=""
+                    rules={{ required: "Campo obligatorio" }}
+                    render={({ field: { value }, fieldState: { invalid, error } }) => (
+                      <TextField
+                        variant="standard"
+                        label="Nombre completo"
+                        onChange={(e) => memberFormMethods.setValue("nombre_completo", e.target.value.toUpperCase())}
+                        value={value ?? ""}
+                        error={invalid}
+                        helperText={error?.message}
+                        fullWidth
+                      />
+                    )}
+                  />
+                </Grid>
+                <Grid size={{ xs: 12, md: 4 }}>
+                  <Controller
+                    control={memberFormMethods.control}
+                    name="cedula"
+                    defaultValue=""
+                    render={({ field: { onChange, value }, fieldState: { invalid, error } }) => (
+                      <TextField
+                        variant="standard"
+                        label="Cédula (Opcional)"
+                        onChange={onChange}
+                        value={value ?? ""}
+                        error={invalid}
+                        helperText={error?.message}
+                        fullWidth
+                      />
+                    )}
+                  />
+                </Grid>
+                <Grid size={{ xs: 12, md: 4 }}>
+                  <Controller
+                    control={memberFormMethods.control}
+                    name="telefono"
+                    defaultValue=""
+                    render={({ field: { onChange, value }, fieldState: { invalid, error } }) => (
+                      <TextField
+                        variant="standard"
+                        label="Teléfono (Opcional)"
+                        onChange={onChange}
+                        value={value ?? ""}
+                        error={invalid}
+                        helperText={error?.message}
+                        fullWidth
+                      />
+                    )}
+                  />
+                </Grid>
+                <Grid size={{ xs: 12, md: 4 }}>
+                  <Controller
+                    control={memberFormMethods.control}
+                    name="fecha_nacimiento"
+                    render={({ field: { onChange, value } }) => (
+                      <DatePicker
+                        label="Fecha de nacimiento (Opcional)"
+                        value={value ? dayjs(value as any) : null}
+                        onChange={onChange}
+                        format="DD/MM/YYYY"
+                        slotProps={{ textField: { variant: "standard", fullWidth: true } }}
+                      />
+                    )}
+                  />
+                </Grid>
+                <Grid size={12}>
+                  <Controller
+                    control={memberFormMethods.control}
+                    name="historial.zona_id"
+                    defaultValue={undefined}
+                    render={({ field: { onChange, value }, fieldState: { invalid, error } }) => (
+                      <FormControl error={invalid} fullWidth variant="standard">
+                        <InputLabel htmlFor="zona_edit_modal">Zona</InputLabel>
+                        <Select
+                          inputProps={{ id: "zona_edit_modal" }}
+                          onChange={onChange}
+                          value={value ?? ""}
+                          disabled={user?.zona !== null}
+                        >
+                          <MenuItem value="" hidden />
+                          {zones?.map(({ id, descripcion }) => (
+                            <MenuItem key={id} value={id}>{descripcion}</MenuItem>
+                          ))}
+                        </Select>
+                        <FormHelperText>{error?.message}</FormHelperText>
+                      </FormControl>
+                    )}
+                  />
+                </Grid>
+                <Grid size={12}>
+                  <Controller
+                    control={memberFormMethods.control}
+                    name="historial.supervisor_id"
+                    defaultValue={undefined}
+                    render={({ field: { onChange, value }, fieldState: { invalid, error } }) => (
+                      <FormControl error={invalid} fullWidth variant="standard">
+                        <InputLabel htmlFor="supervisor_edit_modal">Supervisor (Opcional)</InputLabel>
+                        <Select
+                          inputProps={{ id: "supervisor_edit_modal" }}
+                          onChange={onChange}
+                          value={value ?? ""}
+                        >
+                          <MenuItem value="" />
+                          {supervisorsLoading && <MenuItem value="">Cargando...</MenuItem>}
+                          {supervisors?.map((supervisor: any) => (
+                            <MenuItem key={supervisor?.miembro_id} value={supervisor?.miembro_id}>
+                              {supervisor?.nombre_completo}
+                            </MenuItem>
+                          ))}
+                        </Select>
+                        <FormHelperText>{error?.message}</FormHelperText>
+                      </FormControl>
+                    )}
+                  />
+                </Grid>
+              </Grid>
+              <Box sx={{display: 'flex', justifyContent: 'flex-end', marginTop: 4, gap: 2}}>
+                <Button onClick={onClose} variant='outlined'>
+                  Cancelar
+                </Button>
+                <LoadingButton
+                  onClick={handleSubmitUpdateMember}
+                  type="submit"
+                  variant='contained'
+                  loading={resultMember.isLoading}
+                  startIcon={<EditIcon />}
+                >
+                  Guardar Cambios
+                </LoadingButton>
+              </Box>
             </Paper>
           </Box>
 
@@ -551,31 +656,130 @@ export const EditMember: React.FC<EditMemberProps> = ({ id: propId, isModal = fa
             flexDirection: 'column',
           }}
         >
-          <FormProvider {...memberFormMethods} >
-            <Box sx={{ mb: 4 }} >
-              <Typography variant='subtitle1' sx={{ fontWeight: 600, mb: 2.5, color: 'primary.main', fontSize: '1rem' }}>
-                👤 Información Personal
-              </Typography>
-              <PersonalForm />
-            </Box>
-            <Divider sx={{ my: 4 }} />
-            
-            <Box sx={{ mb: 4 }} >
-              <Typography variant='subtitle1' sx={{ fontWeight: 600, mb: 2.5, color: 'primary.main', fontSize: '1rem' }}>
-                💼 Información Profesional
-              </Typography>
-              <ProfessionForm />
-            </Box>
-            <Divider sx={{ my: 4 }} />
-            
-            <Box sx={{ mb: 4 }}>
-              <Typography variant='subtitle1' sx={{ fontWeight: 600, mb: 2.5, color: 'primary.main', fontSize: '1rem' }}>
-                🏢 Servicio y Zona
-              </Typography>
-              <ServiceForm />
-            </Box>
-            
-            <Box sx={{display: 'flex', justifyContent: 'flex-end', marginTop: 5, gap: 2, pt: 2}}>
+          <Grid container spacing={3}>
+            <Grid size={12}>
+              <Controller
+                control={memberFormMethods.control}
+                name="nombre_completo"
+                defaultValue=""
+                rules={{ required: "Campo obligatorio" }}
+                render={({ field: { value }, fieldState: { invalid, error } }) => (
+                  <TextField
+                    variant="standard"
+                    label="Nombre completo"
+                    onChange={(e) => memberFormMethods.setValue("nombre_completo", e.target.value.toUpperCase())}
+                    value={value ?? ""}
+                    error={invalid}
+                    helperText={error?.message}
+                    fullWidth
+                  />
+                )}
+              />
+            </Grid>
+            <Grid size={{ xs: 12, md: 4 }}>
+              <Controller
+                control={memberFormMethods.control}
+                name="cedula"
+                defaultValue=""
+                render={({ field: { onChange, value }, fieldState: { invalid, error } }) => (
+                  <TextField
+                    variant="standard"
+                    label="Cédula (Opcional)"
+                    onChange={onChange}
+                    value={value ?? ""}
+                    error={invalid}
+                    helperText={error?.message}
+                    fullWidth
+                  />
+                )}
+              />
+            </Grid>
+            <Grid size={{ xs: 12, md: 4 }}>
+              <Controller
+                control={memberFormMethods.control}
+                name="telefono"
+                defaultValue=""
+                render={({ field: { onChange, value }, fieldState: { invalid, error } }) => (
+                  <TextField
+                    variant="standard"
+                    label="Teléfono (Opcional)"
+                    onChange={onChange}
+                    value={value ?? ""}
+                    error={invalid}
+                    helperText={error?.message}
+                    fullWidth
+                  />
+                )}
+              />
+            </Grid>
+            <Grid size={{ xs: 12, md: 4 }}>
+              <Controller
+                control={memberFormMethods.control}
+                name="fecha_nacimiento"
+                render={({ field: { onChange, value } }) => (
+                  <DatePicker
+                    label="Fecha de nacimiento (Opcional)"
+                    value={value ? dayjs(value as any) : null}
+                    onChange={onChange}
+                    format="DD/MM/YYYY"
+                    slotProps={{ textField: { variant: "standard", fullWidth: true } }}
+                  />
+                )}
+              />
+            </Grid>
+            <Grid size={12}>
+              <Controller
+                control={memberFormMethods.control}
+                name="historial.zona_id"
+                defaultValue={undefined}
+                render={({ field: { onChange, value }, fieldState: { invalid, error } }) => (
+                  <FormControl error={invalid} fullWidth variant="standard">
+                    <InputLabel htmlFor="zona_edit_page">Zona</InputLabel>
+                    <Select
+                      inputProps={{ id: "zona_edit_page" }}
+                      onChange={onChange}
+                      value={value ?? ""}
+                      disabled={user?.zona !== null}
+                    >
+                      <MenuItem value="" hidden />
+                      {zones?.map(({ id, descripcion }) => (
+                        <MenuItem key={id} value={id}>{descripcion}</MenuItem>
+                      ))}
+                    </Select>
+                    <FormHelperText>{error?.message}</FormHelperText>
+                  </FormControl>
+                )}
+              />
+            </Grid>
+            <Grid size={12}>
+              <Controller
+                control={memberFormMethods.control}
+                name="historial.supervisor_id"
+                defaultValue={undefined}
+                render={({ field: { onChange, value }, fieldState: { invalid, error } }) => (
+                  <FormControl error={invalid} fullWidth variant="standard">
+                    <InputLabel htmlFor="supervisor_edit_page">Supervisor (Opcional)</InputLabel>
+                    <Select
+                      inputProps={{ id: "supervisor_edit_page" }}
+                      onChange={onChange}
+                      value={value ?? ""}
+                    >
+                      <MenuItem value="" />
+                      {supervisorsLoading && <MenuItem value="">Cargando...</MenuItem>}
+                      {supervisors?.map((supervisor: any) => (
+                        <MenuItem key={supervisor?.miembro_id} value={supervisor?.miembro_id}>
+                          {supervisor?.nombre_completo}
+                        </MenuItem>
+                      ))}
+                    </Select>
+                    <FormHelperText>{error?.message}</FormHelperText>
+                  </FormControl>
+                )}
+              />
+            </Grid>
+          </Grid>
+
+          <Box sx={{display: 'flex', justifyContent: 'flex-end', marginTop: 5, gap: 2, pt: 2}}>
               <Button 
                 variant='outlined'
                 onClick={() => router.back()}
@@ -592,7 +796,6 @@ export const EditMember: React.FC<EditMemberProps> = ({ id: propId, isModal = fa
                 Guardar Cambios
               </LoadingButton>
             </Box>
-          </FormProvider>
         </Paper>
       </Grid>
 

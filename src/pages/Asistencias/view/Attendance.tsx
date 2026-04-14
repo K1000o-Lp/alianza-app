@@ -44,7 +44,7 @@ export const Attendance: React.FC = () => {
               defaultValue={[]}
               render={({field: { onChange }}) => (
                 <Autocomplete
-                  options={options}
+                  options={options ?? []}
                   getOptionLabel={(option: any) => `${option.nombre_completo}`}
                   renderInput={(params) => <TextField {...params} variant='standard' label="Miembros" margin="normal" />}
                   onChange={(_, data) => onChange(data)}
