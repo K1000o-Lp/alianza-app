@@ -34,8 +34,18 @@ interface FilaImport {
   zona_id: number;
   cedula?: string;
   telefono?: string;
-  bautizado?: boolean;
   fecha_nacimiento?: string;
+  grupo_conexion?: boolean;
+  primeros_pasos?: boolean;
+  bautismo?: boolean;
+  encuentro?: boolean;
+  pos_encuentro?: boolean;
+  doctrinas_1?: boolean;
+  doctrinas_2?: boolean;
+  entrenamiento_liderazgo?: boolean;
+  liderazgo?: boolean;
+  encuentro_oracion?: boolean;
+  lider?: boolean;
 }
 
 interface ResultadoItem {
@@ -82,19 +92,29 @@ function parseCSV(text: string): FilaImport[] {
       zona_id,
       cedula: cols[idx("cedula")] || undefined,
       telefono: cols[idx("telefono")] || undefined,
-      bautizado: parseBautizado(cols[idx("bautizado")] ?? ""),
       fecha_nacimiento: rawFecha || undefined,
+      grupo_conexion: parseBautizado(cols[idx("grupo_conexion")] ?? ""),
+      primeros_pasos: parseBautizado(cols[idx("primeros_pasos")] ?? ""),
+      bautismo: parseBautizado(cols[idx("bautismo")] ?? ""),
+      encuentro: parseBautizado(cols[idx("encuentro")] ?? ""),
+      pos_encuentro: parseBautizado(cols[idx("pos_encuentro")] ?? ""),
+      doctrinas_1: parseBautizado(cols[idx("doctrinas_1")] ?? ""),
+      doctrinas_2: parseBautizado(cols[idx("doctrinas_2")] ?? ""),
+      entrenamiento_liderazgo: parseBautizado(cols[idx("entrenamiento_liderazgo")] ?? ""),
+      liderazgo: parseBautizado(cols[idx("liderazgo")] ?? ""),
+      encuentro_oracion: parseBautizado(cols[idx("encuentro_oracion")] ?? ""),
+      lider: parseBautizado(cols[idx("lider")] ?? ""),
     }];
   });
 }
 
 function descargarEjemplo() {
-  const header = "nombre_completo,zona,cedula,telefono,bautizado,fecha_nacimiento";
+  const header = "nombre_completo,zona,cedula,telefono,fecha_nacimiento,grupo_conexion,primeros_pasos,bautismo,encuentro,pos_encuentro,doctrinas_1,doctrinas_2,entrenamiento_liderazgo,liderazgo,encuentro_oracion,lider";
   const rows = [
-    "ANDREA CATALINA AREVALO MENDEZ,1,1072593132,3122981322,OK,1995-06-14",
-    "LUZ MARINA ROMERO,1,52190626,3052908799,SI,1980-03-22",
-    "YUSNAY ANDREINA RAMIREZ ESPINOZA,1,5270413,3214511661,NO,2001-11-05",
-    "ARTURO MENDOZA GUZMAN,3,7697693,3155341119,,",
+    "ANDREA CATALINA AREVALO MENDEZ,1,1072593132,3122981322,1995-06-14,SI,SI,SI,SI,NO,NO,NO,NO,NO,NO,NO",
+    "LUZ MARINA ROMERO,1,52190626,3052908799,1980-03-22,SI,SI,SI,SI,SI,SI,SI,SI,SI,SI,SI",
+    "YUSNAY ANDREINA RAMIREZ ESPINOZA,1,5270413,3214511661,2001-11-05,NO,NO,NO,NO,NO,NO,NO,NO,NO,NO,NO",
+    "ARTURO MENDOZA GUZMAN,3,7697693,3155341119,,,,,,,,,,,,",
   ];
   const csv = [header, ...rows].join("\n");
   const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
@@ -153,6 +173,7 @@ export const ImportarMiembros: React.FC<Props> = ({ open, onClose }) => {
 
   const handleImportar = async () => {
     if (filas.length === 0) return;
+    (document.activeElement as HTMLElement)?.blur();
     const res = await importar({ miembros: filas, transferir }).unwrap().catch((err) => {
       setParseError(err?.data?.message ?? "Error al importar. Intenta de nuevo.");
       return null;
@@ -200,7 +221,7 @@ export const ImportarMiembros: React.FC<Props> = ({ open, onClose }) => {
             {fileName ? fileName : "Haz clic para seleccionar un archivo CSV"}
           </Typography>
           <Typography variant="caption" color="text.secondary">
-            Columnas requeridas: nombre_completo, zona — opcionales: cedula, telefono, bautizado, fecha_nacimiento (YYYY-MM-DD)
+            Columnas requeridas: nombre_completo, zona — opcionales: cedula, telefono, fecha_nacimiento (YYYY-MM-DD), grupo_conexion, primeros_pasos, bautismo, encuentro, pos_encuentro, doctrinas_1, doctrinas_2, entrenamiento_liderazgo, liderazgo, encuentro_oracion, lider (SI/NO)
           </Typography>
         </Box>
 

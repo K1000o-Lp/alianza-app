@@ -321,7 +321,7 @@ export const alianzaApi = createApi({
     }),
     importarMiembros: builder.mutation<
       { importados: number; transferidos: number; omitidos: number; fallidos: number; detalle: { nombre_completo: string; cedula?: string; exito: boolean; error?: string; transferido?: boolean; omitido?: boolean }[] },
-      { miembros: { nombre_completo: string; zona_id: number; cedula?: string; telefono?: string; bautizado?: boolean; fecha_nacimiento?: string }[]; transferir?: boolean }
+      { miembros: { nombre_completo: string; zona_id: number; cedula?: string; telefono?: string; fecha_nacimiento?: string; grupo_conexion?: boolean; primeros_pasos?: boolean; bautismo?: boolean; encuentro?: boolean; pos_encuentro?: boolean; doctrinas_1?: boolean; doctrinas_2?: boolean; entrenamiento_liderazgo?: boolean; liderazgo?: boolean; encuentro_oracion?: boolean; lider?: boolean }[]; transferir?: boolean }
     >({
       query: (body) => ({ url: 'persona/miembros/importar', method: 'POST', body }),
       invalidatesTags: ['Members', 'Statistics', 'InfiniteResults'],
