@@ -101,15 +101,21 @@ export const Miembros: React.FC = () => {
 
   const handleClickExportToExcel = () => {
     const api = config().BACKEND_URL;
+    const params = queryString.stringify({
+      zona: filtersState.zona,
+      supervisor: filtersState.supervisor,
+      q: filtersState.q,
+    }, { skipNull: true, skipEmptyString: true });
 
-    fetch(`${api}persona/miembros/reportes?${queryString.stringify(filtersState)}`)
+    fetch(`${api}persona/miembros/exportar-csv?${params}`)
     .then(response => response.blob())
     .then(blob => {
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `reporte_miembros_${dayjs().format('DD/MM/YYYY HH:mm:ss')}.xlsx`;
+      a.download = `miembros_${dayjs().format('YYYY-MM-DD')}.csv`;
       a.click();
+      URL.revokeObjectURL(url);
     })
     .catch(error => console.error(error));
   }
@@ -196,7 +202,7 @@ export const Miembros: React.FC = () => {
             sx={{ ml: 2 }}
             startIcon={<FileDownloadIcon /> }
           >
-            Exportar a Excel
+            Exportar
           </Button>
           {user?.rol?.nombre === 'admin' && (
             <Button

@@ -74,6 +74,7 @@ export const EditMember: React.FC<EditMemberProps> = ({ id: propId, isModal = fa
   const memberFormMethods = useForm<MemberForm>();
   const { control: consolidationControl, handleSubmit: consolidationHandleSubmit, setValue, reset: consolidationReset } = useForm<consolidationForm>({ defaultValues: { miembro_id: Number(id) ?? undefined, fecha_consolidacion: dayjs() }});
   const { user } = useAppSelector((state) => state.auth);
+  const canDeleteConsolidation = user?.rol?.nombre === 'admin';
   const zonaId = memberFormMethods.watch('historial.zona_id');
   const { data: zones } = useGetZonesQuery();
   const { data: supervisors, isLoading: supervisorsLoading } = useGetSupervisorsQuery(
@@ -118,6 +119,10 @@ export const EditMember: React.FC<EditMemberProps> = ({ id: propId, isModal = fa
   }
 
   const handleDeleteConsolidation = async () => {
+    if (!canDeleteConsolidation) {
+      return;
+    }
+
     const pageParam = calcularPageParam(openDeleteDialog.id as number);
     await deleteConsolidationResults({id: openDeleteDialog.id as number, pageParam});
     setOpenDeleteDialog({ open: false, id: undefined });
@@ -443,6 +448,7 @@ export const EditMember: React.FC<EditMemberProps> = ({ id: propId, isModal = fa
                     creado_en: creado_en as Date | null
                   })) as any}
                   onDelete={(id) => setOpenDeleteDialog({ open: true, id })}
+                  canDelete={canDeleteConsolidation}
                 />
               </Box>
 
@@ -585,29 +591,31 @@ export const EditMember: React.FC<EditMemberProps> = ({ id: propId, isModal = fa
           </Alert>
         </Snackbar>
 
-        <Dialog
-          open={openDeleteDialog.open}
-          onClose={handleCloseDeleteDialog}
-          aria-labelledby="alert-dialog-title"
-        >
-          <DialogTitle id="alert-dialog-title" sx={{ fontWeight: 600 }}>
-            ⚠️ Confirmar eliminación
-          </DialogTitle>
-          <DialogContent sx={{ pt: 2 }}>
-            <Typography>¿Estás seguro de que deseas eliminar este resultado consolidado?</Typography>
-          </DialogContent>
-          <DialogActions>
-            <Button onClick={handleCloseDeleteDialog} variant='outlined'>No</Button>
-            <Button 
-              onClick={handleDeleteConsolidation} 
-              variant='contained'
-              color='error'
-              loading={resultDeleteConsolidation.isLoading}
-            >
-              Sí, eliminar
-            </Button>
-          </DialogActions>
-        </Dialog>
+        {canDeleteConsolidation && (
+          <Dialog
+            open={openDeleteDialog.open}
+            onClose={handleCloseDeleteDialog}
+            aria-labelledby="alert-dialog-title"
+          >
+            <DialogTitle id="alert-dialog-title" sx={{ fontWeight: 600 }}>
+              ⚠️ Confirmar eliminación
+            </DialogTitle>
+            <DialogContent sx={{ pt: 2 }}>
+              <Typography>¿Estás seguro de que deseas eliminar este resultado consolidado?</Typography>
+            </DialogContent>
+            <DialogActions>
+              <Button onClick={handleCloseDeleteDialog} variant='outlined'>No</Button>
+              <Button 
+                onClick={handleDeleteConsolidation} 
+                variant='contained'
+                color='error'
+                loading={resultDeleteConsolidation.isLoading}
+              >
+                Sí, eliminar
+              </Button>
+            </DialogActions>
+          </Dialog>
+        )}
       </Box>
     );
   }
@@ -828,6 +836,7 @@ export const EditMember: React.FC<EditMemberProps> = ({ id: propId, isModal = fa
                 creado_en: creado_en as Date | null
               })) as any}
               onDelete={(id) => setOpenDeleteDialog({ open: true, id })}
+              canDelete={canDeleteConsolidation}
             />
           </Box>
 
@@ -969,28 +978,30 @@ export const EditMember: React.FC<EditMemberProps> = ({ id: propId, isModal = fa
       </Snackbar>
 
       {/* Delete Dialog */}
-      <Dialog
-        open={openDeleteDialog.open}
-        onClose={handleCloseDeleteDialog}
-        aria-labelledby="alert-dialog-title"
-      >
-        <DialogTitle id="alert-dialog-title" sx={{ fontWeight: 600 }}>
-          ⚠️ Confirmar eliminación
-        </DialogTitle>
-        <DialogContent sx={{ pt: 2 }}>
-          <Typography>¿Estás seguro de que deseas eliminar este resultado consolidado?</Typography>
-        </DialogContent>
-        <DialogActions sx={{ gap: 1 }}>
-          <Button onClick={handleCloseDeleteDialog} variant='outlined'>No</Button>
-          <Button 
-            onClick={handleDeleteConsolidation} 
-            variant='contained'
-            color='error'
-          >
-            Sí, eliminar
-          </Button>
-        </DialogActions>
-      </Dialog>
+      {canDeleteConsolidation && (
+        <Dialog
+          open={openDeleteDialog.open}
+          onClose={handleCloseDeleteDialog}
+          aria-labelledby="alert-dialog-title"
+        >
+          <DialogTitle id="alert-dialog-title" sx={{ fontWeight: 600 }}>
+            ⚠️ Confirmar eliminación
+          </DialogTitle>
+          <DialogContent sx={{ pt: 2 }}>
+            <Typography>¿Estás seguro de que deseas eliminar este resultado consolidado?</Typography>
+          </DialogContent>
+          <DialogActions sx={{ gap: 1 }}>
+            <Button onClick={handleCloseDeleteDialog} variant='outlined'>No</Button>
+            <Button 
+              onClick={handleDeleteConsolidation} 
+              variant='contained'
+              color='error'
+            >
+              Sí, eliminar
+            </Button>
+          </DialogActions>
+        </Dialog>
+      )}
     </Grid>
   )
 }

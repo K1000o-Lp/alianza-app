@@ -13,9 +13,10 @@ interface TimelineItem {
 interface CustomTimelineProps {
   items: TimelineItem[];
   onDelete: (id: number) => void;
+  canDelete?: boolean;
 }
 
-export const CustomTimeline: React.FC<CustomTimelineProps> = ({ items, onDelete }) => {
+export const CustomTimeline: React.FC<CustomTimelineProps> = ({ items, onDelete, canDelete = true }) => {
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
       {items.length > 0 ? (
@@ -98,18 +99,20 @@ export const CustomTimeline: React.FC<CustomTimelineProps> = ({ items, onDelete 
                 >
                   {item.nombre}
                 </Typography>
-                <IconButton 
-                  onClick={() => onDelete(item.id)} 
-                  aria-label="delete" 
-                  color='error' 
-                  size='small'
-                  sx={{ 
-                    flexShrink: 0,
-                    ml: 'auto'
-                  }}
-                >
-                  <DeleteIcon fontSize='small' />
-                </IconButton>
+                {canDelete && (
+                  <IconButton 
+                    onClick={() => onDelete(item.id)} 
+                    aria-label="delete" 
+                    color='error' 
+                    size='small'
+                    sx={{ 
+                      flexShrink: 0,
+                      ml: 'auto'
+                    }}
+                  >
+                    <DeleteIcon fontSize='small' />
+                  </IconButton>
+                )}
               </Paper>
             </Box>
           </Box>
