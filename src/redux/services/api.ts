@@ -25,6 +25,8 @@ import {
   User,
   UsuarioAdmin,
   Zone,
+  SolicitudTransferencia,
+  EstadoSolicitud,
 } from "../../types";
 import { jwtDecode } from "jwt-decode";
 import { setUser, logOut } from "../features/authSlice";
@@ -81,7 +83,7 @@ export const alianzaApi = createApi({
   baseQuery: baseQueryWithReauth,
   tagTypes: [
     'Zones', 'Services', 'Members', 'Results', 'InfiniteResults', 'Statistics', 'CivilStatuses', 'Educations',
-    'Disabilities', 'Occupations', 'Supervisors', 'Usuarios'
+    'Disabilities', 'Occupations', 'Supervisors', 'Usuarios', 'SolicitudesTransferencia'
   ],
   endpoints: (builder) => ({
     iniciarSesion: builder.mutation<Sesion, IniciarSesionForm>({
@@ -516,6 +518,22 @@ export const alianzaApi = createApi({
       }),
       invalidatesTags: ['Usuarios'],
     }),
+    getSolicitudesTransferencia: builder.query<SolicitudTransferencia[], { zona_origen_id?: number; zona_destino_id?: number; estado?: EstadoSolicitud }>({
+      query: (params) => ({ url: 'organizacion/solicitudes-transferencia', params }),
+      providesTags: ['SolicitudesTransferencia'],
+    }),
+    crearSolicitudTransferencia: builder.mutation<SolicitudTransferencia, { miembro_id: number; zona_origen_id: number; zona_destino_id: number; solicitante_id?: number }>({
+      query: (body) => ({ url: 'organizacion/solicitudes-transferencia', method: 'POST', body }),
+      invalidatesTags: ['SolicitudesTransferencia'],
+    }),
+    aprobarSolicitudTransferencia: builder.mutation<SolicitudTransferencia, { id: number; aprobador_id: number }>({
+      query: ({ id, aprobador_id }) => ({ url: `organizacion/solicitudes-transferencia/${id}/aprobar`, method: 'PUT', body: { aprobador_id } }),
+      invalidatesTags: ['SolicitudesTransferencia', 'Members'],
+    }),
+    rechazarSolicitudTransferencia: builder.mutation<SolicitudTransferencia, { id: number; aprobador_id: number }>({
+      query: ({ id, aprobador_id }) => ({ url: `organizacion/solicitudes-transferencia/${id}/rechazar`, method: 'PUT', body: { aprobador_id } }),
+      invalidatesTags: ['SolicitudesTransferencia'],
+    }),
   }),
 });
 
@@ -553,4 +571,8 @@ export const {
   useResetContrasenaUsuarioMutation,
   useEliminarUsuarioMutation,
   useImportarMiembrosMutation,
+  useGetSolicitudesTransferenciaQuery,
+  useCrearSolicitudTransferenciaMutation,
+  useAprobarSolicitudTransferenciaMutation,
+  useRechazarSolicitudTransferenciaMutation,
 } = alianzaApi;

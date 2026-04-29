@@ -14,6 +14,7 @@ import { FormacionQR } from "../../pages/FormacionQR";
 import { GestionUsuarios } from "../../pages/GestionUsuarios";
 import { QRRegistro } from "../../pages/QRRegistro/view/QRRegistro";
 import { RegistrarFormacion } from "../../pages/RegistrarFormacion";
+import { SolicitudesTransferencia } from "../../pages/SolicitudesTransferencia/view/SolicitudesTransferencia";
 
 const ADMIN_ROLES = ['admin'];
 const STAFF_ROLES = ['admin', 'pastores'];
@@ -43,7 +44,7 @@ export const MainRoute: RouteObject = {
     {
       path: "miembros/crear",
       element: (
-        <RoleRoute roles={ADMIN_ROLES}>
+        <RoleRoute roles={STAFF_ROLES}>
           <AddMember />
         </RoleRoute>
       ),
@@ -117,6 +118,14 @@ export const MainRoute: RouteObject = {
       element: (
         <RoleRoute roles={STAFF_ROLES}>
           <RegistrarFormacion />
+        </RoleRoute>
+      ),
+    },
+    {
+      path: "solicitudes/transferencia",
+      element: (
+        <RoleRoute roles={STAFF_ROLES}>
+          <SolicitudesTransferencia />
         </RoleRoute>
       ),
     },

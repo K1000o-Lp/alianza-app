@@ -249,3 +249,17 @@ export interface RegistroForm {
   nombre_usuario: string;
   contrasena: string;
 }
+
+export type EstadoSolicitud = 'pendiente' | 'aprobada' | 'rechazada';
+
+export interface SolicitudTransferencia {
+  id: number;
+  miembro: { id: number; nombre_completo: string; cedula?: string };
+  zona_origen: { id: number; descripcion: string };
+  zona_destino: { id: number; descripcion: string };
+  solicitante?: { id: number; miembro?: { nombre_completo: string } };
+  estado: EstadoSolicitud;
+  creado_en: string;
+  aprobado_en: string | null;
+  aprobado_por?: { id: number; miembro?: { nombre_completo: string } };
+}

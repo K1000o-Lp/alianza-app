@@ -14,6 +14,7 @@ import SupervisorAccountIcon from "@mui/icons-material/SupervisorAccount";
 import QrCode2Icon from "@mui/icons-material/QrCode2";
 import GroupIcon from "@mui/icons-material/Group";
 import HowToRegIcon from "@mui/icons-material/HowToReg";
+import SwapHorizIcon from "@mui/icons-material/SwapHoriz";
 import QrCodeScannerIcon from "@mui/icons-material/QrCodeScanner";
 
 interface Props {
@@ -47,7 +48,7 @@ const ALL_NAV_ITEMS: NavItemWithRoles[] = [
     label: "Agregar Miembro",
     icon: <AddBoxIcon />,
     route: "/miembros/crear",
-    roles: ["admin"],
+    roles: ["admin", "pastores"],
   },
   {
     key: "/eventos/crear",
@@ -104,6 +105,13 @@ const ALL_NAV_ITEMS: NavItemWithRoles[] = [
     icon: <QrCodeScannerIcon />,
     route: "/formacion/escanear",
     roles: ["miembros"],
+  },
+  {
+    key: "/solicitudes/transferencia",
+    label: "Solicitudes de Transferencia",
+    icon: <SwapHorizIcon />,
+    route: "/solicitudes/transferencia",
+    roles: ["admin", "pastores"],
   },
 ];
 

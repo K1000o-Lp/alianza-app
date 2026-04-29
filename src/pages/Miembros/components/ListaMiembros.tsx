@@ -145,7 +145,7 @@ export const ListaMiembros: React.FC<Props> = ({ miembros, loading, onFetchMore 
                         >
                             <EditIcon />
                         </IconButton>
-                        {user?.rol?.nombre === 'admin' && (
+                        {(user?.rol?.nombre === 'admin' || user?.rol?.nombre === 'pastores') && (
                             <IconButton 
                                 size="small" 
                                 aria-label="delete" 

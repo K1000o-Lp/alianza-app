@@ -4,6 +4,7 @@ import Paper from "@mui/material/Paper";
 import LoadingButton from "@mui/lab/LoadingButton";
 import Typography from "@mui/material/Typography";
 import {
+  Button,
   Checkbox,
   Chip,
   Collapse,
@@ -28,7 +29,8 @@ import { DatePicker } from "@mui/x-date-pickers";
 import dayjs from "dayjs";
 
 import { MemberForm } from "../../../types";
-import { usePostMembersMutation, useGetSupervisorsQuery, useGetZonesQuery, useCrearUsuarioMutation, useGetRequirementsQuery, usePutMembersMutation } from "../../../redux/services";
+import { config } from "../../../config";
+import { usePostMembersMutation, useGetSupervisorsQuery, useGetZonesQuery, useCrearUsuarioMutation, useGetRequirementsQuery, usePutMembersMutation, useCrearSolicitudTransferenciaMutation } from "../../../redux/services";
 import { useRouter } from "../../../router/hooks";
 import { useAppSelector } from "../../../redux/store";
 
@@ -41,6 +43,7 @@ type ExistingMember = {
 export const AddMember: React.FC = () => {
   const { user } = useAppSelector((state) => state.auth);
   const zonaIdUsuario = user?.zona?.id;
+  const esAdmin = user?.rol?.nombre === 'admin';
 
   // Admin no tiene zona: permite seleccionar; pastores usan la suya
   const [zonaSeleccionada, setZonaSeleccionada] = React.useState<number | "">(zonaIdUsuario ?? "");
@@ -52,9 +55,11 @@ export const AddMember: React.FC = () => {
   const router = useRouter();
   const [postMember, result] = usePostMembersMutation();
   const [putMember, putResult] = usePutMembersMutation();
+  const [crearSolicitud, solicitudResult] = useCrearSolicitudTransferenciaMutation();
   const [crearUsuario] = useCrearUsuarioMutation();
   const { isLoading, isSuccess, isError, error, data: memberData } = result;
   const [existingMember, setExistingMember] = React.useState<ExistingMember | null>(null);
+  const [solicitudDuplicada, setSolicitudDuplicada] = React.useState(false);
   const errorMessage = error && "data" in error
     ? (error.data as { message: string }).message
     : "Error desconocido";
@@ -111,9 +116,25 @@ export const AddMember: React.FC = () => {
     }
   };
 
+  const zona0Id = Number(config().ZONA_0);
+
   const handleTransferir = async () => {
     if (!existingMember || !zonaSeleccionada) return;
-    await putMember({ id: existingMember.id, historial: { zona_id: zonaSeleccionada as number } }).unwrap().catch(() => {});
+    const enZona0 = !existingMember.zona || existingMember.zona.id === zona0Id;
+    if (esAdmin || enZona0) {
+      // Admin or member in zona_0: direct transfer
+      await putMember({ id: existingMember.id, historial: { zona_id: zonaSeleccionada as number } }).unwrap().catch(() => {});
+    } else {
+      // Pastor: member is in another zone → create a transfer request
+      await crearSolicitud({
+        miembro_id: existingMember.id,
+        zona_origen_id: existingMember.zona!.id,
+        zona_destino_id: zonaSeleccionada as number,
+        solicitante_id: user?.id,
+      }).unwrap().catch((err: any) => {
+        if (err?.status === 409) setSolicitudDuplicada(true);
+      });
+    }
   };
 
   React.useEffect(() => {
@@ -121,6 +142,8 @@ export const AddMember: React.FC = () => {
       setTimeout(() => router.reload(), 2500);
     }
   }, [putResult.isSuccess]);
+
+
 
   React.useEffect(() => {
     if (isSuccess) {
@@ -144,6 +167,11 @@ export const AddMember: React.FC = () => {
   }
 
   if (isError && existingMember) {
+    const puedeAccionar = zonaSeleccionada && existingMember.zona?.id !== zonaSeleccionada;
+    const enZona0 = !existingMember.zona || existingMember.zona.id === zona0Id;
+    const transfereDirectamente = esAdmin || enZona0;
+    const accionPendiente = transfereDirectamente ? putResult : solicitudResult;
+
     return (
       <Box width="100%" sx={{ display: "flex", justifyContent: "center" }}>
         <Paper variant="outlined" sx={{ my: { xs: 1.5, md: 3 }, width: 500, p: { xs: 2, md: 3 } }}>
@@ -158,30 +186,70 @@ export const AddMember: React.FC = () => {
               " sin zona asignada"
             )}.
           </Typography>
-          {zonaSeleccionada && existingMember.zona?.id !== zonaSeleccionada && (
+
+          {solicitudDuplicada ? (
+            <Box sx={{ mt: 1 }}>
+              <Typography variant="body1" color="warning.main" sx={{ mb: 2 }}>
+                Ya existe una solicitud de transferencia pendiente para este miembro. Puedes verla en el listado de solicitudes.
+              </Typography>
+              <Box sx={{ display: "flex", gap: 1, flexWrap: "wrap" }}>
+                <Button variant="contained" onClick={() => router.push("/miembros/crear")}>
+                  Agregar otro miembro
+                </Button>
+                <Button variant="outlined" onClick={() => router.push("/solicitudes/transferencia")}>
+                  Ver solicitudes de transferencia
+                </Button>
+              </Box>
+            </Box>
+          ) : (
+            <>
+          {puedeAccionar && !accionPendiente.isSuccess && (
             <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-              ¿Desea transferirlo/a a la zona seleccionada?
+              {transfereDirectamente
+                ? "¿Desea transferirlo/a a la zona seleccionada?"
+                : "¿Desea enviar una solicitud de transferencia a la zona de origen para aprobación?"}
             </Typography>
           )}
-          {putResult.isSuccess ? (
-            <Typography variant="body1" color="success.main" sx={{ mt: 1 }}>
-              Transferencia realizada exitosamente. Redirigiendo...
-            </Typography>
+
+          {accionPendiente.isSuccess ? (
+            <Box sx={{ mt: 1 }}>
+              {esAdmin ? (
+                <Typography variant="body1" color="success.main" sx={{ mb: 2 }}>
+                  Transferencia realizada exitosamente.
+                </Typography>
+              ) : (
+                <Typography variant="body1" color="success.main" sx={{ mb: 2 }}>
+                  Solicitud de transferencia enviada. El pastor de la zona de origen debe aprobarla.
+                </Typography>
+              )}
+              <Box sx={{ display: "flex", gap: 1, flexWrap: "wrap" }}>
+                <Button variant="contained" onClick={() => router.push("/miembros/crear")}>
+                  Agregar otro miembro
+                </Button>
+                {!transfereDirectamente && (
+                  <Button variant="outlined" onClick={() => router.push("/solicitudes/transferencia")}>
+                    Ver solicitudes de transferencia
+                  </Button>
+                )}
+              </Box>
+            </Box>
           ) : (
             <Box sx={{ display: "flex", gap: 1, flexWrap: "wrap", mt: 1 }}>
-              {zonaSeleccionada && existingMember.zona?.id !== zonaSeleccionada && (
+              {puedeAccionar && (
                 <LoadingButton
                   variant="contained"
-                  loading={putResult.isLoading}
+                  loading={accionPendiente.isLoading}
                   onClick={handleTransferir}
                 >
-                  Transferir
+                  {transfereDirectamente ? "Transferir" : "Solicitar transferencia"}
                 </LoadingButton>
               )}
               <LoadingButton variant="outlined" onClick={() => router.reload()}>
                 Volver
               </LoadingButton>
             </Box>
+          )}
+            </>
           )}
         </Paper>
       </Box>
