@@ -108,7 +108,7 @@ export const MainRoute: RouteObject = {
     {
       path: "registro/qr",
       element: (
-        <RoleRoute roles={ADMIN_ROLES}>
+        <RoleRoute roles={STAFF_ROLES}>
           <QRRegistro />
         </RoleRoute>
       ),

@@ -97,7 +97,7 @@ const ALL_NAV_ITEMS: NavItemWithRoles[] = [
     label: "QR de Registro",
     icon: <HowToRegIcon />,
     route: "/registro/qr",
-    roles: ["admin"],
+    roles: ["admin", "pastores"],
   },
   {
     key: "/formacion/escanear",

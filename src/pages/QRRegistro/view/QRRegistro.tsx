@@ -21,9 +21,18 @@ import DownloadIcon from "@mui/icons-material/Download";
 import QrCodeIcon from "@mui/icons-material/QrCode2";
 import { QRCodeCanvas } from "qrcode.react";
 import { useGetZonesQuery } from "../../../redux/services/api";
+import { useAppSelector } from "../../../redux/store";
 
 export const QRRegistro: React.FC = () => {
   const { data: zonas, isLoading } = useGetZonesQuery();
+  const { user } = useAppSelector((state) => state.auth);
+  const esAdmin = user?.rol?.nombre === "admin";
+  const zonaIdUsuario = user?.zona?.id;
+
+  const zonasVisibles = esAdmin
+    ? zonas
+    : zonas?.filter((z) => z.id === zonaIdUsuario);
+
   const [openZona, setOpenZona] = React.useState<{ id: number; descripcion: string } | null>(
     null
   );
@@ -58,7 +67,8 @@ export const QRRegistro: React.FC = () => {
         </Typography>
       </Box>
 
-      {/* General QR */}
+      {/* General QR — admin only */}
+      {esAdmin && (
       <Card sx={{ mb: 4, borderRadius: 2, border: "1px solid", borderColor: "primary.light" }}>
         <CardContent>
           <Typography variant="subtitle1" fontWeight={600} gutterBottom>
@@ -78,12 +88,15 @@ export const QRRegistro: React.FC = () => {
           </Button>
         </CardActions>
       </Card>
+      )}
 
+      {esAdmin && (
       <Divider sx={{ mb: 4 }}>
         <Typography variant="caption" color="text.secondary">
           QRs por zona
         </Typography>
       </Divider>
+      )}
 
       {isLoading ? (
         <Box display="flex" justifyContent="center" py={6}>
@@ -91,7 +104,7 @@ export const QRRegistro: React.FC = () => {
         </Box>
       ) : (
         <Grid container spacing={2}>
-          {zonas?.map((zona) => (
+          {zonasVisibles?.map((zona) => (
             <Grid item xs={12} sm={6} md={4} key={zona.id}>
               <Card sx={{ borderRadius: 2, height: "100%" }}>
                 <CardContent>
